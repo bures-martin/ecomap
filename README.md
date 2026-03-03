@@ -1,2 +1,2 @@
-# ecomap
-Eco Map
+# Eco Map project
+
