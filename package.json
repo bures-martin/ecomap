@@ -1,0 +1,23 @@
+{
+  "name": "ecomap",
+  "version": "1.0.0",
+  "description": "EcoMap Community",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "start": "concurrently \"npm start --workspace=backend\" \"npm run dev --workspace=frontend\"",
+    "backend": "npm run dev --workspace=backend",
+    "frontend": "npm run dev --workspace=frontend",
+    "install": "npm install"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
