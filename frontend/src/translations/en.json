@@ -1,0 +1,10 @@
+{
+  "navbar": {
+    "brand": "EcoMap Community",
+    "toggleSidebar": "Toggle sidebar"
+  },
+  "sidebar": {
+    "title": "Sidebar",
+    "close": "Close sidebar"
+  }
+}

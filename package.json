@@ -12,7 +12,9 @@
     "start": "concurrently \"npm start --workspace=backend\" \"npm run dev --workspace=frontend\"",
     "backend": "npm run dev --workspace=backend",
     "frontend": "npm run dev --workspace=frontend",
-    "install": "npm install"
+    "install": "npm install",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
   },
   "keywords": [],
   "author": "",
