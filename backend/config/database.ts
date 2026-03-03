@@ -1,7 +1,5 @@
 import { Pool } from 'pg';
 
-// Database connection configuration
-// You can use environment variables or hardcode for development
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
@@ -10,12 +8,11 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD || 'postgres',
 });
 
-// Test the connection
-pool.on('connect', () => {
+pool.on('connect', (): void => {
   console.log('Connected to PostgreSQL database');
 });
 
-pool.on('error', (err: Error) => {
+pool.on('error', (err: Error): void => {
   console.error('Unexpected error on idle client', err);
   process.exit(-1);
 });

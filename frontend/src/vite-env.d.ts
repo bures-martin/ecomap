@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_MAP_BOUNDS_WEST: string
   readonly VITE_MAP_BOUNDS_NORTH: string
   readonly VITE_MAP_BOUNDS_EAST: string
+  readonly VITE_API_URL: string
 }
 
 interface ImportMeta {

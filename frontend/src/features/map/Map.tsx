@@ -1,9 +1,34 @@
 import { JSX, useEffect, useRef } from 'react'
 import L from 'leaflet'
 
-export default function Map(): JSX.Element {
+export interface LatLng {
+  lat: number
+  lng: number
+}
+
+interface MapProps {
+  picking?: boolean | undefined
+  onMapClick?: ((coords: LatLng) => void) | undefined
+}
+
+export default function Map({ picking, onMapClick }: MapProps): JSX.Element {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
+  const onMapClickRef = useRef(onMapClick)
+
+  useEffect(() => {
+    onMapClickRef.current = onMapClick
+  }, [onMapClick])
+
+  useEffect(() => {
+    const container = mapInstanceRef.current?.getContainer()
+    if (!container) return
+    if (picking) {
+      container.classList.add('picking-mode')
+    } else {
+      container.classList.remove('picking-mode')
+    }
+  }, [picking])
 
   useEffect((): void | (() => void) => {
     if (!mapRef.current || mapInstanceRef.current) return
@@ -31,6 +56,13 @@ export default function Map(): JSX.Element {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(mapInstanceRef.current)
+
+    mapInstanceRef.current.on('click', (e: L.LeafletMouseEvent) => {
+      onMapClickRef.current?.({
+        lat: Math.round(e.latlng.lat * 1e6) / 1e6,
+        lng: Math.round(e.latlng.lng * 1e6) / 1e6,
+      })
+    })
 
     const observer = new ResizeObserver(() => {
       mapInstanceRef.current?.invalidateSize()

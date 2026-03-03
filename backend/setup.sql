@@ -1,17 +1,16 @@
--- Create database (run this in PostgreSQL)
+-- Create database (run this manually in PostgreSQL first)
 -- CREATE DATABASE ecomap;
 
--- Create table for items
-CREATE TABLE IF NOT EXISTS items (
+-- Then connect to ecomap and run:
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+CREATE TABLE IF NOT EXISTS points (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  value INTEGER NOT NULL CHECK (value >= 0),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  description TEXT NOT NULL DEFAULT '',
+  location GEOGRAPHY(POINT, 4326) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert sample data
-INSERT INTO items (name, value) VALUES
-  ('Item 1', 100),
-  ('Item 2', 200),
-  ('Item 3', 300)
-ON CONFLICT DO NOTHING;
+CREATE INDEX IF NOT EXISTS idx_points_location ON points USING GIST (location);
