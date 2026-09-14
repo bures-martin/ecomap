@@ -1,0 +1,11 @@
+dist
+build
+coverage
+node_modules
+package-lock.json
+*.min.*
+
+# The project's first iteration - left exactly as it was committed.
+# See README, "Migration from the first version".
+backend
+frontend

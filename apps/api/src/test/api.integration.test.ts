@@ -1,0 +1,773 @@
+import { generateTotpCode } from '../auth/totp.js';
+import type { Express } from 'express';
+import request from 'supertest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { createApp } from '../app.js';
+import type { Sql } from '../db/client.js';
+import { setUserTotpSecret, enableUserTotp } from '../modules/users/repository.js';
+import {
+  hasTestDatabase,
+  resetTestDatabase,
+  setupTestDatabase,
+  teardownTestDatabase,
+} from './database.js';
+import { TEST_PASSWORD, createTestLayer, createTestUser, refreshCookieFrom } from './fixtures.js';
+
+/**
+ * End-to-end tests over the real HTTP stack and a real PostGIS database.
+ *
+ * They skip themselves when `TEST_DATABASE_URL` is unset, so a clone without
+ * Docker still gets a green `npm test` from the unit suites.
+ */
+describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
+  let db: Sql;
+  let app: Express;
+
+  beforeAll(async () => {
+    db = await setupTestDatabase();
+    app = createApp(db);
+  });
+
+  afterAll(async () => {
+    await teardownTestDatabase(db);
+  });
+
+  beforeEach(async () => {
+    await resetTestDatabase(db);
+  });
+
+  describe('GET /api/health', () => {
+    it('reports ok and reaches the database', async () => {
+      const response = await request(app).get('/api/health').expect(200);
+      expect(response.body).toMatchObject({ status: 'ok' });
+    });
+  });
+
+  describe('registration and login', () => {
+    const credentials = {
+      email: 'bo@example.test',
+      displayName: 'Bo Nielsen',
+      password: 'a-long-enough-passw0rd',
+    };
+
+    it('registers, returns a session and sets an httpOnly refresh cookie', async () => {
+      const response = await request(app).post('/api/auth/register').send(credentials).expect(201);
+
+      expect(response.body.user).toMatchObject({
+        email: credentials.email,
+        displayName: credentials.displayName,
+        role: 'contributor',
+        totpEnabled: false,
+      });
+      expect(response.body.accessToken).toEqual(expect.any(String));
+
+      const cookie = refreshCookieFrom(response);
+      expect(cookie).toContain('HttpOnly');
+      expect(cookie).toContain('SameSite=Strict');
+      expect(cookie).toContain('Path=/api/auth');
+    });
+
+    it('never returns the password hash', async () => {
+      const response = await request(app).post('/api/auth/register').send(credentials).expect(201);
+      expect(JSON.stringify(response.body)).not.toContain('scrypt$');
+    });
+
+    it('rejects a weak password with field-level issues', async () => {
+      const response = await request(app)
+        .post('/api/auth/register')
+        .send({ ...credentials, password: 'short' })
+        .expect(422);
+
+      expect(response.body.error.code).toBe('validation_failed');
+      expect(response.body.error.issues).toContainEqual(
+        expect.objectContaining({ path: 'password' }),
+      );
+    });
+
+    it('refuses a duplicate email', async () => {
+      await request(app).post('/api/auth/register').send(credentials).expect(201);
+      const response = await request(app).post('/api/auth/register').send(credentials).expect(409);
+      expect(response.body.error.code).toBe('conflict');
+    });
+
+    it('signs in with the right password', async () => {
+      await request(app).post('/api/auth/register').send(credentials).expect(201);
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: credentials.email, password: credentials.password })
+        .expect(200);
+
+      expect(response.body.user.email).toBe(credentials.email);
+    });
+
+    it('gives the same answer for a wrong password and an unknown account', async () => {
+      await request(app).post('/api/auth/register').send(credentials).expect(201);
+
+      const wrongPassword = await request(app)
+        .post('/api/auth/login')
+        .send({ email: credentials.email, password: 'not-the-password-1' })
+        .expect(401);
+      const unknownAccount = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'nobody@example.test', password: 'not-the-password-1' })
+        .expect(401);
+
+      expect(wrongPassword.body.error.code).toBe('invalid_credentials');
+      expect(unknownAccount.body.error).toEqual(wrongPassword.body.error);
+    });
+
+    it('blocks registration when the community is invite-only', async () => {
+      await db`update community_settings set allow_public_registration = false where id = true`;
+      const response = await request(app).post('/api/auth/register').send(credentials).expect(403);
+      expect(response.body.error.code).toBe('forbidden');
+    });
+  });
+
+  describe('two-factor authentication', () => {
+    const secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+
+    async function createUserWithTotp() {
+      const user = await createTestUser(db, 'contributor');
+      await setUserTotpSecret(db, user.id, secret);
+      await enableUserTotp(db, user.id);
+      return user;
+    }
+
+    it('asks for a code when two-factor is on', async () => {
+      const user = await createUserWithTotp();
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: user.email, password: TEST_PASSWORD })
+        .expect(401);
+
+      expect(response.body.error.code).toBe('totp_required');
+    });
+
+    it('signs in with a valid code', async () => {
+      const user = await createUserWithTotp();
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: user.email, password: TEST_PASSWORD, totpCode: generateTotpCode(secret) })
+        .expect(200);
+    });
+
+    it('rejects a wrong code', async () => {
+      const user = await createUserWithTotp();
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: user.email, password: TEST_PASSWORD, totpCode: '000000' })
+        .expect(401);
+
+      expect(response.body.error.code).toBe('invalid_credentials');
+    });
+  });
+
+  describe('session lifecycle', () => {
+    it('refreshes with the cookie and rotates the token', async () => {
+      const agent = request.agent(app);
+      await agent
+        .post('/api/auth/register')
+        .send({ email: 'rot@example.test', displayName: 'Rotator', password: TEST_PASSWORD })
+        .expect(201);
+
+      const first = await agent.post('/api/auth/refresh').expect(200);
+      expect(first.body.accessToken).toEqual(expect.any(String));
+
+      /* The rotated cookie replaced the old one, so a second refresh still works. */
+      await agent.post('/api/auth/refresh').expect(200);
+    });
+
+    it('refuses to reuse a refresh token after rotation', async () => {
+      const registration = await request(app)
+        .post('/api/auth/register')
+        .send({ email: 'reuse@example.test', displayName: 'Reuser', password: TEST_PASSWORD })
+        .expect(201);
+
+      const originalCookie = refreshCookieFrom(registration);
+      expect(originalCookie).toBeDefined();
+
+      await request(app).post('/api/auth/refresh').set('Cookie', originalCookie!).expect(200);
+      const replay = await request(app)
+        .post('/api/auth/refresh')
+        .set('Cookie', originalCookie!)
+        .expect(401);
+
+      expect(replay.body.error.code).toBe('unauthorized');
+    });
+
+    it('rejects a refresh with no cookie at all', async () => {
+      await request(app).post('/api/auth/refresh').expect(401);
+    });
+
+    it('ends the session on logout', async () => {
+      const registration = await request(app)
+        .post('/api/auth/register')
+        .send({ email: 'bye@example.test', displayName: 'Leaver', password: TEST_PASSWORD })
+        .expect(201);
+      const cookie = refreshCookieFrom(registration)!;
+
+      await request(app).post('/api/auth/logout').set('Cookie', cookie).expect(204);
+      await request(app).post('/api/auth/refresh').set('Cookie', cookie).expect(401);
+    });
+
+    it('rejects a forged access token', async () => {
+      await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', 'Bearer not.a.real.token')
+        .expect(401);
+    });
+  });
+
+  describe('layers', () => {
+    it('lists published layers for anonymous visitors', async () => {
+      await createTestLayer(db, { slug: 'visible', name: 'Visible' });
+      await createTestLayer(db, { slug: 'hidden', name: 'Hidden', isPublished: false });
+
+      const response = await request(app).get('/api/layers').expect(200);
+      const layers = response.body as { slug: string }[];
+      expect(layers.map((layer) => layer.slug)).toEqual(['visible']);
+    });
+
+    it('shows unpublished layers to a moderator', async () => {
+      await createTestLayer(db, { slug: 'hidden', name: 'Hidden', isPublished: false });
+      const moderator = await createTestUser(db, 'moderator');
+
+      const response = await request(app).get('/api/layers').set(moderator.authHeader).expect(200);
+      expect(response.body).toHaveLength(1);
+    });
+
+    it('lets an admin create a layer', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const response = await request(app)
+        .post('/api/layers')
+        .set(admin.authHeader)
+        .send({
+          slug: 'repair-cafes',
+          name: 'Repair cafés',
+          allowedGeometries: ['Point'],
+          fields: [{ key: 'openingHours', label: 'Opening hours', type: 'text' }],
+        })
+        .expect(201);
+
+      expect(response.body).toMatchObject({ slug: 'repair-cafes', featureCount: 0 });
+      expect(response.body.fields).toHaveLength(1);
+    });
+
+    it('refuses layer creation for a contributor', async () => {
+      const contributor = await createTestUser(db, 'contributor');
+      const response = await request(app)
+        .post('/api/layers')
+        .set(contributor.authHeader)
+        .send({ slug: 'nope', name: 'Nope' })
+        .expect(403);
+
+      expect(response.body.error.code).toBe('forbidden');
+    });
+
+    it('refuses layer creation for an anonymous visitor', async () => {
+      await request(app).post('/api/layers').send({ slug: 'nope', name: 'Nope' }).expect(401);
+    });
+
+    it('refuses a duplicate slug', async () => {
+      const admin = await createTestUser(db, 'admin');
+      await createTestLayer(db, { slug: 'taken', name: 'Taken' });
+
+      await request(app)
+        .post('/api/layers')
+        .set(admin.authHeader)
+        .send({ slug: 'taken', name: 'Also taken' })
+        .expect(409);
+    });
+
+    it('requires confirmation before deleting a layer that still holds features', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const layer = await createTestLayer(db, { slug: 'busy', name: 'Busy' });
+
+      await request(app)
+        .post('/api/features')
+        .set(admin.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Something here',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(201);
+
+      await request(app).delete(`/api/layers/${layer.id}`).set(admin.authHeader).expect(409);
+      await request(app)
+        .delete(`/api/layers/${layer.id}?confirm=true`)
+        .set(admin.authHeader)
+        .expect(204);
+    });
+  });
+
+  describe('features', () => {
+    it('returns GeoJSON', async () => {
+      const layer = await createTestLayer(db, { slug: 'points', name: 'Points' });
+      const author = await createTestUser(db, 'contributor');
+
+      await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Nexø garden',
+          description: 'Behind the library',
+          geometry: { type: 'Point', coordinates: [15.1289, 55.0605] },
+        })
+        .expect(201);
+
+      const response = await request(app).get('/api/features').expect(200);
+      expect(response.body.type).toBe('FeatureCollection');
+      expect(response.body.total).toBe(1);
+      expect(response.body.features[0].geometry).toEqual({
+        type: 'Point',
+        coordinates: [15.1289, 55.0605],
+      });
+      expect(response.body.features[0].properties.name).toBe('Nexø garden');
+    });
+
+    it('stores lines and polygons through PostGIS unchanged', async () => {
+      const layer = await createTestLayer(db, {
+        slug: 'shapes',
+        name: 'Shapes',
+        allowedGeometries: ['LineString', 'Polygon'],
+      });
+      const author = await createTestUser(db, 'contributor');
+
+      const line = {
+        type: 'LineString' as const,
+        coordinates: [
+          [14.8785, 55.1279],
+          [14.8871, 55.1236],
+        ],
+      };
+      const polygon = {
+        type: 'Polygon' as const,
+        coordinates: [
+          [
+            [14.93, 55.08],
+            [14.94, 55.08],
+            [14.94, 55.09],
+            [14.93, 55.08],
+          ],
+        ],
+      };
+
+      for (const [name, geometry] of [
+        ['A path', line],
+        ['An area', polygon],
+      ] as const) {
+        await request(app)
+          .post('/api/features')
+          .set(author.authHeader)
+          .send({ layerId: layer.id, name, geometry })
+          .expect(201);
+      }
+
+      const response = await request(app).get('/api/features').expect(200);
+      const collection = response.body as { features: { geometry: unknown }[] };
+      const geometries = collection.features.map((feature) => feature.geometry);
+      expect(geometries).toContainEqual(line);
+      expect(geometries).toContainEqual(polygon);
+    });
+
+    it('rejects a geometry the layer does not accept', async () => {
+      const layer = await createTestLayer(db, {
+        slug: 'points-only',
+        name: 'Points only',
+        allowedGeometries: ['Point'],
+      });
+      const author = await createTestUser(db, 'contributor');
+
+      const response = await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'A line',
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [14.9, 55.1],
+              [15.0, 55.2],
+            ],
+          },
+        })
+        .expect(400);
+
+      expect(response.body.error.message).toContain('Point');
+    });
+
+    it('validates custom fields defined on the layer', async () => {
+      const layer = await createTestLayer(db, {
+        slug: 'sightings',
+        name: 'Sightings',
+        fields: [
+          { key: 'species', label: 'Species', type: 'text', required: true },
+          { key: 'website', label: 'Website', type: 'url' },
+        ],
+      });
+      const author = await createTestUser(db, 'contributor');
+
+      const missingRequired = await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'A toad',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+          properties: {},
+        })
+        .expect(422);
+      expect(missingRequired.body.error.issues).toContainEqual(
+        expect.objectContaining({ path: 'species' }),
+      );
+
+      await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'A toad',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+          properties: { species: 'Bufo bufo', website: 'not a url' },
+        })
+        .expect(422);
+    });
+
+    it('filters by bounding box using the spatial index', async () => {
+      const layer = await createTestLayer(db, { slug: 'spread', name: 'Spread out' });
+      const author = await createTestUser(db, 'contributor');
+
+      for (const [name, coordinates] of [
+        ['On Bornholm', [14.9, 55.1]],
+        ['In Copenhagen', [12.57, 55.68]],
+      ] as const) {
+        await request(app)
+          .post('/api/features')
+          .set(author.authHeader)
+          .send({ layerId: layer.id, name, geometry: { type: 'Point', coordinates } })
+          .expect(201);
+      }
+
+      const response = await request(app).get('/api/features?bbox=14.6,54.9,15.2,55.4').expect(200);
+
+      expect(response.body.total).toBe(1);
+      expect(response.body.features[0].properties.name).toBe('On Bornholm');
+    });
+
+    it('filters by layer slug, and returns nothing for an unknown slug', async () => {
+      const wanted = await createTestLayer(db, { slug: 'wanted', name: 'Wanted' });
+      const other = await createTestLayer(db, { slug: 'other', name: 'Other' });
+      const author = await createTestUser(db, 'contributor');
+
+      for (const layer of [wanted, other]) {
+        await request(app)
+          .post('/api/features')
+          .set(author.authHeader)
+          .send({
+            layerId: layer.id,
+            name: `In ${layer.slug}`,
+            geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+          })
+          .expect(201);
+      }
+
+      const filtered = await request(app).get('/api/features?layers=wanted').expect(200);
+      expect(filtered.body.total).toBe(1);
+
+      const unknown = await request(app).get('/api/features?layers=does-not-exist').expect(200);
+      expect(unknown.body.total).toBe(0);
+    });
+
+    it('filters by free text across name and description', async () => {
+      const layer = await createTestLayer(db, { slug: 'searchable', name: 'Searchable' });
+      const author = await createTestUser(db, 'contributor');
+
+      await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Beehive corner',
+          description: 'Pollinator planting',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(201);
+      await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Old quarry',
+          description: 'Nothing to do with insects',
+          geometry: { type: 'Point', coordinates: [14.91, 55.11] },
+        })
+        .expect(201);
+
+      const byName = await request(app).get('/api/features?q=beehive').expect(200);
+      expect(byName.body.total).toBe(1);
+
+      const byDescription = await request(app).get('/api/features?q=pollinator').expect(200);
+      expect(byDescription.body.total).toBe(1);
+    });
+
+    it('rejects a contribution outside the configured contribution bounds', async () => {
+      await db`
+        update community_settings
+        set contribution_bounds = ${db.json([14.6, 54.9, 15.2, 55.4])}
+        where id = true
+      `;
+      const layer = await createTestLayer(db, { slug: 'bounded', name: 'Bounded' });
+      const author = await createTestUser(db, 'contributor');
+
+      await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Far away',
+          geometry: { type: 'Point', coordinates: [12.57, 55.68] },
+        })
+        .expect(400);
+
+      await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Close by',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(201);
+    });
+
+    it('needs a signed-in user to contribute', async () => {
+      const layer = await createTestLayer(db, { slug: 'guarded', name: 'Guarded' });
+      await request(app)
+        .post('/api/features')
+        .send({
+          layerId: layer.id,
+          name: 'Anonymous',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(401);
+    });
+  });
+
+  describe('ownership and moderation', () => {
+    async function createFeatureAs(
+      layerId: string,
+      token: { Authorization: string },
+      name: string,
+    ) {
+      const response = await request(app)
+        .post('/api/features')
+        .set(token)
+        .send({ layerId, name, geometry: { type: 'Point', coordinates: [14.9, 55.1] } })
+        .expect(201);
+      return response.body as { id: string; status: string };
+    }
+
+    it('lets an author edit and delete their own contribution', async () => {
+      const layer = await createTestLayer(db, { slug: 'own', name: 'Own' });
+      const author = await createTestUser(db, 'contributor');
+      const feature = await createFeatureAs(layer.id, author.authHeader, 'Mine');
+
+      await request(app)
+        .patch(`/api/features/${feature.id}`)
+        .set(author.authHeader)
+        .send({ name: 'Renamed' })
+        .expect(200);
+
+      await request(app).delete(`/api/features/${feature.id}`).set(author.authHeader).expect(204);
+    });
+
+    it("stops a contributor editing somebody else's contribution", async () => {
+      const layer = await createTestLayer(db, { slug: 'theirs', name: 'Theirs' });
+      const author = await createTestUser(db, 'contributor');
+      const stranger = await createTestUser(db, 'contributor');
+      const feature = await createFeatureAs(layer.id, author.authHeader, 'Not yours');
+
+      await request(app)
+        .patch(`/api/features/${feature.id}`)
+        .set(stranger.authHeader)
+        .send({ name: 'Hijacked' })
+        .expect(403);
+
+      await request(app).delete(`/api/features/${feature.id}`).set(stranger.authHeader).expect(403);
+    });
+
+    it('lets a moderator edit anything', async () => {
+      const layer = await createTestLayer(db, { slug: 'moderated', name: 'Moderated' });
+      const author = await createTestUser(db, 'contributor');
+      const moderator = await createTestUser(db, 'moderator');
+      const feature = await createFeatureAs(layer.id, author.authHeader, 'Needs a tidy');
+
+      await request(app)
+        .patch(`/api/features/${feature.id}`)
+        .set(moderator.authHeader)
+        .send({ name: 'Tidied' })
+        .expect(200);
+    });
+
+    it('holds contributions to a moderated layer until they are approved', async () => {
+      const layer = await createTestLayer(db, {
+        slug: 'queued',
+        name: 'Queued',
+        requiresModeration: true,
+      });
+      const author = await createTestUser(db, 'contributor');
+      const moderator = await createTestUser(db, 'moderator');
+
+      const feature = await createFeatureAs(layer.id, author.authHeader, 'Awaiting review');
+      expect(feature.status).toBe('pending');
+
+      /* Invisible to the public, visible to its author and to a moderator. */
+      const anonymous = await request(app).get('/api/features').expect(200);
+      expect(anonymous.body.total).toBe(0);
+
+      const asAuthor = await request(app).get('/api/features').set(author.authHeader).expect(200);
+      expect(asAuthor.body.total).toBe(1);
+
+      const asModerator = await request(app)
+        .get('/api/features?status=pending')
+        .set(moderator.authHeader)
+        .expect(200);
+      expect(asModerator.body.total).toBe(1);
+
+      await request(app)
+        .post(`/api/features/${feature.id}/moderate`)
+        .set(moderator.authHeader)
+        .send({ status: 'published' })
+        .expect(200);
+
+      const afterApproval = await request(app).get('/api/features').expect(200);
+      expect(afterApproval.body.total).toBe(1);
+    });
+
+    it('refuses moderation from a plain contributor', async () => {
+      const layer = await createTestLayer(db, { slug: 'guard', name: 'Guard' });
+      const author = await createTestUser(db, 'contributor');
+      const feature = await createFeatureAs(layer.id, author.authHeader, 'Self-approve?');
+
+      await request(app)
+        .post(`/api/features/${feature.id}/moderate`)
+        .set(author.authHeader)
+        .send({ status: 'published' })
+        .expect(403);
+    });
+
+    it('hides an unpublished feature behind a 404, not a 403', async () => {
+      const layer = await createTestLayer(db, {
+        slug: 'secretive',
+        name: 'Secretive',
+        requiresModeration: true,
+      });
+      const author = await createTestUser(db, 'contributor');
+      const stranger = await createTestUser(db, 'contributor');
+      const feature = await createFeatureAs(layer.id, author.authHeader, 'Pending');
+
+      await request(app).get(`/api/features/${feature.id}`).set(stranger.authHeader).expect(404);
+    });
+  });
+
+  describe('community settings', () => {
+    it('is readable without signing in', async () => {
+      const response = await request(app).get('/api/settings').expect(200);
+      expect(response.body).toMatchObject({ name: 'EcoMap Community' });
+      expect(response.body.initialView).toMatchObject({ lat: expect.any(Number) });
+    });
+
+    it('is editable by an admin', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const response = await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({
+          name: 'Grøn Bornholm',
+          primaryColor: '#1a7f5a',
+          initialView: { lat: 55.13, lng: 14.92, zoom: 11 },
+        })
+        .expect(200);
+
+      expect(response.body).toMatchObject({ name: 'Grøn Bornholm', primaryColor: '#1a7f5a' });
+      expect(response.body.initialView).toEqual({ lat: 55.13, lng: 14.92, zoom: 11 });
+    });
+
+    it('is not editable by a moderator', async () => {
+      const moderator = await createTestUser(db, 'moderator');
+      await request(app)
+        .patch('/api/settings')
+        .set(moderator.authHeader)
+        .send({ name: 'Nope' })
+        .expect(403);
+    });
+
+    it('rejects a malformed colour', async () => {
+      const admin = await createTestUser(db, 'admin');
+      await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({ primaryColor: 'green' })
+        .expect(422);
+    });
+  });
+
+  describe('user administration', () => {
+    it('lets a superadmin change a role', async () => {
+      const superadmin = await createTestUser(db, 'superadmin');
+      const user = await createTestUser(db, 'contributor');
+
+      const response = await request(app)
+        .patch(`/api/users/${user.id}/role`)
+        .set(superadmin.authHeader)
+        .send({ role: 'moderator' })
+        .expect(200);
+
+      expect(response.body.role).toBe('moderator');
+    });
+
+    it('stops an admin changing roles', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const user = await createTestUser(db, 'contributor');
+
+      await request(app)
+        .patch(`/api/users/${user.id}/role`)
+        .set(admin.authHeader)
+        .send({ role: 'admin' })
+        .expect(403);
+    });
+
+    it('stops a superadmin demoting themselves out of the role', async () => {
+      const superadmin = await createTestUser(db, 'superadmin');
+      await request(app)
+        .patch(`/api/users/${superadmin.id}/role`)
+        .set(superadmin.authHeader)
+        .send({ role: 'viewer' })
+        .expect(400);
+    });
+  });
+
+  describe('error handling', () => {
+    it('answers an unknown endpoint with a structured 404', async () => {
+      const response = await request(app).get('/api/nope').expect(404);
+      expect(response.body.error.code).toBe('not_found');
+    });
+
+    it('answers malformed JSON with a structured 400', async () => {
+      const response = await request(app)
+        .post('/api/auth/login')
+        .set('Content-Type', 'application/json')
+        .send('{ not json')
+        .expect(400);
+
+      expect(response.body.error.code).toBe('bad_request');
+    });
+
+    it('rejects a non-uuid id before it reaches the database', async () => {
+      await request(app).get('/api/features/not-a-uuid').expect(422);
+    });
+  });
+});

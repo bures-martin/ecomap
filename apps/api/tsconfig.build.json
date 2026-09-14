@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist"
+  },
+  /* Tests and their helpers are type-checked and linted, but never deployed. */
+  "exclude": ["src/**/*.test.ts", "src/test/**"]
+}

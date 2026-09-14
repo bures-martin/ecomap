@@ -1,25 +1,45 @@
 {
   "name": "ecomap",
-  "version": "1.0.0",
-  "description": "EcoMap Community",
+  "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "description": "EcoMap Community - a generic, layer-based community map for local ecological initiatives.",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=22"
+  },
   "workspaces": [
-    "backend",
-    "frontend"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
-    "start": "concurrently \"npm start --workspace=backend\" \"npm run dev --workspace=frontend\"",
-    "backend": "npm run dev --workspace=backend",
-    "frontend": "npm run dev --workspace=frontend",
-    "install": "npm install",
+    "prepare": "npm run build -w @ecomap/shared",
+    "dev": "concurrently -n shared,api,web -c magenta,blue,green \"npm run dev -w @ecomap/shared\" \"npm run dev -w @ecomap/api\" \"npm run dev -w @ecomap/web\"",
+    "build": "npm run build -w @ecomap/shared && npm run build -w @ecomap/api && npm run build -w @ecomap/web",
+    "start": "npm run start -w @ecomap/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test --workspaces --if-present",
+    "test:watch": "npm run test:watch --workspaces --if-present",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d --wait && npm run db:migrate && npm run db:seed",
+    "db:migrate": "npm run migrate -w @ecomap/api",
+    "db:seed": "npm run seed -w @ecomap/api",
+    "setup": "npm run db:up && npm run db:migrate && npm run db:seed"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@eslint/js": "^9.37.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.37.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0"
   }
 }

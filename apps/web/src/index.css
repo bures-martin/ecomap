@@ -1,0 +1,52 @@
+/*
+ * Almost everything is styled through MUI. This file holds only what has to be
+ * global: the full-height layout the map needs, and a few Leaflet overrides so
+ * its controls match the rest of the interface.
+ */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Leaflet draws its own panes; let them inherit the app's colour scheme. */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: var(--mui-palette-background-default);
+  font-family: inherit;
+}
+
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--mui-palette-background-paper) 85%, transparent);
+  color: var(--mui-palette-text-secondary);
+  font-size: 0.7rem;
+}
+
+.leaflet-control-attribution a {
+  color: var(--mui-palette-primary-main);
+}
+
+/* Leaflet's zoom buttons are keyboard targets; give them a visible focus ring. */
+.leaflet-bar a:focus-visible {
+  outline: 3px solid var(--mui-palette-primary-main);
+  outline-offset: 2px;
+}
+
+/* While drawing, the crosshair makes it obvious the map is waiting for a click. */
+.leaflet-container.ecomap-drawing {
+  cursor: crosshair;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

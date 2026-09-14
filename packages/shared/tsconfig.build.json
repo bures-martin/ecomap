@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist"
+  },
+  /* Tests are type-checked and linted, but never shipped in the package. */
+  "exclude": ["src/**/*.test.ts"]
+}

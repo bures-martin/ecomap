@@ -1,0 +1,23 @@
+services:
+  db:
+    # PostGIS gives us real spatial indexes and bbox queries; both PostgreSQL and
+    # PostGIS are open source and can be self-hosted inside the EU.
+    image: postgis/postgis:17-3.5
+    container_name: ecomap-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ecomap
+      POSTGRES_PASSWORD: ecomap
+      POSTGRES_DB: ecomap
+    ports:
+      - '5432:5432'
+    volumes:
+      - ecomap-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ecomap -d ecomap']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  ecomap-db-data:

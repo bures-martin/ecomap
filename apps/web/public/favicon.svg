@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="EcoMap">
+  <rect width="32" height="32" rx="7" fill="#2f855a" />
+  <path
+    d="M16 27s9-10.2 9-15.4A9 9 0 1 0 7 11.6C7 16.8 16 27 16 27z"
+    fill="#ffffff"
+    fill-opacity="0.18"
+  />
+  <path
+    d="M16 6.5c-4.3 0-7.5 3-7.5 6.8 0 3.6 3 6.3 7.5 6.3V6.5z"
+    fill="#ffffff"
+    fill-opacity="0.95"
+  />
+  <path
+    d="M16 6.5c4.3 0 7.5 3 7.5 6.8 0 3.6-3 6.3-7.5 6.3V6.5z"
+    fill="#b7f5d2"
+  />
+  <path d="M16 6.5v18" stroke="#1c4532" stroke-width="1.6" stroke-linecap="round" />
+</svg>
