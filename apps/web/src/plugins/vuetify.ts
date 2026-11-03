@@ -28,6 +28,10 @@ export function createEcoMapVuetify(): ReturnType<typeof createVuetify> {
             secondary: accentColor,
             background: '#f7f8f6',
             surface: '#ffffff',
+            /* The header: off-white with a hint of green. */
+            header: '#f3f6f2',
+            /* Softer than pure black: a deep green-grey for the title and links. */
+            'on-header': '#1e2b23',
           },
         },
         dark: {
@@ -37,6 +41,9 @@ export function createEcoMapVuetify(): ReturnType<typeof createVuetify> {
             secondary: accentColor,
             background: '#14171a',
             surface: '#1c2023',
+            /* The header: a soft charcoal, a step lighter than the page. */
+            header: '#20262a',
+            'on-header': '#e6ebe7',
           },
         },
       },

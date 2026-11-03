@@ -53,7 +53,12 @@ const signOut = async (): Promise<void> => {
     <!-- Visible only once focused, so a keyboard user can jump past the header. -->
     <a href="#main-content" class="skip-link">{{ t('app.skipToContent') }}</a>
 
-    <v-toolbar color="primary" density="comfortable" class="px-2" tag="header">
+    <!--
+      A light header in light mode, a charcoal one in dark mode, with soft
+      text: the "header" / "on-header" theme colours. The community's own
+      colour stays as the accent on the map icon.
+    -->
+    <v-toolbar color="header" density="comfortable" class="px-2 app-header" tag="header">
       <v-btn
         v-if="adminLinks.length > 0 && !isDesktop"
         :icon="mdiMenu"
@@ -61,7 +66,7 @@ const signOut = async (): Promise<void> => {
         @click="drawerOpen = true"
       />
 
-      <v-icon :icon="mdiMap" aria-hidden="true" class="mx-2" />
+      <v-icon :icon="mdiMap" color="primary" aria-hidden="true" class="mx-2" />
       <RouterLink to="/" class="app-title text-title-large">
         {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
       </RouterLink>
@@ -146,6 +151,11 @@ const signOut = async (): Promise<void> => {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+/* A hairline instead of a coloured bar separates the header from the page. */
+.app-header {
+  border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
 .app-title {
