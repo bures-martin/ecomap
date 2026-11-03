@@ -27,12 +27,11 @@ export default withVueTs(
       '**/*.config.js',
       '**/*.config.ts',
       /*
-       * The first iteration of the project, kept for reference while the new
+       * The first iteration of the API, kept for reference while the new
        * `apps/` + `packages/` layout takes over. It predates this lint setup and
        * is not part of the workspace build - see README, "Migration".
        */
       'backend/**',
-      'frontend/**',
     ],
   },
 

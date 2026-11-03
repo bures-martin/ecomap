@@ -7,9 +7,6 @@ build/
 coverage/
 *.tsbuildinfo
 backend/dist/
-frontend/dist/
-frontend/build/
-frontend/public/
 
 # Environment variables
 .env

@@ -145,10 +145,10 @@ still passes on a machine with no Docker.
 
 ## Migration from the first version
 
-`backend/` and `frontend/` are the project's first iteration. They are still in the repository and
-in git history, but they are no longer part of the workspace build and are excluded from lint.
-Everything they did is covered by `apps/api` and `apps/web`; delete them once you are happy the
-new version has replaced them.
+The first iteration was a React `frontend/` and an Express `backend/`. The React frontend has been
+removed; `apps/web` covers everything it did, and it remains in git history. `backend/` is still in
+the repository but is no longer part of the workspace build and is excluded from lint. Everything
+it did is covered by `apps/api`; delete it once you are happy the new version has replaced it.
 
 ## Deliberately left for later
 
