@@ -14,9 +14,9 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc",
+    "dev": "node ../../node_modules/typescript7/bin/tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "build": "node ../../node_modules/typescript7/bin/tsc -p tsconfig.build.json",
+    "typecheck": "node ../../node_modules/typescript7/bin/tsc",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -24,7 +24,6 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }
 }

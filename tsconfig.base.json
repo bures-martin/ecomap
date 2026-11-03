@@ -20,6 +20,10 @@
     "useUnknownInCatchVariables": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "erasableSyntaxOnly": true,
+    "noUncheckedSideEffectImports": true,
 
     "declaration": true,
     "declarationMap": true,
