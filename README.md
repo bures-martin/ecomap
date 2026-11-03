@@ -29,7 +29,7 @@ Open <http://localhost:5173>. The seed creates a superadmin account — the cred
 ```
 apps/
   api/        Express 5 REST API, PostgreSQL + PostGIS
-  web/        React 19 + MUI + Leaflet
+  web/        Vue 3.5 + Vuetify 4 + Leaflet
 packages/
   shared/     Zod schemas, domain types and the permission rules, used by both
 ```
@@ -105,8 +105,21 @@ filtered map is a link you can send to a neighbour, and the back button undoes a
 A skip link, semantic landmarks and headings, visible focus rings on every interactive element
 (including Leaflet's own zoom buttons), `aria-live` on the result count and the drawing toolbar,
 labelled form fields with errors wired to their inputs, a `prefers-reduced-motion` rule, and
-`contrastThreshold: 4.5` so MUI picks button text colours by the WCAG AA ratio no matter which
-colours a community chooses.
+Vuetify deriving the text colour on every coloured surface from its contrast, so buttons stay
+readable no matter which colours a community chooses.
+
+## TypeScript
+
+Every package compiles with `strict` plus the stricter extras in `tsconfig.base.json`
+(`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `erasableSyntaxOnly`, ...).
+
+- `packages/shared` and `apps/api` are type-checked and built by **TypeScript 7**, the native
+  compiler. It is installed as `typescript7` and each package's scripts call it by path.
+- `typescript` itself is aliased to `@typescript/typescript6`: TypeScript 7 ships no JavaScript
+  compiler API, and typescript-eslint and vue-tsc still need one. Drop the alias once they support
+  TypeScript 7.
+- `apps/web` is checked by **vue-tsc**, which type-checks templates too: unknown components and
+  directives, mistyped `v-model` bindings and missing CSS-module classes are errors.
 
 ## Tests
 
@@ -114,7 +127,7 @@ colours a community chooses.
 | ----------------- | ----- | -------------------------------------------------------------- |
 | `packages/shared` | 54    | Schemas, permission rules, geometry helpers                    |
 | `apps/api`        | 77    | 29 unit + 48 end-to-end over HTTP against a real PostGIS       |
-| `apps/web`        | 46    | API client, URL filters, drawing state machine, form rendering |
+| `apps/web`        | 65    | API client, URL filters, drawing state machine, form rendering |
 
 The API integration tests run against the database named by `TEST_DATABASE_URL`, creating it on
 demand and truncating between cases. Without that variable they skip themselves, so `npm test`

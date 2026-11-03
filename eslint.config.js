@@ -1,7 +1,8 @@
 import js from '@eslint/js';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import { vueTsConfigs, withVueTs } from '@vue/eslint-config-typescript';
 import prettier from 'eslint-config-prettier';
+import pluginVue from 'eslint-plugin-vue';
+import globals from 'globals';
 
 /**
  * Flat ESLint config for the whole monorepo.
@@ -9,8 +10,14 @@ import prettier from 'eslint-config-prettier';
  * We deliberately run the *type-checked* rule sets: the project asks for strict
  * linting, and the rules that actually catch bugs (no-floating-promises,
  * no-misused-promises, no-unnecessary-condition) all need type information.
+ *
+ * `withVueTs` wires the same typescript-eslint rules into `.vue` files, so a
+ * component's `<script setup>` and its template expressions are held to the
+ * same standard as a plain `.ts` module.
  */
-export default tseslint.config(
+export default withVueTs(
+  { rootDir: import.meta.dirname },
+
   {
     ignores: [
       '**/dist/**',
@@ -30,16 +37,11 @@ export default tseslint.config(
   },
 
   js.configs.recommended,
-  ...tseslint.configs.strictTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
+  pluginVue.configs['flat/recommended'],
+  vueTsConfigs.strictTypeChecked,
+  vueTsConfigs.stylisticTypeChecked,
 
   {
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
     rules: {
       /* Allow `_`-prefixed throwaways - the convention is explicit enough. */
       '@typescript-eslint/no-unused-vars': [
@@ -74,13 +76,19 @@ export default tseslint.config(
 
   /* Browser-side package. */
   {
-    files: ['apps/web/**/*.{ts,tsx}'],
+    files: ['apps/web/**/*.{ts,vue}'],
     languageOptions: { globals: globals.browser },
+    rules: {
+      /* Props are typed with `defineProps<...>()`; runtime defaults would duplicate them. */
+      'vue/require-default-prop': 'off',
+      /* Every component is a page or a feature, named by its file. */
+      'vue/multi-word-component-names': 'off',
+    },
   },
 
   /* Tests may be looser: assertions and non-null access are idiomatic there. */
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**/*.ts'],
+    files: ['**/*.test.ts', '**/test/**/*.ts'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',

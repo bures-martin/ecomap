@@ -1,9 +1,11 @@
 /// <reference types="vitest/config" />
-import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
+import vuetify from 'vite-plugin-vuetify';
 
 export default defineConfig({
-  plugins: [react()],
+  /* Imports only the Vuetify components a template actually uses. */
+  plugins: [vue(), vuetify({ autoImport: true })],
   server: {
     port: 5173,
     /*
@@ -26,14 +28,10 @@ export default defineConfig({
          * Keep the big third-party libraries in their own chunks: they change far
          * less often than our code, so a deploy does not invalidate them.
          */
-        /*
-         * Only the two heavyweights get their own chunk. React itself stays with
-         * the app entry: pulling it out as well made the chunks import each other
-         * in a cycle, which Rollup warns about and which buys nothing.
-         */
-        manualChunks: {
-          mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
-          leaflet: ['leaflet'],
+        manualChunks: (id) => {
+          if (id.includes('/node_modules/vuetify/')) return 'vuetify';
+          if (id.includes('/node_modules/leaflet/')) return 'leaflet';
+          return undefined;
         },
       },
     },
@@ -43,5 +41,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
     css: false,
+    /* Vuetify ships CSS imports inside its ESM, which Vitest must transform. */
+    server: { deps: { inline: ['vuetify'] } },
   },
 });

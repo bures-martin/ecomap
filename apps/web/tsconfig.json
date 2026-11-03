@@ -5,9 +5,23 @@
     "moduleResolution": "bundler",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
-    "jsx": "react-jsx",
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "vite.config.ts", "vitest.setup.ts"]
+  /*
+   * vue-tsc checks the templates too. An unknown component or directive, a
+   * v-model bound to the wrong type, or a CSS-module class that does not exist
+   * is a type error instead of silently rendering nothing.
+   *
+   * Not `strictTemplates`: it also rejects unknown *props*, which would flag
+   * every `aria-*`, `type` or `@click` attribute that Vuetify components pass
+   * straight through to their root element by design.
+   */
+  "vueCompilerOptions": {
+    "checkUnknownComponents": true,
+    "checkUnknownDirectives": true,
+    "strictVModel": true,
+    "strictCssModules": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.ts", "vitest.setup.ts"]
 }

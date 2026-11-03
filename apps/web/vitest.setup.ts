@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 
 /**
- * Leaflet and MUI both measure elements; jsdom has no layout engine, so a couple
+ * Leaflet and Vuetify both measure elements; jsdom has no layout engine, so a couple
  * of browser APIs need standing in for.
  *
  * The globals are reached through an untyped view of `globalThis` on purpose:
@@ -37,4 +37,21 @@ if (typeof browserGlobals['matchMedia'] !== 'function') {
     removeEventListener: () => undefined,
     dispatchEvent: () => false,
   });
+}
+
+/* Vuetify positions overlays (dialogs, menus) against the visual viewport. */
+if (
+  typeof browserGlobals['visualViewport'] !== 'object' ||
+  browserGlobals['visualViewport'] === null
+) {
+  const viewport = Object.assign(new EventTarget(), {
+    width: 1024,
+    height: 768,
+    offsetLeft: 0,
+    offsetTop: 0,
+    pageLeft: 0,
+    pageTop: 0,
+    scale: 1,
+  });
+  browserGlobals['visualViewport'] = viewport;
 }

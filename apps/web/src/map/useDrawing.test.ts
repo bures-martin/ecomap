@@ -1,5 +1,4 @@
 import { createLayerInputSchema, layerSchema, type Layer, type Position } from '@ecomap/shared';
-import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { buildGeometry, useDrawing } from './useDrawing.js';
 
@@ -41,105 +40,84 @@ describe('buildGeometry', () => {
   });
 });
 
+/* A composable outside a component is just functions over refs - no harness needed. */
 describe('useDrawing', () => {
   it('starts idle', () => {
-    const { result } = renderHook(() => useDrawing());
-    expect(result.current.isDrawing).toBe(false);
-    expect(result.current.toGeometry()).toBeNull();
+    const drawing = useDrawing();
+    expect(drawing.isDrawing.value).toBe(false);
+    expect(drawing.toGeometry()).toBeNull();
   });
 
   it('collects positions while drawing a line', () => {
-    const { result } = renderHook(() => useDrawing());
+    const drawing = useDrawing();
 
-    act(() => {
-      result.current.start(layer, 'LineString');
-    });
-    expect(result.current.isDrawing).toBe(true);
-    expect(result.current.canFinish).toBe(false);
+    drawing.start(layer, 'LineString');
+    expect(drawing.isDrawing.value).toBe(true);
+    expect(drawing.canFinish.value).toBe(false);
 
-    act(() => {
-      result.current.addPosition(A);
-    });
-    expect(result.current.canFinish).toBe(false);
+    drawing.addPosition(A);
+    expect(drawing.canFinish.value).toBe(false);
 
-    act(() => {
-      result.current.addPosition(B);
-    });
-    expect(result.current.canFinish).toBe(true);
-    expect(result.current.toGeometry()).toEqual({ type: 'LineString', coordinates: [A, B] });
+    drawing.addPosition(B);
+    expect(drawing.canFinish.value).toBe(true);
+    expect(drawing.toGeometry()).toEqual({ type: 'LineString', coordinates: [A, B] });
   });
 
   it('moves the pin instead of collecting, when drawing a point', () => {
-    const { result } = renderHook(() => useDrawing());
+    const drawing = useDrawing();
 
-    act(() => {
-      result.current.start(layer, 'Point');
-    });
-    act(() => {
-      result.current.addPosition(A);
-    });
-    act(() => {
-      result.current.addPosition(B);
-    });
+    drawing.start(layer, 'Point');
+    drawing.addPosition(A);
+    drawing.addPosition(B);
 
-    expect(result.current.drawing?.positions).toEqual([B]);
-    expect(result.current.toGeometry()).toEqual({ type: 'Point', coordinates: B });
+    expect(drawing.drawing.value?.positions).toEqual([B]);
+    expect(drawing.toGeometry()).toEqual({ type: 'Point', coordinates: B });
   });
 
   it('undoes the last position', () => {
-    const { result } = renderHook(() => useDrawing());
+    const drawing = useDrawing();
 
-    act(() => {
-      result.current.start(layer, 'Polygon');
-    });
-    act(() => {
-      result.current.addPosition(A);
-      result.current.addPosition(B);
-    });
-    act(() => {
-      result.current.undo();
-    });
+    drawing.start(layer, 'Polygon');
+    drawing.addPosition(A);
+    drawing.addPosition(B);
+    drawing.undo();
 
-    expect(result.current.drawing?.positions).toEqual([A]);
+    expect(drawing.drawing.value?.positions).toEqual([A]);
   });
 
   it('keeps the layer and shape when starting over', () => {
-    const { result } = renderHook(() => useDrawing());
+    const drawing = useDrawing();
 
-    act(() => {
-      result.current.start(layer, 'Polygon');
-    });
-    act(() => {
-      result.current.addPosition(A);
-    });
-    act(() => {
-      result.current.reset();
-    });
+    drawing.start(layer, 'Polygon');
+    drawing.addPosition(A);
+    drawing.reset();
 
-    expect(result.current.isDrawing).toBe(true);
-    expect(result.current.drawing?.kind).toBe('Polygon');
-    expect(result.current.drawing?.positions).toEqual([]);
+    expect(drawing.isDrawing.value).toBe(true);
+    expect(drawing.drawing.value?.kind).toBe('Polygon');
+    expect(drawing.drawing.value?.positions).toEqual([]);
   });
 
   it('returns to idle when cancelled', () => {
-    const { result } = renderHook(() => useDrawing());
+    const drawing = useDrawing();
 
-    act(() => {
-      result.current.start(layer, 'Point');
-    });
-    act(() => {
-      result.current.cancel();
-    });
+    drawing.start(layer, 'Point');
+    drawing.cancel();
 
-    expect(result.current.isDrawing).toBe(false);
-    expect(result.current.drawing).toBeNull();
+    expect(drawing.isDrawing.value).toBe(false);
+    expect(drawing.drawing.value).toBeNull();
   });
 
   it('ignores positions added while idle', () => {
-    const { result } = renderHook(() => useDrawing());
-    act(() => {
-      result.current.addPosition(A);
-    });
-    expect(result.current.drawing).toBeNull();
+    const drawing = useDrawing();
+    drawing.addPosition(A);
+    expect(drawing.drawing.value).toBeNull();
+  });
+
+  it('replaces the state on every change, so watchers fire', () => {
+    const drawing = useDrawing();
+    drawing.start(layer, 'LineString');
+    const before = drawing.drawing.value;
+    drawing.addPosition(A);
+    expect(drawing.drawing.value).not.toBe(before);
   });
 });

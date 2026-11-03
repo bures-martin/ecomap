@@ -5,7 +5,7 @@ import {
   type Layer,
   type Position,
 } from '@ecomap/shared';
-import { useCallback, useMemo, useState } from 'react';
+import { computed, shallowRef, type ComputedRef, type ShallowRef } from 'vue';
 
 /**
  * The drawing interaction, as a small state machine.
@@ -14,6 +14,9 @@ import { useCallback, useMemo, useState } from 'react';
  * points to make a valid geometry) -> back to `idle` once the form is submitted
  * or cancelled. Keeping it here means the map components stay presentational and
  * the rules are unit-testable without a DOM.
+ *
+ * The state is replaced, never mutated, so a watcher on `drawing` sees every
+ * change.
  */
 
 export interface DrawingState {
@@ -30,10 +33,10 @@ export const MINIMUM_POSITIONS: Readonly<Record<GeometryKind, number>> = {
 };
 
 export interface UseDrawingResult {
-  drawing: DrawingState | null;
-  isDrawing: boolean;
+  drawing: Readonly<ShallowRef<DrawingState | null>>;
+  isDrawing: ComputedRef<boolean>;
   /** True once enough points have been placed to build a valid geometry. */
-  canFinish: boolean;
+  canFinish: ComputedRef<boolean>;
   start: (layer: Layer, kind: GeometryKind) => void;
   addPosition: (position: Position) => void;
   undo: () => void;
@@ -44,57 +47,42 @@ export interface UseDrawingResult {
 }
 
 export function useDrawing(): UseDrawingResult {
-  const [drawing, setDrawing] = useState<DrawingState | null>(null);
+  const drawing = shallowRef<DrawingState | null>(null);
 
-  const start = useCallback((layer: Layer, kind: GeometryKind) => {
-    setDrawing({ layer, kind, positions: [] });
-  }, []);
-
-  const addPosition = useCallback((position: Position) => {
-    setDrawing((current) => {
-      if (!current) return current;
-      /* A point has exactly one position: a second click moves the pin. */
-      if (current.kind === 'Point') {
-        return { ...current, positions: [position] };
-      }
-      return { ...current, positions: [...current.positions, position] };
-    });
-  }, []);
-
-  const undo = useCallback(() => {
-    setDrawing((current) =>
-      current ? { ...current, positions: current.positions.slice(0, -1) } : current,
-    );
-  }, []);
-
-  const reset = useCallback(() => {
-    setDrawing((current) => (current ? { ...current, positions: [] } : current));
-  }, []);
-
-  const cancel = useCallback(() => {
-    setDrawing(null);
-  }, []);
-
-  const canFinish = useMemo(
-    () => (drawing ? drawing.positions.length >= MINIMUM_POSITIONS[drawing.kind] : false),
-    [drawing],
-  );
-
-  const toGeometry = useCallback((): Geometry | null => {
-    if (!drawing || drawing.positions.length < MINIMUM_POSITIONS[drawing.kind]) return null;
-    return buildGeometry(drawing.kind, drawing.positions);
-  }, [drawing]);
+  const update = (change: (current: DrawingState) => DrawingState): void => {
+    if (drawing.value) drawing.value = change(drawing.value);
+  };
 
   return {
     drawing,
-    isDrawing: drawing !== null,
-    canFinish,
-    start,
-    addPosition,
-    undo,
-    reset,
-    cancel,
-    toGeometry,
+    isDrawing: computed(() => drawing.value !== null),
+    canFinish: computed(() =>
+      drawing.value
+        ? drawing.value.positions.length >= MINIMUM_POSITIONS[drawing.value.kind]
+        : false,
+    ),
+    start: (layer, kind) => {
+      drawing.value = { layer, kind, positions: [] };
+    },
+    addPosition: (position) => {
+      update((current) =>
+        /* A point has exactly one position: a second click moves the pin. */
+        current.kind === 'Point'
+          ? { ...current, positions: [position] }
+          : { ...current, positions: [...current.positions, position] },
+      );
+    },
+    undo: () => {
+      update((current) => ({ ...current, positions: current.positions.slice(0, -1) }));
+    },
+    reset: () => {
+      update((current) => ({ ...current, positions: [] }));
+    },
+    cancel: () => {
+      drawing.value = null;
+    },
+    toGeometry: () =>
+      drawing.value ? buildGeometry(drawing.value.kind, drawing.value.positions) : null,
   };
 }
 
