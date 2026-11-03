@@ -222,7 +222,17 @@
       "cornerHint": "Træk for at flytte, dobbeltklik for at fjerne",
       "midpointHint": "Træk for at tilføje et hjørne her",
       "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
-    }
+    },
+    "basemaps": {
+      "mapy-outdoor": "Mapy.com udendørs (vandring og cykling)",
+      "mapy-basic": "Mapy.com basis",
+      "mapy-aerial": "Mapy.com luftfoto",
+      "osm": "OpenStreetMap",
+      "topo": "OpenTopoMap",
+      "cyclosm": "CyclOSM (cykling)",
+      "humanitarian": "Humanitarian OSM"
+    },
+    "mapyKeyMissing": "Mapy.com-kort kræver en API-nøgle (VITE_MAPY_API_KEY). Indtil den er sat, viser kortet OpenStreetMap."
   },
   "photos": {
     "title": "Billeder",

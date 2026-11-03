@@ -16,13 +16,25 @@ You need **Node 22+** and **Docker** (for PostgreSQL + PostGIS).
 ```bash
 npm install            # installs every workspace and builds @ecomap/shared
 cp .env.example .env   # then change JWT_SECRET
-npm run setup          # starts the database, migrates it and seeds demo data
+npm run setup          # starts the database, migrates it, creates the admin and starter layers
+npm run db:seed:demo   # optional: real example places on Bornholm, from OpenStreetMap
 npm run dev            # API on :4000, web app on :5173
 ```
 
 Open <http://localhost:5173>. The seed creates a superadmin account — the credentials are the
 `SEED_ADMIN_*` values in `.env` (`admin@ecomap.local` / `ChangeMe123!` by default).
 **Change them before this ever leaves your machine.**
+
+**Background map.** The default is Mapy.com's outdoor map, which needs a free API key from
+<https://developer.mapy.com/>: copy `apps/web/.env.example` to `apps/web/.env.local` and set
+`VITE_MAPY_API_KEY`, then restrict the key to your domain in their portal. Without a key the map
+shows OpenStreetMap instead.
+
+**One codebase, one community per deployment.** Nothing in the code is tied to a place: a
+community's name, colours, start view, area and layers are settings an admin edits in the app,
+stored in that deployment's database. A real instance starts with an empty map; the demo places
+are opt-in and only meant for trying the app out. They come from OpenStreetMap (© OpenStreetMap
+contributors, ODbL) - see `apps/api/src/db/demo/bornholm.ts`.
 
 ## Layout
 
@@ -50,7 +62,8 @@ All run from the repository root.
 | `npm test`                  | Tests only                                                       |
 | `npm run db:up` / `db:down` | Start / stop the PostGIS container                               |
 | `npm run db:migrate`        | Apply pending SQL migrations                                     |
-| `npm run db:seed`           | Idempotent demo data (admin, seven layers, features on Bornholm) |
+| `npm run db:seed`           | Superadmin account and starter layers; no places                 |
+| `npm run db:seed:demo`      | Adds 64 real eco places on Bornholm from OpenStreetMap           |
 | `npm run db:reset`          | Throw the database away and rebuild it from scratch              |
 
 ## The data model

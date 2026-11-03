@@ -132,3 +132,14 @@ body,
     scroll-behavior: auto !important;
   }
 }
+
+/* Mapy.com's logo: its terms ask for it on the map, clickable, at least 30px tall. */
+.mapy-logo {
+  display: block;
+  line-height: 0;
+}
+
+.mapy-logo img {
+  height: 30px;
+  width: auto;
+}

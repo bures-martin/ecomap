@@ -160,6 +160,9 @@
     "allowPublicRegistration": "Anyone may create an account",
     "saved": "Settings saved",
     "basemaps": {
+      "mapy-outdoor": "Mapy.com outdoor (hiking and cycling)",
+      "mapy-basic": "Mapy.com basic",
+      "mapy-aerial": "Mapy.com aerial photos",
       "osm": "OpenStreetMap",
       "topo": "OpenTopoMap",
       "cyclosm": "CyclOSM (cycling)",
@@ -183,7 +186,8 @@
       "cornerHint": "Drag to move, double-click to remove",
       "midpointHint": "Drag to add a corner here",
       "crosses": "The outline crosses itself. Move a corner so the edges do not cross, or the area cannot be saved."
-    }
+    },
+    "mapyKeyMissing": "Mapy.com maps need an API key (VITE_MAPY_API_KEY). Until one is set, the map shows OpenStreetMap instead."
   },
   "moderation": {
     "title": "Waiting for review",

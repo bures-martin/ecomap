@@ -10,7 +10,7 @@ import {
 import { useTranslation } from 'i18next-vue';
 import L from 'leaflet';
 import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
-import { basemapDefinition } from './basemaps.js';
+import { addBasemap } from './basemaps.js';
 import { toLatLng } from './geo.js';
 import { markerIcon } from './markerIcon.js';
 import type { DrawingState } from './useDrawing.js';
@@ -44,7 +44,7 @@ const { t } = useTranslation();
 const container = useTemplateRef<HTMLDivElement>('container');
 
 let map: L.Map | null = null;
-let tiles: L.TileLayer | null = null;
+let removeBasemap: (() => void) | null = null;
 const featureLayer = L.layerGroup();
 const drawingLayer = L.layerGroup();
 const areaLayer = L.layerGroup();
@@ -146,13 +146,8 @@ function drawArea(): void {
 
 function showBasemap(basemap: Basemap): void {
   if (!map) return;
-  tiles?.remove();
-  const definition = basemapDefinition(basemap);
-  tiles = L.tileLayer(definition.url, {
-    attribution: definition.attribution,
-    maxZoom: definition.maxZoom,
-    ...(definition.subdomains ? { subdomains: definition.subdomains } : {}),
-  }).addTo(map);
+  removeBasemap?.();
+  removeBasemap = addBasemap(map, basemap);
 }
 
 /**

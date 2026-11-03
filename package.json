@@ -30,6 +30,7 @@
     "db:reset": "docker compose down -v && docker compose up -d --wait && npm run db:migrate && npm run db:seed",
     "db:migrate": "npm run migrate -w @ecomap/api",
     "db:seed": "npm run seed -w @ecomap/api",
+    "db:seed:demo": "npm run seed:demo -w @ecomap/api",
     "setup": "npm run db:up && npm run db:migrate && npm run db:seed"
   },
   "devDependencies": {

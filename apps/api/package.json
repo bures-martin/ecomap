@@ -12,6 +12,7 @@
     "typecheck": "node ../../node_modules/typescript7/bin/tsc",
     "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/db/seed.ts",
+    "seed:demo": "tsx src/db/seed-demo.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

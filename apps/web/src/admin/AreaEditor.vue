@@ -22,7 +22,7 @@ import {
 import { useTranslation } from 'i18next-vue';
 import L from 'leaflet';
 import { computed, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue';
-import { basemapDefinition } from '../map/basemaps.js';
+import { addBasemap } from '../map/basemaps.js';
 import { toLatLng } from '../map/geo.js';
 
 /**
@@ -48,7 +48,7 @@ const crossesItself = computed(() => corners.value.length >= 4 && !isRingSimple(
 const canFinish = computed(() => (drafting.value?.length ?? 0) >= 3);
 
 let map: L.Map | null = null;
-let tiles: L.TileLayer | null = null;
+let removeBasemap: (() => void) | null = null;
 const shapes = L.layerGroup();
 const handles = L.layerGroup();
 
@@ -89,13 +89,8 @@ onBeforeUnmount(() => {
 
 function showBasemap(basemap: Basemap): void {
   if (!map) return;
-  tiles?.remove();
-  const definition = basemapDefinition(basemap);
-  tiles = L.tileLayer(definition.url, {
-    attribution: definition.attribution,
-    maxZoom: definition.maxZoom,
-    ...(definition.subdomains ? { subdomains: definition.subdomains } : {}),
-  }).addTo(map);
+  removeBasemap?.();
+  removeBasemap = addBasemap(map, basemap);
 }
 
 function handleIcon(kind: 'corner' | 'midpoint'): L.DivIcon {
