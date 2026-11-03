@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {
   DEFAULT_COMMUNITY_SETTINGS,
-  isGeometryWithinBBox,
+  isGeometryWithinArea,
+  isPositionInArea,
   type Feature,
   type Geometry,
   type GeometryKind,
   type Layer,
+  type Position,
 } from '@ecomap/shared';
 import { mdiFilterVariant, mdiPlus } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
@@ -157,12 +159,23 @@ const startDrawing = (layer: Layer, kind: GeometryKind): void => {
   startDrawingState(layer, kind);
 };
 
+/** Refuses a click outside the community's area straight away, not at the end. */
+const placePosition = (position: Position): void => {
+  const area = settings.value?.contributionArea;
+  if (area && !isPositionInArea(position, area)) {
+    toast.showError(t('draw.outsideBounds'));
+    return;
+  }
+  addPosition(position);
+};
+
 const finishDrawing = (): void => {
   const geometry = toGeometry();
   if (!geometry) return;
 
-  const bounds = settings.value?.contributionBounds;
-  if (bounds && !isGeometryWithinBBox(geometry, bounds)) {
+  /* Every corner is inside by now, but a line can still cut across a concave area. */
+  const area = settings.value?.contributionArea;
+  if (area && !isGeometryWithinArea(geometry, area)) {
     toast.showError(t('draw.outsideBounds'));
     return;
   }
@@ -321,8 +334,10 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :layers-by-slug="layersBySlug"
         :selected-feature-id="selectedFeatureId"
         :drawing="drawing"
+        :contribution-area="settings?.contributionArea ?? null"
+        :area-color="settings?.primaryColor ?? DEFAULT_COMMUNITY_SETTINGS.primaryColor"
         @select-feature="selectFeature"
-        @draw-position="addPosition"
+        @draw-position="placePosition"
       />
 
       <DrawingToolbar

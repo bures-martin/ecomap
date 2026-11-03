@@ -1,3 +1,4 @@
+import { areaFromBBox, areaFromCorners } from '@ecomap/shared';
 import { generateTotpCode } from '../auth/totp.js';
 import type { Express } from 'express';
 import request from 'supertest';
@@ -513,12 +514,13 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       expect(byDescription.body.total).toBe(1);
     });
 
-    it('rejects a contribution outside the configured contribution bounds', async () => {
-      await db`
-        update community_settings
-        set contribution_bounds = ${db.json([14.6, 54.9, 15.2, 55.4])}
-        where id = true
-      `;
+    it('rejects a contribution outside the configured contribution area', async () => {
+      const admin = await createTestUser(db, 'admin');
+      await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({ contributionArea: areaFromBBox([14.6, 54.9, 15.2, 55.4]) })
+        .expect(200);
       const layer = await createTestLayer(db, { slug: 'bounded', name: 'Bounded' });
       const author = await createTestUser(db, 'contributor');
 
@@ -541,6 +543,100 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
           geometry: { type: 'Point', coordinates: [14.9, 55.1] },
         })
         .expect(201);
+    });
+
+    it('catches a line that leaves a concave area and comes back', async () => {
+      /* A "C" open to the east: both ends of the line are inside, its middle is not. */
+      const admin = await createTestUser(db, 'admin');
+      await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({
+          contributionArea: areaFromCorners([
+            [14.0, 55.0],
+            [15.0, 55.0],
+            [15.0, 55.3],
+            [14.3, 55.3],
+            [14.3, 55.7],
+            [15.0, 55.7],
+            [15.0, 56.0],
+            [14.0, 56.0],
+          ]),
+        })
+        .expect(200);
+      const layer = await createTestLayer(db, {
+        slug: 'paths',
+        name: 'Paths',
+        allowedGeometries: ['LineString'],
+      });
+      const author = await createTestUser(db, 'contributor');
+      const line = (coordinates: [number, number][]) =>
+        request(app)
+          .post('/api/features')
+          .set(author.authHeader)
+          .send({
+            layerId: layer.id,
+            name: 'A path',
+            geometry: { type: 'LineString', coordinates },
+          });
+
+      await line([
+        [14.8, 55.1],
+        [14.8, 55.9],
+      ]).expect(400);
+      await line([
+        [14.8, 55.1],
+        [14.1, 55.1],
+        [14.1, 55.9],
+        [14.8, 55.9],
+      ]).expect(201);
+    });
+
+    it('refuses an area outline that crosses itself', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const response = await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({
+          contributionArea: areaFromCorners([
+            [14.0, 55.0],
+            [15.0, 56.0],
+            [15.0, 55.0],
+            [14.0, 56.0],
+          ]),
+        })
+        .expect(422);
+      expect(response.body.error.code).toBe('validation_failed');
+    });
+
+    it('lets an admin remove the area again', async () => {
+      const admin = await createTestUser(db, 'admin');
+      await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({ contributionArea: areaFromBBox([14.6, 54.9, 15.2, 55.4]) })
+        .expect(200);
+      const cleared = await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({ contributionArea: null })
+        .expect(200);
+      expect(cleared.body.contributionArea).toBeNull();
+
+      const settings = await request(app).get('/api/settings').expect(200);
+      expect(settings.body.contributionArea).toBeNull();
+    });
+
+    it('returns the area as GeoJSON the web app can draw', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const area = areaFromBBox([14.6, 54.9, 15.2, 55.4]);
+      await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({ contributionArea: area })
+        .expect(200);
+      const settings = await request(app).get('/api/settings').expect(200);
+      expect(settings.body.contributionArea).toEqual(area);
     });
 
     it('needs a signed-in user to contribute', async () => {

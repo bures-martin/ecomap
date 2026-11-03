@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { bboxSchema, latitudeSchema, longitudeSchema } from './geometry.js';
+import { contributionAreaSchema } from './area.js';
+import { latitudeSchema, longitudeSchema } from './geometry.js';
 import { hexColorSchema } from './layers.js';
 import { localeSchema } from './locales.js';
 
@@ -30,11 +31,12 @@ export const communitySettingsSchema = z.object({
   basemap: basemapSchema,
   initialView: mapViewSchema,
   /**
-   * Optional limit on where features may be added. The map itself can be panned
-   * anywhere; this only constrains contributions, which is what the notes asked
-   * for: "allow to make the map bigger, but allow to add points only where we can".
+   * Optional region, drawn by an admin, outside which nothing may be added. The
+   * map itself can still be panned and zoomed anywhere; this only constrains
+   * contributions: "allow to make the map bigger, but allow to add points only
+   * where we can".
    */
-  contributionBounds: bboxSchema.nullable(),
+  contributionArea: contributionAreaSchema.nullable(),
   /** Whether visitors may register themselves, or an admin invites them. */
   allowPublicRegistration: z.boolean(),
   updatedAt: z.iso.datetime(),
@@ -51,7 +53,7 @@ export const updateCommunitySettingsInputSchema = z
     defaultLocale: localeSchema,
     basemap: basemapSchema,
     initialView: mapViewSchema,
-    contributionBounds: bboxSchema.nullable(),
+    contributionArea: contributionAreaSchema.nullable(),
     allowPublicRegistration: z.boolean(),
   })
   .partial();
@@ -67,6 +69,6 @@ export const DEFAULT_COMMUNITY_SETTINGS = {
   defaultLocale: 'en',
   basemap: 'osm',
   initialView: { lat: 55.1, lng: 14.9, zoom: 10 },
-  contributionBounds: null,
+  contributionArea: null,
   allowPublicRegistration: true,
 } as const satisfies Omit<CommunitySettings, 'updatedAt'>;

@@ -2,7 +2,6 @@ import {
   canDeleteFeature,
   canEditFeature,
   hasPermission,
-  isGeometryWithinBBox,
   layerPropertiesSchema,
   type CreateFeatureInput,
   type Feature,
@@ -16,7 +15,7 @@ import type { AuthContext } from '../../auth/context.js';
 import type { Sql } from '../../db/client.js';
 import { ApiError, parseOrThrow } from '../../http/api-error.js';
 import { findLayerById } from '../layers/repository.js';
-import { getCommunitySettings } from '../settings/repository.js';
+import { getCommunitySettings, isWithinContributionArea } from '../settings/repository.js';
 import { deleteFeature, findFeatureById, insertFeature, updateFeature } from './repository.js';
 
 /**
@@ -36,7 +35,7 @@ export async function createFeature(
   }
 
   assertGeometryAllowed(layer, input.geometry.type);
-  await assertWithinContributionBounds(db, input.geometry);
+  await assertWithinContributionArea(db, input.geometry);
 
   const properties = validateProperties(layer, input.properties);
   const status = initialStatus(layer, actor, input.isDraft);
@@ -68,7 +67,7 @@ export async function editFeature(
 
   if (input.geometry) {
     assertGeometryAllowed(layer, input.geometry.type);
-    await assertWithinContributionBounds(db, input.geometry);
+    await assertWithinContributionArea(db, input.geometry);
   }
 
   const properties =
@@ -140,16 +139,11 @@ function assertGeometryAllowed(layer: Layer, kind: Feature['geometry']['type']):
   }
 }
 
-async function assertWithinContributionBounds(
-  db: Sql,
-  geometry: Feature['geometry'],
-): Promise<void> {
+/** PostGIS has the last word: the browser's check is only there for quick feedback. */
+async function assertWithinContributionArea(db: Sql, geometry: Feature['geometry']): Promise<void> {
+  if (await isWithinContributionArea(db, geometry)) return;
   const settings = await getCommunitySettings(db);
-  if (!settings.contributionBounds) return;
-
-  if (!isGeometryWithinBBox(geometry, settings.contributionBounds)) {
-    throw ApiError.badRequest(`Contributions have to be inside the ${settings.name} area`);
-  }
+  throw ApiError.badRequest(`Contributions have to be inside the ${settings.name} area`);
 }
 
 /** Validates the custom properties against this layer's own field definitions. */

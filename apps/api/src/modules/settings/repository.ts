@@ -1,11 +1,13 @@
 import {
   DEFAULT_COMMUNITY_SETTINGS,
-  bboxSchema,
   communitySettingsSchema,
+  contributionAreaSchema,
   type CommunitySettings,
+  type ContributionArea,
+  type Geometry,
   type UpdateCommunitySettingsInput,
 } from '@ecomap/shared';
-import type { Sql } from '../../db/client.js';
+import type { Queryable, Sql } from '../../db/client.js';
 
 interface SettingsRow {
   name: string;
@@ -18,12 +20,12 @@ interface SettingsRow {
   initialLat: number;
   initialLng: number;
   initialZoom: number;
-  contributionBounds: unknown;
+  contributionArea: unknown;
   allowPublicRegistration: boolean;
   updatedAt: string;
 }
 
-function settingsColumns(db: Sql) {
+function settingsColumns(db: Queryable) {
   return db`
     name,
     tagline,
@@ -35,13 +37,13 @@ function settingsColumns(db: Sql) {
     initial_lat               as "initialLat",
     initial_lng               as "initialLng",
     initial_zoom              as "initialZoom",
-    contribution_bounds       as "contributionBounds",
+    ST_AsGeoJSON(contribution_area)::json as "contributionArea",
     allow_public_registration as "allowPublicRegistration",
     updated_at                as "updatedAt"
   `;
 }
 
-export async function getCommunitySettings(db: Sql): Promise<CommunitySettings> {
+export async function getCommunitySettings(db: Queryable): Promise<CommunitySettings> {
   const [row] = await db<SettingsRow[]>`
     select ${settingsColumns(db)} from community_settings where id = true
   `;
@@ -50,6 +52,38 @@ export async function getCommunitySettings(db: Sql): Promise<CommunitySettings> 
     return { ...DEFAULT_COMMUNITY_SETTINGS, updatedAt: new Date().toISOString() };
   }
   return toCommunitySettings(row);
+}
+
+/**
+ * PostGIS's own opinion of a drawn area. The shared schema already refuses a
+ * crossing outline; this is the second check, with the reason in words.
+ */
+export async function checkAreaValidity(
+  db: Sql,
+  area: ContributionArea,
+): Promise<{ valid: boolean; reason: string }> {
+  const [row] = await db<{ valid: boolean; reason: string }[]>`
+    select ST_IsValid(g) as valid, ST_IsValidReason(g) as reason
+    from (select ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(area)}), 4326) as g) drawn
+  `;
+  return row ?? { valid: false, reason: 'No result' };
+}
+
+/**
+ * Whether a geometry lies entirely inside the contribution area - `true` when
+ * no area is set. `ST_CoveredBy` also catches a line that leaves a concave area
+ * and comes back, and counts the outline itself as inside.
+ */
+export async function isWithinContributionArea(db: Sql, geometry: Geometry): Promise<boolean> {
+  const [row] = await db<{ inside: boolean }[]>`
+    select contribution_area is null
+        or ST_CoveredBy(
+             ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326),
+             contribution_area
+           ) as inside
+    from community_settings where id = true
+  `;
+  return row?.inside ?? true;
 }
 
 export async function updateCommunitySettings(
@@ -70,30 +104,31 @@ export async function updateCommunitySettings(
     assignments['initial_lng'] = input.initialView.lng;
     assignments['initial_zoom'] = input.initialView.zoom;
   }
-  if (input.contributionBounds !== undefined) {
-    assignments['contribution_bounds'] = input.contributionBounds
-      ? JSON.stringify(input.contributionBounds)
-      : null;
-  }
   if (input.allowPublicRegistration !== undefined) {
     assignments['allow_public_registration'] = input.allowPublicRegistration;
   }
 
-  if (Object.keys(assignments).length === 0) {
-    return getCommunitySettings(db);
-  }
-
-  const [row] = await db<SettingsRow[]>`
-    update community_settings set ${db(assignments)}
-    where id = true
-    returning ${settingsColumns(db)}
-  `;
-  if (!row) throw new Error('community_settings row is missing');
-  return toCommunitySettings(row);
+  return db.begin(async (tx) => {
+    /* The area is a PostGIS geometry, so it is set with its own expression. */
+    if (input.contributionArea !== undefined) {
+      const area = input.contributionArea;
+      await tx`
+        update community_settings
+        set contribution_area = ${
+          area ? tx`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(area)}), 4326)` : null
+        }
+        where id = true
+      `;
+    }
+    if (Object.keys(assignments).length > 0) {
+      await tx`update community_settings set ${tx(assignments)} where id = true`;
+    }
+    return getCommunitySettings(tx);
+  });
 }
 
 function toCommunitySettings(row: SettingsRow): CommunitySettings {
-  const bounds = bboxSchema.safeParse(row.contributionBounds);
+  const area = contributionAreaSchema.safeParse(row.contributionArea);
 
   return communitySettingsSchema.parse({
     name: row.name,
@@ -104,7 +139,7 @@ function toCommunitySettings(row: SettingsRow): CommunitySettings {
     defaultLocale: row.defaultLocale,
     basemap: row.basemap,
     initialView: { lat: row.initialLat, lng: row.initialLng, zoom: row.initialZoom },
-    contributionBounds: bounds.success ? bounds.data : null,
+    contributionArea: area.success ? area.data : null,
     allowPublicRegistration: row.allowPublicRegistration,
     updatedAt: row.updatedAt,
   });

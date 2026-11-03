@@ -104,6 +104,24 @@ body,
   cursor: crosshair;
 }
 
+/* Handles of the contribution-area editor: corners to drag, midpoints to add a corner. */
+.area-handle {
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid rgb(var(--v-theme-primary));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+
+.area-handle--midpoint {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+.area-handle:active {
+  cursor: grabbing;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

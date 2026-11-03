@@ -1,4 +1,5 @@
 export * from './geometry.js';
+export * from './area.js';
 export * from './permissions.js';
 export * from './auth.js';
 export * from './avatars.js';

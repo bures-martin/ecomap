@@ -157,13 +157,6 @@
     "initialLng": "Longitude",
     "initialZoom": "Zoom",
     "useCurrentView": "Use the map's current position",
-    "contributionBounds": "Limit contributions to an area",
-    "contributionBoundsHelp": "People can pan anywhere, but may only add things inside this box.",
-    "boundsWest": "West",
-    "boundsSouth": "South",
-    "boundsEast": "East",
-    "boundsNorth": "North",
-    "clearBounds": "No limit",
     "allowPublicRegistration": "Anyone may create an account",
     "saved": "Settings saved",
     "basemaps": {
@@ -171,6 +164,25 @@
       "topo": "OpenTopoMap",
       "cyclosm": "CyclOSM (cycling)",
       "humanitarian": "Humanitarian OSM"
+    },
+    "area": {
+      "title": "Community area",
+      "help": "Draw the region your community covers. People can still pan and zoom anywhere on the map, but they can only add things inside this area. Leave it empty to allow contributions everywhere.",
+      "draw": "Draw the area",
+      "redraw": "Draw it again",
+      "finish": "Finish area",
+      "useVisible": "Use the visible map",
+      "zoomTo": "Zoom to area",
+      "remove": "Remove area",
+      "mapLabel": "Map for drawing the community area",
+      "none": "No area yet: contributions are allowed anywhere. Draw one, or zoom the map to your region and use the visible map.",
+      "drawingHint_one": "{{count}} corner placed. Click the map to add corners around your region, then finish.",
+      "drawingHint_other": "{{count}} corners placed. Click the map to add corners around your region, then finish (at least 3).",
+      "editHint_one": "{{count}} corner.",
+      "editHint_other": "{{count}} corners. Drag a corner to move it, drag a small midpoint to add a corner, double-click a corner to remove it. Save the settings to apply.",
+      "cornerHint": "Drag to move, double-click to remove",
+      "midpointHint": "Drag to add a corner here",
+      "crosses": "The outline crosses itself. Move a corner so the edges do not cross, or the area cannot be saved."
     }
   },
   "moderation": {

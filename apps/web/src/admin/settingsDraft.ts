@@ -1,4 +1,4 @@
-import type { CommunitySettings } from '@ecomap/shared';
+import type { CommunitySettings, ContributionArea } from '@ecomap/shared';
 
 /** The settings form's own state: numbers are kept as typed text until submit. */
 export interface SettingsDraft {
@@ -12,16 +12,12 @@ export interface SettingsDraft {
   lat: string;
   lng: string;
   zoom: string;
-  boundsEnabled: boolean;
-  west: string;
-  south: string;
-  east: string;
-  north: string;
+  /** Drawn on the map in `AreaEditor`; null means contributions are allowed anywhere. */
+  contributionArea: ContributionArea | null;
   allowPublicRegistration: boolean;
 }
 
 export function toSettingsDraft(settings: CommunitySettings): SettingsDraft {
-  const bounds = settings.contributionBounds;
   return {
     name: settings.name,
     tagline: settings.tagline,
@@ -33,11 +29,7 @@ export function toSettingsDraft(settings: CommunitySettings): SettingsDraft {
     lat: String(settings.initialView.lat),
     lng: String(settings.initialView.lng),
     zoom: String(settings.initialView.zoom),
-    boundsEnabled: bounds !== null,
-    west: bounds ? String(bounds[0]) : '',
-    south: bounds ? String(bounds[1]) : '',
-    east: bounds ? String(bounds[2]) : '',
-    north: bounds ? String(bounds[3]) : '',
+    contributionArea: settings.contributionArea,
     allowPublicRegistration: settings.allowPublicRegistration,
   };
 }

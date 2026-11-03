@@ -59,7 +59,7 @@ export async function resetTestDatabase(db: Sql): Promise<void> {
   await db`
     update community_settings
     set name = 'EcoMap Community',
-        contribution_bounds = null,
+        contribution_area = null,
         allow_public_registration = true
     where id = true
   `;

@@ -202,5 +202,26 @@
     "unblocked": "{{name}} kan logge ind igen.",
     "blockConfirmTitle": "Blokér {{name}}?",
     "blockConfirmBody": "Personen bliver logget ud alle steder med det samme og kan ikke logge ind igen, før blokeringen ophæves. Det, de har tilføjet, bliver på kortet."
+  },
+  "settingsAdmin": {
+    "area": {
+      "title": "Fællesskabets område",
+      "help": "Tegn det område, jeres fællesskab dækker. Man kan stadig panorere og zoome overalt på kortet, men kun tilføje ting inden for området. Lad det stå tomt for at tillade bidrag overalt.",
+      "draw": "Tegn området",
+      "redraw": "Tegn det igen",
+      "finish": "Afslut området",
+      "useVisible": "Brug det synlige kort",
+      "zoomTo": "Zoom til området",
+      "remove": "Fjern området",
+      "mapLabel": "Kort til at tegne fællesskabets område",
+      "none": "Intet område endnu: bidrag er tilladt overalt. Tegn et, eller zoom kortet ind på jeres område og brug det synlige kort.",
+      "drawingHint_one": "{{count}} hjørne sat. Klik på kortet for at sætte hjørner rundt om området, og afslut så.",
+      "drawingHint_other": "{{count}} hjørner sat. Klik på kortet for at sætte hjørner rundt om området, og afslut så (mindst 3).",
+      "editHint_one": "{{count}} hjørne.",
+      "editHint_other": "{{count}} hjørner. Træk i et hjørne for at flytte det, træk i et lille midtpunkt for at tilføje et hjørne, dobbeltklik på et hjørne for at fjerne det. Gem indstillingerne for at bruge det.",
+      "cornerHint": "Træk for at flytte, dobbeltklik for at fjerne",
+      "midpointHint": "Træk for at tilføje et hjørne her",
+      "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
+    }
   }
 }

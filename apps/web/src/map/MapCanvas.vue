@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import type { Basemap, Feature, Layer, Position } from '@ecomap/shared';
+import {
+  openRing,
+  type Basemap,
+  type ContributionArea,
+  type Feature,
+  type Layer,
+  type Position,
+} from '@ecomap/shared';
 import { useTranslation } from 'i18next-vue';
 import L from 'leaflet';
 import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
@@ -23,6 +30,9 @@ const props = defineProps<{
   layersBySlug: ReadonlyMap<string, Layer>;
   selectedFeatureId: string | null;
   drawing: DrawingState | null;
+  /** The community's region; everything outside it is greyed out. */
+  contributionArea: ContributionArea | null;
+  areaColor: string;
 }>();
 
 const emit = defineEmits<{
@@ -37,6 +47,22 @@ let map: L.Map | null = null;
 let tiles: L.TileLayer | null = null;
 const featureLayer = L.layerGroup();
 const drawingLayer = L.layerGroup();
+const areaLayer = L.layerGroup();
+
+/** Its own pane, below the contributions, so the grey veil never covers or blocks them. */
+const AREA_PANE = 'ecomapArea';
+
+/**
+ * A rectangle round the whole world, to cut the community's region out of. It
+ * stops at 85 degrees: Web Mercator cannot project the poles (they lie at
+ * infinity), and a ring that touches them is silently not drawn at all.
+ */
+const WORLD: L.LatLngExpression[] = [
+  [-85, -540],
+  [85, -540],
+  [85, 540],
+  [-85, 540],
+];
 
 onMounted(() => {
   if (!container.value) return;
@@ -46,8 +72,15 @@ onMounted(() => {
     zoom: props.zoom,
     scrollWheelZoom: true,
   });
+  const pane = map.createPane(AREA_PANE);
+  pane.style.zIndex = '350';
+  pane.style.pointerEvents = 'none';
+
+  areaLayer.addTo(map);
   featureLayer.addTo(map);
   drawingLayer.addTo(map);
+
+  watch(() => [props.contributionArea, props.areaColor] as const, drawArea, { immediate: true });
 
   map.on('click', (event: L.LeafletMouseEvent) => {
     if (props.drawing) emit('drawPosition', [event.latlng.lng, event.latlng.lat]);
@@ -78,6 +111,38 @@ onBeforeUnmount(() => {
   map?.remove();
   map = null;
 });
+
+/**
+ * The region where contributions are allowed: everything outside it gets a
+ * light grey veil and the region itself a dashed border. Panning and zooming
+ * stay free - only adding is limited, and the server enforces that.
+ */
+function drawArea(): void {
+  areaLayer.clearLayers();
+  const area = props.contributionArea;
+  if (!area) return;
+
+  const ring = openRing(area.coordinates[0]).map(toLatLng);
+  areaLayer.addLayer(
+    L.polygon([WORLD, ring], {
+      pane: AREA_PANE,
+      stroke: false,
+      fillColor: '#5f6b75',
+      fillOpacity: 0.3,
+      interactive: false,
+    }),
+  );
+  areaLayer.addLayer(
+    L.polygon(ring, {
+      pane: AREA_PANE,
+      color: props.areaColor,
+      weight: 2.5,
+      dashArray: '8 6',
+      fill: false,
+      interactive: false,
+    }),
+  );
+}
 
 function showBasemap(basemap: Basemap): void {
   if (!map) return;

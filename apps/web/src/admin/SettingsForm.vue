@@ -3,9 +3,7 @@ import {
   BASEMAPS,
   LOCALES,
   LOCALE_LABELS,
-  bboxSchema,
   updateCommunitySettingsInputSchema,
-  type BBox,
   type CommunitySettings,
 } from '@ecomap/shared';
 import { useTranslation } from 'i18next-vue';
@@ -13,6 +11,7 @@ import { computed, ref, useId } from 'vue';
 import { useUpdateSettings } from '../api/queries.js';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
+import AreaEditor from './AreaEditor.vue';
 import { toSettingsDraft } from './settingsDraft.js';
 
 const props = defineProps<{ settings: CommunitySettings }>();
@@ -22,7 +21,7 @@ const toast = useToast();
 const errorMessage = useApiErrorMessage();
 const updateSettings = useUpdateSettings();
 const viewHeadingId = useId();
-const boundsHeadingId = useId();
+const areaHeadingId = useId();
 
 const draft = ref(toSettingsDraft(props.settings));
 const validationError = ref<string | null>(null);
@@ -35,21 +34,6 @@ const localeItems = LOCALES.map((locale) => ({ title: LOCALE_LABELS[locale], val
 const submit = (): void => {
   validationError.value = null;
   const current = draft.value;
-
-  let contributionBounds: BBox | null = null;
-  if (current.boundsEnabled) {
-    const parsed = bboxSchema.safeParse([
-      Number(current.west),
-      Number(current.south),
-      Number(current.east),
-      Number(current.north),
-    ]);
-    if (!parsed.success) {
-      validationError.value = parsed.error.issues[0]?.message ?? t('errors.validation_failed');
-      return;
-    }
-    contributionBounds = parsed.data;
-  }
 
   const input = updateCommunitySettingsInputSchema.safeParse({
     name: current.name,
@@ -64,7 +48,7 @@ const submit = (): void => {
       lng: Number(current.lng),
       zoom: Number(current.zoom),
     },
-    contributionBounds,
+    contributionArea: current.contributionArea,
     allowPublicRegistration: current.allowPublicRegistration,
   });
 
@@ -151,43 +135,20 @@ const submit = (): void => {
       </div>
     </v-card>
 
-    <v-card tag="section" class="pa-6" :aria-labelledby="boundsHeadingId">
-      <h2 :id="boundsHeadingId" class="text-title-large mb-2">
-        {{ t('settingsAdmin.contributionBounds') }}
+    <v-card tag="section" class="pa-6" :aria-labelledby="areaHeadingId">
+      <h2 :id="areaHeadingId" class="text-title-large mb-2">
+        {{ t('settingsAdmin.area.title') }}
       </h2>
       <p class="text-body-medium text-medium-emphasis mb-4">
-        {{ t('settingsAdmin.contributionBoundsHelp') }}
+        {{ t('settingsAdmin.area.help') }}
       </p>
 
-      <v-checkbox
-        :model-value="draft.boundsEnabled"
-        :label="t('settingsAdmin.contributionBounds')"
-        hide-details
-        @update:model-value="(checked: boolean | null) => (draft.boundsEnabled = checked === true)"
+      <AreaEditor
+        v-model="draft.contributionArea"
+        :basemap="draft.basemap"
+        :initial-view="props.settings.initialView"
+        :color="draft.primaryColor"
       />
-
-      <div v-if="draft.boundsEnabled" class="responsive-row mt-2">
-        <v-text-field
-          v-model="draft.west"
-          :label="t('settingsAdmin.boundsWest')"
-          inputmode="decimal"
-        />
-        <v-text-field
-          v-model="draft.south"
-          :label="t('settingsAdmin.boundsSouth')"
-          inputmode="decimal"
-        />
-        <v-text-field
-          v-model="draft.east"
-          :label="t('settingsAdmin.boundsEast')"
-          inputmode="decimal"
-        />
-        <v-text-field
-          v-model="draft.north"
-          :label="t('settingsAdmin.boundsNorth')"
-          inputmode="decimal"
-        />
-      </div>
     </v-card>
 
     <v-card class="pa-6">
