@@ -8,3 +8,6 @@ package-lock.json
 # The project's first iteration - left exactly as it was committed.
 # See README, "Migration from the first version".
 backend
+
+# A verbatim copy of the Obsidian project note; keep its formatting.
+TODO.md
