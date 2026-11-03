@@ -85,6 +85,24 @@ export const featuresApi = {
       body: input,
       schema: featureSchema,
     }),
+  /* Photo calls answer with the whole contribution, so its status stays current too. */
+  addImage: (featureId: string, image: Blob, alt: string): Promise<Feature> =>
+    apiRequest(`/api/features/${featureId}/images?alt=${encodeURIComponent(alt)}`, {
+      method: 'POST',
+      body: image,
+      schema: featureSchema,
+    }),
+  updateImage: (featureId: string, imageId: string, alt: string): Promise<Feature> =>
+    apiRequest(`/api/features/${featureId}/images/${imageId}`, {
+      method: 'PATCH',
+      body: { alt },
+      schema: featureSchema,
+    }),
+  removeImage: (featureId: string, imageId: string): Promise<Feature> =>
+    apiRequest(`/api/features/${featureId}/images/${imageId}`, {
+      method: 'DELETE',
+      schema: featureSchema,
+    }),
 };
 
 export const authApi = {

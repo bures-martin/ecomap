@@ -6,6 +6,7 @@ import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuth } from '../auth/auth.js';
 import UserAvatar from '../components/UserAvatar.vue';
+import FeatureGallery from './FeatureGallery.vue';
 import { useLanguage } from '../i18n/index.js';
 
 /**
@@ -102,6 +103,8 @@ function formatPropertyValue(
           @click="emit('close')"
         />
       </div>
+
+      <FeatureGallery :feature="props.feature" />
 
       <p v-if="props.feature.description" class="pre-wrap">{{ props.feature.description }}</p>
 

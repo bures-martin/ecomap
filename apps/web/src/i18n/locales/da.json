@@ -223,5 +223,26 @@
       "midpointHint": "Træk for at tilføje et hjørne her",
       "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
     }
+  },
+  "photos": {
+    "title": "Billeder",
+    "add": "Tilføj billeder",
+    "help": "Op til 6 billeder. De gøres mindre på din enhed før upload, og deres placeringsdata fjernes.",
+    "alt": "Beskriv billedet (for dem, der ikke kan se det)",
+    "remove": "Fjern billede",
+    "keep": "Behold billedet",
+    "newPhoto": "Nyt billede",
+    "tooMany": "Et bidrag kan have op til {{count}} billeder; resten blev udeladt.",
+    "someFailed_one": "{{count}} billede kunne ikke gemmes. Prøv at tilføje det igen.",
+    "someFailed_other": "{{count}} billeder kunne ikke gemmes. Prøv at tilføje dem igen.",
+    "open": "Åbn billede {{index}} af {{count}}. {{alt}}",
+    "position": "{{index}} / {{count}}",
+    "previous": "Forrige billede",
+    "next": "Næste billede",
+    "errors": {
+      "not-image": "det er ikke en billedfil.",
+      "too-large": "billedet er for stort.",
+      "unreadable": "billedet kunne ikke læses. Prøv et JPEG- eller PNG-billede."
+    }
   }
 }

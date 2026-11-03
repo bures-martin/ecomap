@@ -1131,6 +1131,137 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
   });
 
+  describe('contribution photos', () => {
+    /* Only the header is inspected, so a JPEG signature plus padding is enough. */
+    const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(256, 7)]);
+    type Actor = { authHeader: { Authorization: string } };
+
+    async function contribution(author: Actor, layerOverrides = {}) {
+      const layer = await createTestLayer(db, layerOverrides);
+      const response = await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Kitchen garden',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(201);
+      return { id: String(response.body.id), status: String(response.body.status) };
+    }
+
+    function upload(actor: Actor, featureId: string, alt = '', body: Buffer = jpeg) {
+      return request(app)
+        .post(`/api/features/${featureId}/images?alt=${encodeURIComponent(alt)}`)
+        .set(actor.authHeader)
+        .set('Content-Type', 'image/jpeg')
+        .send(body);
+    }
+
+    it('adds a photo the contribution then lists, and serves it to everyone', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const { id } = await contribution(author);
+
+      const added = await upload(author, id, 'Raised beds in spring').expect(201);
+      expect(added.body.images).toHaveLength(1);
+      expect(added.body.images[0]).toMatchObject({ alt: 'Raised beds in spring' });
+
+      const url = String(added.body.images[0].url);
+      const served = await request(app).get(url).expect(200);
+      expect(served.headers['content-type']).toBe('image/jpeg');
+      expect(served.headers['cache-control']).toContain('public');
+      expect(served.headers['content-security-policy']).toContain('sandbox');
+
+      const listed = await request(app).get('/api/features').expect(200);
+      expect(listed.body.features[0].properties.images).toHaveLength(1);
+    });
+
+    it('hides the photos of an unapproved contribution from the public', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const { id, status } = await contribution(author, { requiresModeration: true });
+      expect(status).toBe('pending');
+      const added = await upload(author, id).expect(201);
+      const url = String(added.body.images[0].url);
+
+      await request(app).get(url).expect(404);
+      const own = await request(app).get(url).set(author.authHeader).expect(200);
+      expect(own.headers['cache-control']).toContain('no-store');
+      const moderator = await createTestUser(db, 'moderator');
+      await request(app).get(url).set(moderator.authHeader).expect(200);
+    });
+
+    it("stops a stranger adding photos to somebody else's contribution", async () => {
+      const author = await createTestUser(db, 'contributor');
+      const stranger = await createTestUser(db, 'contributor');
+      const moderator = await createTestUser(db, 'moderator');
+      const { id } = await contribution(author);
+
+      await upload(stranger, id).expect(403);
+      await upload(moderator, id).expect(201);
+    });
+
+    it('refuses markup sent as an image, and anything over the size limit', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const { id } = await contribution(author);
+      await upload(author, id, '', Buffer.from('<svg onload="alert(1)"/>')).expect(400);
+      await upload(author, id, '', Buffer.concat([jpeg, Buffer.alloc(1100 * 1024)])).expect(413);
+    });
+
+    it('allows at most six photos', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const { id } = await contribution(author);
+      for (let i = 0; i < 6; i += 1) await upload(author, id).expect(201);
+      await upload(author, id).expect(409);
+    });
+
+    it('sends an approved contribution back for review when its author adds a photo', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const moderator = await createTestUser(db, 'moderator');
+      const { id } = await contribution(author, { requiresModeration: true });
+      await request(app)
+        .post(`/api/features/${id}/moderate`)
+        .set(moderator.authHeader)
+        .send({ status: 'published' })
+        .expect(200);
+
+      const added = await upload(author, id).expect(201);
+      expect(added.body.status).toBe('pending');
+    });
+
+    it('changes a description and removes a photo', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const { id } = await contribution(author);
+      const added = await upload(author, id, 'first').expect(201);
+      const imageId = String(added.body.images[0].id);
+
+      const renamed = await request(app)
+        .patch(`/api/features/${id}/images/${imageId}`)
+        .set(author.authHeader)
+        .send({ alt: 'A better description' })
+        .expect(200);
+      expect(renamed.body.images[0].alt).toBe('A better description');
+
+      const removed = await request(app)
+        .delete(`/api/features/${id}/images/${imageId}`)
+        .set(author.authHeader)
+        .expect(200);
+      expect(removed.body.images).toEqual([]);
+      await request(app).get(String(added.body.images[0].url)).expect(404);
+    });
+
+    it('deletes the photos together with their contribution', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const { id } = await contribution(author);
+      await upload(author, id).expect(201);
+      await request(app).delete(`/api/features/${id}`).set(author.authHeader).expect(204);
+
+      const [row] = await db<{ count: number }[]>`
+        select count(*)::int as count from feature_images
+      `;
+      expect(row?.count).toBe(0);
+    });
+  });
+
   describe('error handling', () => {
     it('answers an unknown endpoint with a structured 404', async () => {
       const response = await request(app).get('/api/nope').expect(404);

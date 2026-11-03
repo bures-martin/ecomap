@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { bboxStringSchema, geometrySchema } from './geometry.js';
+import { featureImageSchema } from './images.js';
 import { propertyValueSchema, slugSchema } from './layers.js';
 
 /**
@@ -26,6 +27,8 @@ export const featureSchema = z.object({
   createdByName: z.string().nullable(),
   /** Versioned path of the author's profile picture, or null if they have none. */
   createdByAvatarUrl: z.string().nullable(),
+  /** Photos, in display order. */
+  images: z.array(featureImageSchema),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

@@ -6,7 +6,7 @@ import {
   invitationTokenInputSchema,
   loginInputSchema,
   registerInputSchema,
-  sniffAvatarContentType,
+  sniffImageContentType,
   totpDisableInputSchema,
   totpEnableInputSchema,
 } from '@ecomap/shared';
@@ -151,7 +151,7 @@ export function createAuthRouter(db: Sql): Router {
         throw ApiError.badRequest('Upload the picture as a PNG, JPEG or WebP image');
       }
 
-      const contentType = sniffAvatarContentType(body);
+      const contentType = sniffImageContentType(body);
       if (!contentType) {
         throw ApiError.badRequest('That file is not a PNG, JPEG or WebP image');
       }

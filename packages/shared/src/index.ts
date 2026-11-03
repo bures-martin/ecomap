@@ -3,6 +3,7 @@ export * from './area.js';
 export * from './permissions.js';
 export * from './auth.js';
 export * from './avatars.js';
+export * from './images.js';
 export * from './layers.js';
 export * from './features.js';
 export * from './invitations.js';

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { Feature, Geometry, Layer, PropertyBag } from '@ecomap/shared';
 import { useTranslation } from 'i18next-vue';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { fieldIssues, useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import type { FeatureFormValues } from './featureForm.js';
 import LayerFieldInput from './LayerFieldInput.vue';
+import PhotoPicker from './PhotoPicker.vue';
+import { emptyPhotoChanges, releasePhotoPreviews } from './photos.js';
 
 /**
  * The contribution form.
@@ -35,17 +37,24 @@ watch(
   () => [props.open, props.existing] as const,
   ([open, existing]) => {
     if (!open) return;
+    /* Previews of an earlier round are no longer shown; the blobs stay usable. */
+    releasePhotoPreviews(values.value.photos);
     values.value = existing
       ? {
           name: existing.name,
           description: existing.description,
           properties: { ...existing.properties },
           isDraft: existing.status === 'draft',
+          photos: emptyPhotoChanges(),
         }
       : emptyValues();
   },
   { immediate: true },
 );
+
+onBeforeUnmount(() => {
+  releasePhotoPreviews(values.value.photos);
+});
 
 const issues = computed(() => fieldIssues(props.error));
 const hasError = computed(() => props.error !== null && props.error !== undefined);
@@ -72,7 +81,7 @@ const onOpenChange = (value: boolean): void => {
 };
 
 function emptyValues(): FeatureFormValues {
-  return { name: '', description: '', properties: {}, isDraft: false };
+  return { name: '', description: '', properties: {}, isDraft: false, photos: emptyPhotoChanges() };
 }
 </script>
 
@@ -131,6 +140,9 @@ function emptyValues(): FeatureFormValues {
             :error="issues[`properties.${field.key}`] ?? issues[field.key]"
             @change="(value) => setProperty(field.key, value)"
           />
+
+          <v-divider />
+          <PhotoPicker v-model="values.photos" :existing="props.existing" />
 
           <v-checkbox
             v-if="!props.existing"

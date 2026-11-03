@@ -79,6 +79,20 @@ export async function apiRequest<T>(path: string, options: RequestOptions<T> = {
   return handleResponse(response, options);
 }
 
+/**
+ * Downloads a file the signed-in user is allowed to see, such as a photo on a
+ * contribution that is not public yet. An `<img src>` cannot send the access
+ * token, so these go through `fetch` and become an object URL.
+ */
+export async function apiBlob(path: string): Promise<Blob> {
+  let response = await sendRequest(path, {});
+  if (response.status === 401 && refreshSession && (await refreshSession())) {
+    response = await sendRequest(path, { skipRetry: true });
+  }
+  if (!response.ok) throw await toRequestError(response);
+  return response.blob();
+}
+
 async function sendRequest<T>(path: string, options: RequestOptions<T>): Promise<Response> {
   const headers = new Headers({ Accept: 'application/json' });
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);

@@ -7,6 +7,7 @@ import { authApi } from '../api/endpoints.js';
 import { useAuth } from '../auth/auth.js';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
+import { ImagePreparationError, decodeImageFile, encodeCanvas } from '../images/encode.js';
 import {
   INITIAL_CROP,
   MAX_ZOOM,
@@ -30,8 +31,6 @@ const emit = defineEmits<{ close: [] }>();
 
 /** On-screen size of the square viewport, in CSS pixels. */
 const VIEWPORT = 280;
-/** Refuse to decode anything bigger; a phone photo is a few MB. */
-const MAX_FILE_BYTES = 20 * 1024 * 1024;
 const PAN_STEP = 10;
 const ZOOM_STEP = 0.1;
 
@@ -72,24 +71,21 @@ const onDrop = (event: DragEvent): void => {
 
 async function loadFile(file: File): Promise<void> {
   error.value = null;
-  if (!file.type.startsWith('image/')) {
-    error.value = t('avatar.notImage');
-    return;
-  }
-  if (file.size > MAX_FILE_BYTES) {
-    error.value = t('avatar.fileTooLarge');
-    return;
-  }
-
   try {
-    /* Browsers apply the EXIF orientation here, so phone photos arrive upright. */
-    const bitmap = await createImageBitmap(file);
+    const bitmap = await decodeImageFile(file);
     image.value?.close();
     image.value = bitmap;
     crop.value = { ...INITIAL_CROP };
-  } catch {
-    error.value = t('avatar.unreadable');
+  } catch (caught) {
+    error.value = preparationMessage(caught);
   }
+}
+
+function preparationMessage(caught: unknown): string {
+  if (!(caught instanceof ImagePreparationError)) return t('avatar.unreadable');
+  if (caught.reason === 'not-image') return t('avatar.notImage');
+  if (caught.reason === 'too-large') return t('avatar.fileTooLarge');
+  return t('avatar.unreadable');
 }
 
 const reset = (): void => {
@@ -252,30 +248,6 @@ const onKeydown = (event: KeyboardEvent): void => {
 
 /* ------------------------------------------------------------ saving ---- */
 
-function toBlob(element: HTMLCanvasElement, type: string, quality: number): Promise<Blob | null> {
-  return new Promise((resolve) => {
-    element.toBlob(resolve, type, quality);
-  });
-}
-
-/**
- * WebP where the browser can encode it; Safari silently hands back a PNG
- * instead, which is far bigger, so it gets a JPEG. A busy photo that is still
- * over the limit is retried at a lower quality.
- */
-async function encode(element: HTMLCanvasElement): Promise<Blob> {
-  const attempts: [string, number][] = [
-    ['image/webp', 0.88],
-    ['image/jpeg', 0.9],
-    ['image/jpeg', 0.75],
-  ];
-  for (const [type, quality] of attempts) {
-    const blob = await toBlob(element, type, quality);
-    if (blob?.type === type && blob.size <= AVATAR_MAX_BYTES) return blob;
-  }
-  throw new Error(t('avatar.unreadable'));
-}
-
 const save = async (): Promise<void> => {
   const bitmap = image.value;
   if (!bitmap) return;
@@ -293,11 +265,12 @@ const save = async (): Promise<void> => {
     context.fillRect(0, 0, AVATAR_SIZE, AVATAR_SIZE);
     drawCrop(context, bitmap, crop.value, VIEWPORT, AVATAR_SIZE);
 
-    auth.setUser(await authApi.uploadAvatar(await encode(output)));
+    auth.setUser(await authApi.uploadAvatar(await encodeCanvas(output, AVATAR_MAX_BYTES)));
     toast.showSuccess(t('avatar.saved'));
     emit('close');
   } catch (caught) {
-    error.value = errorMessage(caught);
+    error.value =
+      caught instanceof ImagePreparationError ? preparationMessage(caught) : errorMessage(caught);
   } finally {
     saving.value = false;
   }

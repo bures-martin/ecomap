@@ -10,6 +10,7 @@ import {
   type Position,
 } from '@ecomap/shared';
 import { mdiFilterVariant, mdiPlus } from '@mdi/js';
+import { useQueryClient } from '@tanstack/vue-query';
 import { useTranslation } from 'i18next-vue';
 import { computed, ref, shallowRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -38,6 +39,7 @@ import LayerFilterPanel from '../map/LayerFilterPanel.vue';
 import MapCanvas from '../map/MapCanvas.vue';
 import { fromSearchParams, toSearchParams } from '../map/routeQuery.js';
 import StartDrawingDialog from '../map/StartDrawingDialog.vue';
+import { hasPhotoChanges, syncPhotos, type PhotoChanges } from '../map/photos.js';
 import { useDrawing } from '../map/useDrawing.js';
 
 const SIDEBAR_WIDTH = 320;
@@ -51,6 +53,7 @@ const SIDEBAR_WIDTH = 320;
 const { t } = useTranslation();
 const { mdAndUp: isDesktop } = useDisplay();
 const toast = useToast();
+const queryClient = useQueryClient();
 const errorMessage = useApiErrorMessage();
 const auth = useAuth();
 const route = useRoute();
@@ -191,6 +194,25 @@ const closeForm = (): void => {
   cancelDrawing();
 };
 
+/**
+ * Photos are uploaded once the contribution is saved (a new one has no id
+ * before that). The form stays in its saving state until they are done, so
+ * "added" really means added - photos included.
+ */
+const savingPhotos = ref(false);
+
+const savePhotos = async (featureId: string, changes: PhotoChanges): Promise<void> => {
+  if (!hasPhotoChanges(changes)) return;
+  savingPhotos.value = true;
+  try {
+    const { failed } = await syncPhotos(featureId, changes);
+    await queryClient.invalidateQueries({ queryKey: ['features'] });
+    if (failed > 0) toast.showError(t('photos.someFailed', { count: failed }));
+  } finally {
+    savingPhotos.value = false;
+  }
+};
+
 const submitForm = (values: FeatureFormValues): void => {
   const onError = (error: unknown): void => {
     toast.showError(errorMessage(error));
@@ -207,9 +229,11 @@ const submitForm = (values: FeatureFormValues): void => {
         },
       },
       {
-        onSuccess: () => {
-          toast.showSuccess(t('feature.updated'));
-          closeForm();
+        onSuccess: (feature) => {
+          void savePhotos(feature.id, values.photos).then(() => {
+            toast.showSuccess(t('feature.updated'));
+            closeForm();
+          });
         },
         onError,
       },
@@ -232,11 +256,13 @@ const submitForm = (values: FeatureFormValues): void => {
     },
     {
       onSuccess: (feature) => {
-        toast.showSuccess(
-          feature.status === 'pending' ? t('feature.createdPending') : t('feature.created'),
-        );
-        closeForm();
-        selectFeature(feature);
+        void savePhotos(feature.id, values.photos).then(() => {
+          toast.showSuccess(
+            feature.status === 'pending' ? t('feature.createdPending') : t('feature.created'),
+          );
+          closeForm();
+          selectFeature(feature);
+        });
       },
       onError,
     },
@@ -396,7 +422,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
       :layer="formLayer"
       :geometry="pendingGeometry"
       :existing="editing"
-      :submitting="createFeature.isPending.value || updateFeature.isPending.value"
+      :submitting="createFeature.isPending.value || updateFeature.isPending.value || savingPhotos"
       :error="createFeature.error.value ?? updateFeature.error.value"
       @submit="submitForm"
       @cancel="closeForm"

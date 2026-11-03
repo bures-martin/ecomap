@@ -1,5 +1,6 @@
 import {
   avatarPath,
+  featureImagePath,
   featureSchema,
   type Feature,
   type FeatureStatus,
@@ -21,6 +22,7 @@ interface FeatureRow {
   createdById: string | null;
   createdByName: string | null;
   createdByAvatarUpdatedAt: string | null;
+  images: { id: string; alt: string }[];
   createdAt: string;
   updatedAt: string;
   totalCount?: string;
@@ -43,6 +45,15 @@ function featureColumns(db: Sql) {
     f.created_by                 as "createdById",
     u.display_name               as "createdByName",
     u.avatar_updated_at          as "createdByAvatarUpdatedAt",
+    coalesce(
+      (
+        select json_agg(json_build_object('id', fi.id, 'alt', fi.alt)
+                        order by fi.sort_order, fi.created_at)
+        from feature_images fi
+        where fi.feature_id = f.id
+      ),
+      '[]'::json
+    )                            as images,
     f.created_at                 as "createdAt",
     f.updated_at                 as "updatedAt"
   `;
@@ -227,6 +238,11 @@ function toFeature(row: FeatureRow): Feature {
       row.createdById && row.createdByAvatarUpdatedAt
         ? avatarPath(row.createdById, row.createdByAvatarUpdatedAt)
         : null,
+    images: row.images.map((image) => ({
+      id: image.id,
+      alt: image.alt,
+      url: featureImagePath(row.id, image.id),
+    })),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   });

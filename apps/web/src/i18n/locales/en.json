@@ -346,5 +346,26 @@
     "signedIn": "You are signed in as {{name}}. Sign out first to accept this invitation with a new account.",
     "invalidTitle": "This link does not work",
     "missing": "The invitation link is incomplete. Open it again from the message you received."
+  },
+  "photos": {
+    "title": "Photos",
+    "add": "Add photos",
+    "help": "Up to 6 photos. They are made smaller on your device before upload, and their location data is removed.",
+    "alt": "Describe the photo (for people who cannot see it)",
+    "remove": "Remove photo",
+    "keep": "Keep this photo",
+    "newPhoto": "New photo",
+    "tooMany": "A contribution can have up to {{count}} photos; the rest were left out.",
+    "someFailed_one": "{{count}} photo could not be saved. Try adding it again.",
+    "someFailed_other": "{{count}} photos could not be saved. Try adding them again.",
+    "open": "Open photo {{index}} of {{count}}. {{alt}}",
+    "position": "{{index}} / {{count}}",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "errors": {
+      "not-image": "that is not an image file.",
+      "too-large": "that photo is too large.",
+      "unreadable": "that photo could not be read. Try a JPEG or PNG."
+    }
   }
 }

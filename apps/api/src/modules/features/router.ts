@@ -1,12 +1,16 @@
 import {
+  FEATURE_IMAGE_MAX_BYTES,
+  IMAGE_CONTENT_TYPES,
   createFeatureInputSchema,
+  featureImageQuerySchema,
   featureQuerySchema,
   hasPermission,
   moderateFeatureInputSchema,
   toFeatureCollection,
+  updateFeatureImageInputSchema,
   updateFeatureInputSchema,
 } from '@ecomap/shared';
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { z } from 'zod';
 import { assertPermission, optionalAuthContext, requireAuthContext } from '../../auth/context.js';
 import { requireAuth } from '../../auth/middleware.js';
@@ -14,10 +18,12 @@ import type { Sql } from '../../db/client.js';
 import { ApiError, parseOrThrow } from '../../http/api-error.js';
 import { writeRateLimiter } from '../../http/rate-limit.js';
 import { findLayerIdsBySlugs } from '../layers/repository.js';
+import { findFeatureImage } from './images.repository.js';
 import { findFeatureById, listFeatures } from './repository.js';
 import * as service from './service.js';
 
 const idParamSchema = z.object({ id: z.uuid() });
+const imageParamSchema = z.object({ id: z.uuid(), imageId: z.uuid() });
 
 export function createFeaturesRouter(db: Sql): Router {
   const router = Router();
@@ -61,16 +67,67 @@ export function createFeaturesRouter(db: Sql): Router {
   router.get('/:id', async (req, res) => {
     const { id } = parseOrThrow(idParamSchema, req.params);
     const feature = await findFeatureById(db, id);
-    if (!feature) throw ApiError.notFound('That contribution');
-
-    const auth = optionalAuthContext(req);
-    const visible =
-      feature.status === 'published' ||
-      hasPermission(auth?.role, 'feature:read:unpublished') ||
-      (auth !== null && feature.createdById === auth.userId);
-
-    if (!visible) throw ApiError.notFound('That contribution');
+    if (!feature || !service.canViewFeature(optionalAuthContext(req), feature)) {
+      throw ApiError.notFound('That contribution');
+    }
     res.json(feature);
+  });
+
+  /*
+   * Photos. They are served only to people who may see the contribution: a
+   * published one's photos to everybody (and cacheable), the rest only to the
+   * author and moderators, never cached by shared caches. `sandbox` means even
+   * a crafted file opened directly can run nothing.
+   */
+  router.get('/:id/images/:imageId', async (req, res) => {
+    const { id, imageId } = parseOrThrow(imageParamSchema, req.params);
+    const feature = await findFeatureById(db, id);
+    if (!feature || !service.canViewFeature(optionalAuthContext(req), feature)) {
+      throw ApiError.notFound('That photo');
+    }
+    const image = await findFeatureImage(db, id, imageId);
+    if (!image) throw ApiError.notFound('That photo');
+
+    res
+      .status(200)
+      .set({
+        'Content-Type': image.contentType,
+        'Content-Length': String(image.data.length),
+        'Cache-Control':
+          feature.status === 'published' ? 'public, max-age=86400' : 'private, no-store',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+      })
+      .end(image.data);
+  });
+
+  router.post(
+    '/:id/images',
+    writeRateLimiter,
+    requireAuth,
+    express.raw({ type: [...IMAGE_CONTENT_TYPES], limit: FEATURE_IMAGE_MAX_BYTES }),
+    async (req, res) => {
+      const auth = requireAuthContext(req);
+      const { id } = parseOrThrow(idParamSchema, req.params);
+      const { alt } = parseOrThrow(featureImageQuerySchema, req.query);
+      const body: unknown = req.body;
+      if (!Buffer.isBuffer(body) || body.length === 0) {
+        throw ApiError.badRequest('Upload the photo as a PNG, JPEG or WebP image');
+      }
+      res.status(201).json(await service.addFeatureImage(db, auth, id, body, alt));
+    },
+  );
+
+  router.patch('/:id/images/:imageId', writeRateLimiter, requireAuth, async (req, res) => {
+    const auth = requireAuthContext(req);
+    const { id, imageId } = parseOrThrow(imageParamSchema, req.params);
+    const { alt } = parseOrThrow(updateFeatureImageInputSchema, req.body);
+    res.json(await service.updateFeatureImage(db, auth, id, imageId, alt));
+  });
+
+  router.delete('/:id/images/:imageId', writeRateLimiter, requireAuth, async (req, res) => {
+    const auth = requireAuthContext(req);
+    const { id, imageId } = parseOrThrow(imageParamSchema, req.params);
+    res.json(await service.removeFeatureImage(db, auth, id, imageId));
   });
 
   router.post('/', writeRateLimiter, requireAuth, async (req, res) => {

@@ -2,6 +2,7 @@
 import { useTranslation } from 'i18next-vue';
 import { useFeatures, useModerateFeature } from '../api/queries.js';
 import QueryBoundary from '../components/QueryBoundary.vue';
+import FeatureGallery from '../map/FeatureGallery.vue';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -48,6 +49,8 @@ const decide = (id: string, status: 'published' | 'rejected'): void => {
 
               <p v-if="feature.description" class="pre-wrap">{{ feature.description }}</p>
 
+              <FeatureGallery :feature="feature" class="moderation-gallery" />
+
               <p class="text-body-small text-medium-emphasis">
                 {{
                   feature.createdByName
@@ -75,3 +78,9 @@ const decide = (id: string, status: 'published' | 'rejected'): void => {
     </QueryBoundary>
   </v-container>
 </template>
+
+<style scoped>
+.moderation-gallery {
+  max-width: 480px;
+}
+</style>

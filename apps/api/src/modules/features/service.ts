@@ -1,8 +1,10 @@
 import {
+  FEATURE_IMAGE_MAX_COUNT,
   canDeleteFeature,
   canEditFeature,
   hasPermission,
   layerPropertiesSchema,
+  sniffImageContentType,
   type CreateFeatureInput,
   type Feature,
   type FeatureStatus,
@@ -16,6 +18,12 @@ import type { Sql } from '../../db/client.js';
 import { ApiError, parseOrThrow } from '../../http/api-error.js';
 import { findLayerById } from '../layers/repository.js';
 import { getCommunitySettings, isWithinContributionArea } from '../settings/repository.js';
+import {
+  countFeatureImages,
+  deleteFeatureImage,
+  insertFeatureImage,
+  updateFeatureImageAlt,
+} from './images.repository.js';
 import { deleteFeature, findFeatureById, insertFeature, updateFeature } from './repository.js';
 
 /**
@@ -73,16 +81,7 @@ export async function editFeature(
   const properties =
     input.properties === undefined ? undefined : validateProperties(layer, input.properties);
 
-  /*
-   * An edit by the author sends a moderated feature back for review; an edit by
-   * a moderator does not, since they could approve it again immediately anyway.
-   */
-  const status: FeatureStatus | undefined =
-    layer.requiresModeration &&
-    existing.status === 'published' &&
-    !hasPermission(actor.role, 'feature:moderate')
-      ? 'pending'
-      : undefined;
+  const status = statusAfterEdit(layer, existing, actor);
 
   const updated = await updateFeature(
     db,
@@ -165,4 +164,111 @@ async function requireFeature(db: Sql, featureId: string): Promise<Feature> {
   const feature = await findFeatureById(db, featureId);
   if (!feature) throw ApiError.notFound('That contribution');
   return feature;
+}
+
+/**
+ * An edit by the author sends a moderated feature back for review; an edit by
+ * a moderator does not, since they could approve it again immediately anyway.
+ * Photos count as edits: a new picture deserves the same look as new text.
+ */
+function statusAfterEdit(
+  layer: Layer,
+  existing: Feature,
+  actor: AuthContext,
+): FeatureStatus | undefined {
+  return layer.requiresModeration &&
+    existing.status === 'published' &&
+    !hasPermission(actor.role, 'feature:moderate')
+    ? 'pending'
+    : undefined;
+}
+
+/**
+ * Who may see a contribution - and therefore its photos: everyone once it is
+ * published, moderators always, and its author while it is not.
+ */
+export function canViewFeature(viewer: AuthContext | null, feature: Feature): boolean {
+  return (
+    feature.status === 'published' ||
+    hasPermission(viewer?.role, 'feature:read:unpublished') ||
+    (viewer !== null && feature.createdById === viewer.userId)
+  );
+}
+
+/* ------------------------------------------------------------- photos ---- */
+
+async function requireEditableFeature(
+  db: Sql,
+  actor: AuthContext,
+  featureId: string,
+): Promise<Feature> {
+  const feature = await requireFeature(db, featureId);
+  if (!canEditFeature({ id: actor.userId, role: actor.role }, feature)) {
+    throw ApiError.forbidden('You can only change photos of contributions you added');
+  }
+  return feature;
+}
+
+/** Applies the review rule after a photo change and returns the fresh contribution. */
+async function afterPhotoChange(db: Sql, actor: AuthContext, feature: Feature): Promise<Feature> {
+  const layer = await requireLayer(db, feature.layerId);
+  const status = statusAfterEdit(layer, feature, actor);
+  if (status) await updateFeature(db, feature.id, { status }, actor.userId);
+  return requireFeature(db, feature.id);
+}
+
+export async function addFeatureImage(
+  db: Sql,
+  actor: AuthContext,
+  featureId: string,
+  bytes: Buffer,
+  alt: string,
+): Promise<Feature> {
+  const feature = await requireEditableFeature(db, actor, featureId);
+
+  if ((await countFeatureImages(db, featureId)) >= FEATURE_IMAGE_MAX_COUNT) {
+    throw ApiError.conflict(
+      `A contribution can have up to ${String(FEATURE_IMAGE_MAX_COUNT)} photos`,
+    );
+  }
+
+  const contentType = sniffImageContentType(bytes);
+  if (!contentType) throw ApiError.badRequest('That file is not a PNG, JPEG or WebP image');
+
+  await insertFeatureImage(db, {
+    featureId,
+    contentType,
+    data: bytes,
+    alt,
+    createdBy: actor.userId,
+  });
+  return afterPhotoChange(db, actor, feature);
+}
+
+export async function updateFeatureImage(
+  db: Sql,
+  actor: AuthContext,
+  featureId: string,
+  imageId: string,
+  alt: string,
+): Promise<Feature> {
+  await requireEditableFeature(db, actor, featureId);
+  if (!(await updateFeatureImageAlt(db, featureId, imageId, alt))) {
+    throw ApiError.notFound('That photo');
+  }
+  /* A changed description is not a new picture; no second review needed. */
+  return requireFeature(db, featureId);
+}
+
+export async function removeFeatureImage(
+  db: Sql,
+  actor: AuthContext,
+  featureId: string,
+  imageId: string,
+): Promise<Feature> {
+  await requireEditableFeature(db, actor, featureId);
+  if (!(await deleteFeatureImage(db, featureId, imageId))) {
+    throw ApiError.notFound('That photo');
+  }
+  return requireFeature(db, featureId);
 }
