@@ -99,7 +99,9 @@
       "pending": "Afventer godkendelse",
       "published": "Offentlig",
       "rejected": "Ikke godkendt"
-    }
+    },
+    "navigate": "Navigér",
+    "navigateToStart": "Navigér til start"
   },
   "auth": {
     "signInTitle": "Log ind",

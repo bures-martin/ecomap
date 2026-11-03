@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { canDeleteFeature, canEditFeature, type Feature, type Layer } from '@ecomap/shared';
-import { mdiClose, mdiDelete, mdiPencil } from '@mdi/js';
+import { mdiClose, mdiDelete, mdiNavigationVariant, mdiPencil } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
 import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuth } from '../auth/auth.js';
 import UserAvatar from '../components/UserAvatar.vue';
 import FeatureGallery from './FeatureGallery.vue';
+import { googleMapsDirectionsUrl, navigationTarget } from './navigation.js';
 import { useLanguage } from '../i18n/index.js';
 
 /**
@@ -33,6 +34,10 @@ const mayEdit = computed(() =>
 );
 const mayDelete = computed(() =>
   props.feature ? canDeleteFeature(actor.value, props.feature) : false,
+);
+
+const navigationUrl = computed(() =>
+  props.feature ? googleMapsDirectionsUrl(navigationTarget(props.feature.geometry)) : null,
 );
 
 const open = computed({
@@ -102,6 +107,27 @@ function formatPropertyValue(
           :aria-label="t('app.close')"
           @click="emit('close')"
         />
+      </div>
+
+      <!--
+        A plain link to Google Maps: a new tab on a computer, the Google Maps
+        app on a phone that has it. Routes are navigated to their start.
+      -->
+      <div>
+        <v-btn
+          :href="navigationUrl ?? undefined"
+          target="_blank"
+          rel="noopener noreferrer"
+          color="primary"
+          variant="tonal"
+          :prepend-icon="mdiNavigationVariant"
+        >
+          {{
+            props.feature.geometry.type === 'LineString'
+              ? t('feature.navigateToStart')
+              : t('feature.navigate')
+          }}
+        </v-btn>
       </div>
 
       <FeatureGallery :feature="props.feature" />

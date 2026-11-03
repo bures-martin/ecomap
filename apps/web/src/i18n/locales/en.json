@@ -99,7 +99,9 @@
       "pending": "Awaiting review",
       "published": "Published",
       "rejected": "Not accepted"
-    }
+    },
+    "navigate": "Navigate",
+    "navigateToStart": "Navigate to start"
   },
   "layerAdmin": {
     "title": "Layers",
