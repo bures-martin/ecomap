@@ -252,6 +252,24 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
 
       expect(response.body).toMatchObject({ slug: 'repair-cafes', featureCount: 0 });
       expect(response.body.fields).toHaveLength(1);
+      /* Switched on when the map opens unless an admin says otherwise. */
+      expect(response.body.visibleByDefault).toBe(true);
+    });
+
+    it('lets an admin keep a layer off when the map opens', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const layer = await createTestLayer(db, { slug: 'chargers', name: 'Chargers' });
+
+      const updated = await request(app)
+        .patch(`/api/layers/${layer.id}`)
+        .set(admin.authHeader)
+        .send({ visibleByDefault: false })
+        .expect(200);
+      expect(updated.body.visibleByDefault).toBe(false);
+
+      /* Off at the start is not hidden: the layer is still listed for everyone. */
+      const listed = await request(app).get('/api/layers').expect(200);
+      expect(listed.body.map((l: { slug: string }) => l.slug)).toContain('chargers');
     });
 
     it('refuses layer creation for a contributor', async () => {

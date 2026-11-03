@@ -21,6 +21,7 @@
     "i18next-vue": "^5.4.0",
     "leaflet": "^1.9.4",
     "qrcode": "^1.5.4",
+    "supercluster": "^9.1.0",
     "vue": "^3.5.44",
     "vue-router": "^5.4.0",
     "vuetify": "^4.3.1",

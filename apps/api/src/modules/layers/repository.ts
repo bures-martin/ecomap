@@ -22,6 +22,7 @@ interface LayerRow {
   sortOrder: number;
   isPublished: boolean;
   requiresModeration: boolean;
+  visibleByDefault: boolean;
   featureCount: string;
   createdAt: string;
   updatedAt: string;
@@ -44,6 +45,7 @@ function layerColumns(db: Sql) {
     l.sort_order          as "sortOrder",
     l.is_published        as "isPublished",
     l.requires_moderation as "requiresModeration",
+    l.visible_by_default  as "visibleByDefault",
     l.created_at          as "createdAt",
     l.updated_at          as "updatedAt",
     (
@@ -90,12 +92,13 @@ export async function insertLayer(
   const [inserted] = await db<{ id: string }[]>`
     insert into layers (
       slug, name, description, color, icon,
-      allowed_geometries, fields, sort_order, is_published, requires_moderation, created_by
+      allowed_geometries, fields, sort_order, is_published, requires_moderation,
+      visible_by_default, created_by
     )
     values (
       ${input.slug}, ${input.name}, ${input.description}, ${input.color}, ${input.icon},
       ${db.array(input.allowedGeometries)}, ${db.json(input.fields)}, ${input.sortOrder},
-      ${input.isPublished}, ${input.requiresModeration}, ${createdBy}
+      ${input.isPublished}, ${input.requiresModeration}, ${input.visibleByDefault}, ${createdBy}
     )
     returning id
   `;
@@ -125,6 +128,9 @@ export async function updateLayer(
   if (input.isPublished !== undefined) assignments['is_published'] = input.isPublished;
   if (input.requiresModeration !== undefined) {
     assignments['requires_moderation'] = input.requiresModeration;
+  }
+  if (input.visibleByDefault !== undefined) {
+    assignments['visible_by_default'] = input.visibleByDefault;
   }
 
   if (Object.keys(assignments).length === 0) {
@@ -165,6 +171,7 @@ function toLayer(row: LayerRow): Layer {
     sortOrder: row.sortOrder,
     isPublished: row.isPublished,
     requiresModeration: row.requiresModeration,
+    visibleByDefault: row.visibleByDefault,
     featureCount: Number(row.featureCount),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

@@ -47,11 +47,15 @@ export function useLayers() {
   });
 }
 
-/** Refetches whenever the (reactive) filters change. */
-export function useFeatures(filters: MaybeRefOrGetter<MapFilters>) {
+/** Refetches whenever the (reactive) filters change; waits while `enabled` is false. */
+export function useFeatures(
+  filters: MaybeRefOrGetter<MapFilters>,
+  enabled: MaybeRefOrGetter<boolean> = true,
+) {
   return useQuery({
     queryKey: computed(() => queryKeys.features(toValue(filters))),
     queryFn: ({ signal }) => featuresApi.list(toValue(filters), signal),
+    enabled: computed(() => toValue(enabled)),
     /* Keeps the previous points on screen while a filter change loads. */
     placeholderData: keepPreviousData,
   });

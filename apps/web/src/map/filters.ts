@@ -1,4 +1,4 @@
-import { featureStatusSchema, type FeatureStatus } from '@ecomap/shared';
+import { featureStatusSchema, type FeatureStatus, type Layer } from '@ecomap/shared';
 
 /**
  * Map filters live in the URL so that a filtered view is a shareable link and
@@ -76,4 +76,67 @@ export function filtersKey(filters: MapFilters): string {
     filters.status,
     filters.mine,
   ]);
+}
+
+/* ------------------------------------------------- which layers show ---- */
+
+type LayerVisibility = Pick<Layer, 'slug' | 'visibleByDefault'>;
+
+/**
+ * The layers the map asks the API for. An explicit pick (a ticked box or a
+ * chip) always wins; a search looks through every layer, so "charger" finds
+ * the chargers even when that layer starts switched off; otherwise the map
+ * shows the layers an admin marked "show when the map opens".
+ *
+ * Empty means every layer - the API's meaning - so it is also what this
+ * returns when all layers are on by default, or (to avoid an empty map) when
+ * none are.
+ */
+export function effectiveLayers(filters: MapFilters, layers: readonly LayerVisibility[]): string[] {
+  if (filters.layers.length > 0) return filters.layers;
+  if (filters.q.trim() !== '') return [];
+  const defaults = layers.filter((layer) => layer.visibleByDefault).map((layer) => layer.slug);
+  return defaults.length === 0 || defaults.length === layers.length ? [] : defaults;
+}
+
+/** The layers currently on the map, for the ticks in the layer list. */
+export function visibleLayerSlugs(
+  filters: MapFilters,
+  layers: readonly LayerVisibility[],
+): Set<string> {
+  const effective = effectiveLayers(filters, layers);
+  return new Set(effective.length > 0 ? effective : layers.map((layer) => layer.slug));
+}
+
+/**
+ * The new explicit pick after ticking or unticking one layer. It starts from
+ * what is visible, and drops back to "no pick" when the result is just the
+ * default set again, so the URL stays clean.
+ */
+export function layersAfterToggle(
+  filters: MapFilters,
+  layers: readonly LayerVisibility[],
+  slug: string,
+  on: boolean,
+): string[] {
+  const visible = visibleLayerSlugs(filters, layers);
+  if (on) visible.add(slug);
+  else visible.delete(slug);
+
+  const next = layers.map((layer) => layer.slug).filter((candidate) => visible.has(candidate));
+  /* Unticking the only layer left goes back to the starting view, not to an empty map. */
+  if (next.length === 0) return [];
+  const defaults = visibleLayerSlugs({ ...filters, layers: [], q: '' }, layers);
+  const isDefault =
+    next.length === defaults.size && next.every((candidate) => defaults.has(candidate));
+  return isDefault ? [] : next;
+}
+
+/** A chip shows a single topic: tapping it picks just that layer, tapping again lets go. */
+export function layersAfterChip(filters: MapFilters, slug: string): string[] {
+  return isOnlyLayer(filters, slug) ? [] : [slug];
+}
+
+export function isOnlyLayer(filters: MapFilters, slug: string): boolean {
+  return filters.layers.length === 1 && filters.layers[0] === slug;
 }

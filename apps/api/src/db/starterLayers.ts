@@ -66,9 +66,11 @@ export const STARTER_LAYERS: readonly CreateLayerInput[] = [
     name: 'EV charging',
     description: 'Charging points for electric cars.',
     color: '#00a3c4',
-    icon: 'pin',
+    icon: 'plug',
     allowedGeometries: ['Point'],
     sortOrder: 27,
+    /* Practical rather than inspiring: one tap away instead of on the first view. */
+    visibleByDefault: false,
     fields: [
       { key: 'operator', label: 'Operator', type: 'text' },
       { key: 'chargePoints', label: 'Charging points', type: 'number' },

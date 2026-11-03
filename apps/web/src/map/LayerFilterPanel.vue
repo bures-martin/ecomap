@@ -4,7 +4,7 @@ import { mdiMagnify } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
 import { computed, useId } from 'vue';
 import { useAuth } from '../auth/auth.js';
-import { EMPTY_FILTERS, hasActiveFilters, type MapFilters } from './filters.js';
+import { EMPTY_FILTERS, hasActiveFilters, layersAfterToggle, type MapFilters } from './filters.js';
 
 /**
  * Everything that narrows what the map shows. Each control writes straight into
@@ -22,6 +22,8 @@ const props = defineProps<{
    * layer, by slug. Null when nothing is being searched for.
    */
   matches: ReadonlyMap<string, number> | null;
+  /** The layers on the map right now, defaults and picks resolved. */
+  visibleSlugs: ReadonlySet<string>;
 }>();
 const emit = defineEmits<{
   'update:searchDraft': [value: string];
@@ -33,11 +35,13 @@ const auth = useAuth();
 const headingId = useId();
 
 const toggleLayer = (slug: string, checked: boolean | null): void => {
-  const next = checked
-    ? [...props.filters.layers, slug]
-    : props.filters.layers.filter((current) => current !== slug);
-  emit('update:filters', { ...props.filters, layers: next });
+  emit('update:filters', {
+    ...props.filters,
+    layers: layersAfterToggle(props.filters, props.layers, slug, checked === true),
+  });
 };
+
+const someStartOff = computed(() => props.layers.some((layer) => !layer.visibleByDefault));
 
 const statusItems = computed(() => [
   { title: t('map.anyStatus'), value: '' },
@@ -108,7 +112,7 @@ const clearFilters = (): void => {
       <v-checkbox
         v-for="layer in visibleLayers"
         :key="layer.id"
-        :model-value="props.filters.layers.includes(layer.slug)"
+        :model-value="props.visibleSlugs.has(layer.slug)"
         :color="layer.color"
         :base-color="layer.color"
         density="compact"
@@ -131,8 +135,11 @@ const clearFilters = (): void => {
         </template>
       </v-checkbox>
 
-      <p v-if="props.filters.layers.length === 0" class="text-body-small text-medium-emphasis">
-        {{ t('map.allLayers') }}
+      <p
+        v-if="props.filters.layers.length === 0 && !searching"
+        class="text-body-small text-medium-emphasis"
+      >
+        {{ someStartOff ? t('map.someLayersOff') : t('map.allLayers') }}
       </p>
     </section>
 

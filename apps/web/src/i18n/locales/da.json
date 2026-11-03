@@ -56,7 +56,11 @@
     "emptyLayer": "Ingen bidrag endnu",
     "attribution": "Kortdata © OpenStreetMap-bidragydere",
     "noMatches": "Ingen lag eller steder passer.",
-    "matchesInLayer": "Matchende steder i dette lag"
+    "matchesInLayer": "Matchende steder i dette lag",
+    "topics": "Emner",
+    "clusterLabel_one": "{{count}} sted her - zoom ind",
+    "clusterLabel_other": "{{count}} steder her - zoom ind",
+    "someLayersOff": "Nogle emner er slået fra fra start - sæt flueben, eller tryk på dem over kortet."
   },
   "draw": {
     "chooseLayer": "Hvilket lag?",
@@ -258,5 +262,17 @@
       "too-large": "billedet er for stort.",
       "unreadable": "billedet kunne ikke læses. Prøv et JPEG- eller PNG-billede."
     }
+  },
+  "layerAdmin": {
+    "visibleByDefault": "Vis, når kortet åbner",
+    "visibleByDefaultHelp": "Fra holder kortet roligt i starten: laget er stadig ét tryk væk, og en søgning tager det altid med."
+  },
+  "welcome": {
+    "label": "Velkommen",
+    "title": "Velkommen til {{name}}",
+    "intro": "Et kort over de grønne ting omkring dig - lavet af dem, der bor her.",
+    "howTo": "Tryk på et emne øverst på kortet, eller på et sted for at læse mere.",
+    "explore": "Udforsk kortet",
+    "add": "Tilføj et sted"
   }
 }

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   EMPTY_FILTERS,
+  effectiveLayers,
+  layersAfterChip,
+  layersAfterToggle,
+  visibleLayerSlugs,
   filtersKey,
   hasActiveFilters,
   readFilters,
@@ -96,5 +100,56 @@ describe('filtersKey', () => {
 
   it('differs when a filter actually differs', () => {
     expect(filtersKey({ ...EMPTY_FILTERS, q: 'bee' })).not.toBe(filtersKey(EMPTY_FILTERS));
+  });
+});
+
+describe('which layers show', () => {
+  const layers = [
+    { slug: 'nature', visibleByDefault: true },
+    { slug: 'cycling', visibleByDefault: true },
+    { slug: 'ev', visibleByDefault: false },
+  ];
+  const none: MapFilters = { layers: [], q: '', status: null, mine: false };
+
+  it('opens on the layers marked to show at the start', () => {
+    expect(effectiveLayers(none, layers)).toEqual(['nature', 'cycling']);
+    expect([...visibleLayerSlugs(none, layers)]).toEqual(['nature', 'cycling']);
+  });
+
+  it('asks for everything when every layer shows at the start - the shortest request', () => {
+    const allOn = layers.map((layer) => ({ ...layer, visibleByDefault: true }));
+    expect(effectiveLayers(none, allOn)).toEqual([]);
+  });
+
+  it('never opens on an empty map, even if every layer is switched off', () => {
+    const allOff = layers.map((layer) => ({ ...layer, visibleByDefault: false }));
+    expect(effectiveLayers(none, allOff)).toEqual([]);
+  });
+
+  it('searches every layer, including ones that start switched off', () => {
+    expect(effectiveLayers({ ...none, q: 'charger' }, layers)).toEqual([]);
+  });
+
+  it('lets an explicit pick win', () => {
+    expect(effectiveLayers({ ...none, layers: ['ev'] }, layers)).toEqual(['ev']);
+  });
+
+  it('ticks a layer on top of what is already visible', () => {
+    expect(layersAfterToggle(none, layers, 'ev', true)).toEqual(['nature', 'cycling', 'ev']);
+  });
+
+  it('drops back to "no pick" when the ticks match the starting set again', () => {
+    const picked = { ...none, layers: ['nature', 'cycling', 'ev'] };
+    expect(layersAfterToggle(picked, layers, 'ev', false)).toEqual([]);
+  });
+
+  it('goes back to the starting view when the only layer left is unticked', () => {
+    expect(layersAfterToggle({ ...none, layers: ['ev'] }, layers, 'ev', false)).toEqual([]);
+  });
+
+  it('makes a chip pick just its topic, and a second tap let go', () => {
+    expect(layersAfterChip(none, 'ev')).toEqual(['ev']);
+    expect(layersAfterChip({ ...none, layers: ['ev'] }, 'ev')).toEqual([]);
+    expect(layersAfterChip({ ...none, layers: ['nature', 'ev'] }, 'ev')).toEqual(['ev']);
   });
 });

@@ -30,10 +30,18 @@ import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useDebouncedRef } from '../composables/useDebouncedRef.js';
 import { useToast } from '../composables/useToast.js';
 import DrawingToolbar from '../map/DrawingToolbar.vue';
+import TopicChips from '../map/TopicChips.vue';
+import WelcomeCard from '../map/WelcomeCard.vue';
 import FeatureDetailsPanel from '../map/FeatureDetailsPanel.vue';
 import FeatureFormDialog from '../map/FeatureFormDialog.vue';
 import type { FeatureFormValues } from '../map/featureForm.js';
-import { readFilters, writeFilters, type MapFilters } from '../map/filters.js';
+import {
+  effectiveLayers,
+  readFilters,
+  visibleLayerSlugs,
+  writeFilters,
+  type MapFilters,
+} from '../map/filters.js';
 import { featureCenter } from '../map/geo.js';
 import LayerFilterPanel from '../map/LayerFilterPanel.vue';
 import MapCanvas from '../map/MapCanvas.vue';
@@ -72,7 +80,23 @@ const debouncedSearch = useDebouncedRef(searchDraft, 300, filters.value.q);
 
 const settingsQuery = useCommunitySettings();
 const layersQuery = useLayers();
-const featuresQuery = useFeatures(() => ({ ...filters.value, q: debouncedSearch.value }));
+
+/*
+ * What the map shows: the URL's filters with the typed search, and the layers
+ * resolved against each layer's "show when the map opens" setting. Places
+ * wait for the layer list, so a layer that starts switched off never flashes
+ * up for a moment first.
+ */
+const activeFilters = computed((): MapFilters => ({ ...filters.value, q: debouncedSearch.value }));
+const layersForMap = computed(() => layersQuery.data.value ?? []);
+const featuresQuery = useFeatures(
+  () => ({
+    ...activeFilters.value,
+    layers: effectiveLayers(activeFilters.value, layersForMap.value),
+  }),
+  () => layersQuery.data.value !== undefined,
+);
+const visibleSlugs = computed(() => visibleLayerSlugs(activeFilters.value, layersForMap.value));
 
 const sidebarOpen = ref(false);
 const startDialogOpen = ref(false);
@@ -147,10 +171,27 @@ const selectFeature = (feature: Feature | null): void => {
   });
 };
 
+/** Where the map opens: the community's start view. */
 const mapCenter = computed((): [number, number] => {
-  if (selectedFeature.value) return featureCenter(selectedFeature.value);
   const view = settings.value?.initialView ?? DEFAULT_COMMUNITY_SETTINGS.initialView;
   return [view.lat, view.lng];
+});
+
+/*
+ * The selected place, for the map to bring into view. Clicking a place keeps
+ * the zoom the person chose; a shared link that opens on one place zooms in
+ * close to it once, since that visitor came for that place.
+ */
+const SHARED_LINK_ZOOM = 14;
+const sharedLinkFeatureId = selectedFeatureId.value;
+const mapFocus = computed(() => {
+  const feature = selectedFeature.value;
+  if (!feature) return null;
+  return {
+    id: feature.id,
+    position: featureCenter(feature),
+    zoom: feature.id === sharedLinkFeatureId ? SHARED_LINK_ZOOM : null,
+  };
 });
 
 const mapZoom = computed(
@@ -164,6 +205,12 @@ const formLayer = computed(() =>
 const selectedLayer = computed(() =>
   selectedFeature.value ? layersBySlug.value.get(selectedFeature.value.layerSlug) : undefined,
 );
+
+/** From the welcome card: start adding, or sign in first. */
+const startAdding = (): void => {
+  if (auth.user) startDialogOpen.value = true;
+  else void router.push('/sign-in');
+};
 
 const startDrawing = (layer: Layer, kind: GeometryKind): void => {
   startDialogOpen.value = false;
@@ -333,6 +380,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
         :matches="searchMatches"
+        :visible-slugs="visibleSlugs"
         @update:filters="applyFilters"
       />
     </aside>
@@ -351,6 +399,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
         :matches="searchMatches"
+        :visible-slugs="visibleSlugs"
         @update:filters="applyFilters"
       />
     </v-navigation-drawer>
@@ -368,6 +417,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :basemap="settings?.basemap ?? DEFAULT_COMMUNITY_SETTINGS.basemap"
         :center="mapCenter"
         :zoom="mapZoom"
+        :focus="mapFocus"
         :features="features"
         :layers-by-slug="layersBySlug"
         :selected-feature-id="selectedFeatureId"
@@ -386,6 +436,15 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         @undo="undo"
         @reset="reset"
         @cancel="cancelDrawing"
+      />
+      <TopicChips v-else :layers="layers" :filters="filters" @update:filters="applyFilters" />
+
+      <!-- Not over a shared link to one place: that visitor came for that place. -->
+      <WelcomeCard
+        v-if="!selectedFeatureId"
+        :community-name="settings?.name ?? 'EcoMap'"
+        :tagline="settings?.tagline ?? ''"
+        @add="startAdding"
       />
 
       <div class="map-actions">

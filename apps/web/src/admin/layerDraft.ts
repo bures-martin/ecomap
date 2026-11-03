@@ -35,6 +35,7 @@ export function toLayerDraft(layer: Layer | null): LayerDraft {
     sortOrder: layer.sortOrder,
     isPublished: layer.isPublished,
     requiresModeration: layer.requiresModeration,
+    visibleByDefault: layer.visibleByDefault,
   };
 }
 

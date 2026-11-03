@@ -24,6 +24,7 @@ export const LAYER_ICONS = [
   'alert',
   'heart',
   'pin',
+  'plug',
 ] as const;
 export type LayerIcon = (typeof LAYER_ICONS)[number];
 
@@ -90,6 +91,11 @@ export const layerSchema = z.object({
   isPublished: z.boolean(),
   /** Whether contributors may add features, or only moderators and above. */
   requiresModeration: z.boolean(),
+  /**
+   * Whether the layer is switched on when somebody opens the map. Off means
+   * one tap away - its chip, the layer list or a search - rather than hidden.
+   */
+  visibleByDefault: z.boolean(),
   featureCount: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
@@ -110,6 +116,7 @@ export const createLayerInputSchema = z.object({
   sortOrder: z.number().int().min(0).max(9999).default(0),
   isPublished: z.boolean().default(true),
   requiresModeration: z.boolean().default(false),
+  visibleByDefault: z.boolean().default(true),
 });
 export type CreateLayerInput = z.infer<typeof createLayerInputSchema>;
 

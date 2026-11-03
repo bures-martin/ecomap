@@ -12,7 +12,8 @@ import L from 'leaflet';
 import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
 import { addBasemap } from './basemaps.js';
 import { toLatLng } from './geo.js';
-import { markerIcon } from './markerIcon.js';
+import { CLUSTER_MAX_ZOOM, buildPointIndex, type PointIndex } from './clustering.js';
+import { clusterIcon, markerIcon } from './markerIcon.js';
 import type { DrawingState } from './useDrawing.js';
 
 /**
@@ -24,8 +25,14 @@ import type { DrawingState } from './useDrawing.js';
  */
 const props = defineProps<{
   basemap: Basemap;
+  /** The community's start view; changes only when an admin moves it. */
   center: [number, number];
   zoom: number;
+  /**
+   * A place to bring into view - the selected one. `zoom` null keeps the
+   * current zoom; a number zooms in at least that far (a shared link).
+   */
+  focus: { id: string; position: [number, number]; zoom: number | null } | null;
   features: readonly Feature[];
   layersBySlug: ReadonlyMap<string, Layer>;
   selectedFeatureId: string | null;
@@ -45,7 +52,10 @@ const container = useTemplateRef<HTMLDivElement>('container');
 
 let map: L.Map | null = null;
 let removeBasemap: (() => void) | null = null;
+/** Routes, areas and the selected place. */
 const featureLayer = L.layerGroup();
+/** Single places and groups of places, redrawn as the view changes. */
+const pointLayer = L.layerGroup();
 const drawingLayer = L.layerGroup();
 const areaLayer = L.layerGroup();
 
@@ -78,7 +88,10 @@ onMounted(() => {
 
   areaLayer.addTo(map);
   featureLayer.addTo(map);
+  pointLayer.addTo(map);
   drawingLayer.addTo(map);
+  /* Zooming ends in a move too, so this covers both. */
+  map.on('moveend', drawPoints);
 
   watch(() => [props.contributionArea, props.areaColor] as const, drawArea, { immediate: true });
 
@@ -95,15 +108,32 @@ onMounted(() => {
   watch(() => props.drawing, drawDrawing, { immediate: true });
 
   /*
-   * Moves the map when the requested view changes - for instance when a shared
-   * link arrives with a feature id, or the admin previews a new start position.
-   * Only a deliberate change of target counts, not the user panning.
+   * Moves to a new start view when an admin changes it. Only a deliberate
+   * change of target counts, never the person's own panning.
    */
   watch(
     () => [props.center[0], props.center[1], props.zoom] as const,
     ([lat, lng, zoom]) => {
       map?.setView([lat, lng], zoom, { animate: true });
     },
+  );
+
+  /*
+   * Brings the selected place into view. It pans, keeping the zoom the person
+   * chose; only a shared link asks to zoom in. Closing the place (focus back
+   * to null) leaves the map exactly where it is.
+   */
+  watch(
+    () => props.focus,
+    (focus, previous) => {
+      if (!map || !focus || focus.id === previous?.id) return;
+      if (focus.zoom === null) {
+        map.panTo(focus.position, { animate: true });
+      } else {
+        map.setView(focus.position, Math.max(map.getZoom(), focus.zoom), { animate: true });
+      }
+    },
+    { immediate: true },
   );
 });
 
@@ -160,20 +190,76 @@ function textContent(text: string): HTMLElement {
   return span;
 }
 
+let pointIndex: PointIndex | null = null;
+let featuresById = new Map<string, Feature>();
+
+/**
+ * Routes and areas are drawn as they are; points go into the grouping index,
+ * except the selected one, which is always drawn on its own.
+ */
 function drawFeatures(): void {
   featureLayer.clearLayers();
+  featuresById = new Map(props.features.map((feature) => [feature.id, feature]));
+
   for (const feature of props.features) {
-    featureLayer.addLayer(
-      featureShape(
-        feature,
-        props.layersBySlug.get(feature.layerSlug)?.color ?? '#2f855a',
-        feature.id === props.selectedFeatureId,
-      ),
-    );
+    const selected = feature.id === props.selectedFeatureId;
+    if (feature.geometry.type === 'Point' && !selected) continue;
+    featureLayer.addLayer(featureShape(feature, selected));
+  }
+
+  pointIndex = buildPointIndex(props.features, props.selectedFeatureId);
+  drawPoints();
+}
+
+/** The groups and single places for what is on screen now; redone on every move. */
+function drawPoints(): void {
+  pointLayer.clearLayers();
+  if (!map || !pointIndex) return;
+
+  const bounds = map.getBounds().pad(0.2);
+  const groups = pointIndex.getClusters(
+    [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+    Math.round(map.getZoom()),
+  );
+
+  for (const group of groups) {
+    const [lng, lat] = group.geometry.coordinates as [number, number];
+    if ('cluster' in group.properties) {
+      pointLayer.addLayer(
+        clusterMarker(group.properties.cluster_id, group.properties.point_count, [lat, lng]),
+      );
+      continue;
+    }
+    const feature = featuresById.get(group.properties.featureId);
+    if (feature) pointLayer.addLayer(featureShape(feature, false));
   }
 }
 
-function featureShape(feature: Feature, color: string, selected: boolean): L.Layer {
+/** A badge with the number of places; clicking it zooms in until they come apart. */
+function clusterMarker(clusterId: number, count: number, position: L.LatLngTuple): L.Marker {
+  const marker = L.marker(position, {
+    icon: clusterIcon(count),
+    keyboard: true,
+    title: t('map.clusterLabel', { count }),
+  });
+  const expand = (): void => {
+    if (!map || !pointIndex) return;
+    const zoom = Math.min(pointIndex.getClusterExpansionZoom(clusterId), CLUSTER_MAX_ZOOM + 1);
+    map.flyTo(position, zoom);
+  };
+  marker.on('click', expand);
+  marker.on('keypress', (event: L.LeafletKeyboardEvent) => {
+    if (event.originalEvent.key === 'Enter' || event.originalEvent.key === ' ') expand();
+  });
+  marker.on('add', () => {
+    marker.getElement()?.setAttribute('aria-label', t('map.clusterLabel', { count }));
+  });
+  return marker;
+}
+
+function featureShape(feature: Feature, selected: boolean): L.Layer {
+  const layer = props.layersBySlug.get(feature.layerSlug);
+  const color = layer?.color ?? '#2f855a';
   const select = (): void => {
     emit('selectFeature', feature);
   };
@@ -191,7 +277,7 @@ function featureShape(feature: Feature, color: string, selected: boolean): L.Lay
   switch (feature.geometry.type) {
     case 'Point': {
       const marker = L.marker(toLatLng(feature.geometry.coordinates), {
-        icon: markerIcon(color, selected),
+        icon: markerIcon(color, layer?.icon ?? 'pin', selected),
         keyboard: true,
         title: feature.name,
       });
@@ -241,7 +327,10 @@ function drawDrawing(drawing: DrawingState | null): void {
 
   for (const position of positions) {
     drawingLayer.addLayer(
-      L.marker(position, { icon: markerIcon(drawing.layer.color, true), interactive: false }),
+      L.marker(position, {
+        icon: markerIcon(drawing.layer.color, drawing.layer.icon, true),
+        interactive: false,
+      }),
     );
   }
   if (drawing.kind === 'LineString' && positions.length > 1) {
