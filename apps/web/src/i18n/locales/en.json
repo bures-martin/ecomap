@@ -35,8 +35,8 @@
   },
   "map": {
     "title": "Map",
-    "searchLabel": "Search contributions",
-    "searchPlaceholder": "Search by name or description",
+    "searchLabel": "Search places and layers",
+    "searchPlaceholder": "e.g. Hammersly, cycling, recycling",
     "filters": "Filters",
     "layersHeading": "Layers",
     "allLayers": "All layers",
@@ -54,7 +54,9 @@
     "zoomOut": "Zoom out",
     "resultsList": "Results",
     "emptyLayer": "No contributions yet",
-    "attribution": "Map data © OpenStreetMap contributors"
+    "attribution": "Map data © OpenStreetMap contributors",
+    "noMatches": "No layers or places match.",
+    "matchesInLayer": "Matching places in this layer"
   },
   "draw": {
     "chooseLayer": "Which layer?",

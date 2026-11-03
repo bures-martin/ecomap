@@ -35,8 +35,8 @@
   },
   "map": {
     "title": "Kort",
-    "searchLabel": "Søg i bidrag",
-    "searchPlaceholder": "Søg på navn eller beskrivelse",
+    "searchLabel": "Søg i steder og lag",
+    "searchPlaceholder": "fx Hammersly, cykling, genbrug",
     "filters": "Filtre",
     "layersHeading": "Lag",
     "allLayers": "Alle lag",
@@ -54,7 +54,9 @@
     "zoomOut": "Zoom ud",
     "resultsList": "Resultater",
     "emptyLayer": "Ingen bidrag endnu",
-    "attribution": "Kortdata © OpenStreetMap-bidragydere"
+    "attribution": "Kortdata © OpenStreetMap-bidragydere",
+    "noMatches": "Ingen lag eller steder passer.",
+    "matchesInLayer": "Matchende steder i dette lag"
   },
   "draw": {
     "chooseLayer": "Hvilket lag?",

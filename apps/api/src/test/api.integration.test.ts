@@ -512,6 +512,23 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
 
       const byDescription = await request(app).get('/api/features?q=pollinator').expect(200);
       expect(byDescription.body.total).toBe(1);
+
+      /* The layer's own name finds everything in it: "searchable" is the layer here. */
+      const byLayer = await request(app).get('/api/features?q=searchab').expect(200);
+      expect(byLayer.body.total).toBe(2);
+
+      /* ...but only from the start of a word: "archable" is inside "Searchable". */
+      const insideWord = await request(app).get('/api/features?q=archable').expect(200);
+      expect(insideWord.body.total).toBe(0);
+
+      /* A whole word inside a description counts, but not a fragment of one. */
+      const descriptionWord = await request(app).get('/api/features?q=insects').expect(200);
+      expect(descriptionWord.body.total).toBe(1);
+      const descriptionFragment = await request(app).get('/api/features?q=sects').expect(200);
+      expect(descriptionFragment.body.total).toBe(0);
+
+      /* Characters that mean something in a regular expression are taken literally. */
+      await request(app).get('/api/features?q=(%5B*').expect(200);
     });
 
     it('rejects a contribution outside the configured contribution area', async () => {

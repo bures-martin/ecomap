@@ -118,8 +118,24 @@ export async function listFeatures(
           : db`true`
       }
       and ${
+        /*
+         * One search box for both: "Hammersly" finds a place, "cycling" a whole
+         * layer. A place name matches anywhere, so "genbrug" still finds
+         * "Møbelgenbrug" - Danish loves compound words. Descriptions and layer
+         * names match only from the start of a word (`\m`), so "cycling" does
+         * not drag in every "Recycling centre". The values of a layer's own
+         * fields count too ("honey", "Clever", "BOFA"), but not their keys.
+         */
         filter.search
-          ? db`(f.name ilike ${`%${filter.search}%`} or f.description ilike ${`%${filter.search}%`})`
+          ? db`(
+              f.name ilike ${`%${filter.search}%`}
+              or f.description ~* ${`\\m${escapeRegex(filter.search)}`}
+              or l.name ~* ${`\\m${escapeRegex(filter.search)}`}
+              or exists (
+                select 1 from jsonb_each_text(f.properties) as field
+                where field.value ~* ${`\\m${escapeRegex(filter.search)}`}
+              )
+            )`
           : db`true`
       }
       and ${filter.status ? db`f.status = ${filter.status}` : db`true`}
@@ -246,4 +262,9 @@ function toFeature(row: FeatureRow): Feature {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   });
+}
+
+/** Makes user input match literally inside a PostgreSQL regular expression. */
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

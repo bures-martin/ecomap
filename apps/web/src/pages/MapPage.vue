@@ -100,6 +100,16 @@ const moderateFeature = useModerateFeature();
 const settings = computed(() => settingsQuery.data.value);
 const layers = computed(() => layersQuery.data.value ?? []);
 const features = computed(() => featuresQuery.data.value?.features ?? []);
+
+/** Matches per layer while searching, for the layer list; null when not searching. */
+const searchMatches = computed((): ReadonlyMap<string, number> | null => {
+  if (!filters.value.q.trim()) return null;
+  const counts = new Map<string, number>();
+  for (const feature of features.value) {
+    counts.set(feature.layerSlug, (counts.get(feature.layerSlug) ?? 0) + 1);
+  }
+  return counts;
+});
 const layersBySlug = computed(() => new Map(layers.value.map((layer) => [layer.slug, layer])));
 const contributableLayers = computed(() => layers.value.filter((layer) => layer.isPublished));
 
@@ -322,6 +332,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :filters="filters"
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
+        :matches="searchMatches"
         @update:filters="applyFilters"
       />
     </aside>
@@ -339,6 +350,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :filters="filters"
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
+        :matches="searchMatches"
         @update:filters="applyFilters"
       />
     </v-navigation-drawer>

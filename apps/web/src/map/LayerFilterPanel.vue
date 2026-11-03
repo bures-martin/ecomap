@@ -17,6 +17,11 @@ const props = defineProps<{
   searchDraft: string;
   shown: number;
   total: number;
+  /**
+   * While a search is active: how many of the matching places sit in each
+   * layer, by slug. Null when nothing is being searched for.
+   */
+  matches: ReadonlyMap<string, number> | null;
 }>();
 const emit = defineEmits<{
   'update:searchDraft': [value: string];
@@ -46,6 +51,32 @@ const onStatus = (value: string): void => {
   emit('update:filters', { ...props.filters, status: isFeatureStatus(value) ? value : null });
 };
 
+/*
+ * The search box covers layers and places alike. While it is in use, the list
+ * keeps the layers whose name matches, the layers holding a matching place,
+ * and any layer already ticked - so a tick can always be undone.
+ */
+const searching = computed(() => props.matches !== null);
+const visibleLayers = computed(() => {
+  const matches = props.matches;
+  if (!matches) return props.layers;
+  const term = props.filters.q.trim().toLocaleLowerCase();
+  /* The same rule as the server: a layer name matches from the start of a word. */
+  const startsAWord = (name: string): boolean =>
+    name
+      .toLocaleLowerCase()
+      .split(/[^\p{L}\p{N}]+/u)
+      .some((word) => word.startsWith(term));
+  return props.layers.filter(
+    (layer) =>
+      matches.has(layer.slug) ||
+      startsAWord(layer.name) ||
+      props.filters.layers.includes(layer.slug),
+  );
+});
+const countFor = (layer: Layer): number =>
+  props.matches ? (props.matches.get(layer.slug) ?? 0) : layer.featureCount;
+
 const clearFilters = (): void => {
   emit('update:searchDraft', '');
   emit('update:filters', { ...EMPTY_FILTERS, layers: [] });
@@ -67,8 +98,15 @@ const clearFilters = (): void => {
     <section :aria-labelledby="headingId">
       <h2 :id="headingId" class="text-title-small mb-1">{{ t('map.layersHeading') }}</h2>
 
+      <p
+        v-if="searching && visibleLayers.length === 0"
+        class="text-body-small text-medium-emphasis"
+      >
+        {{ t('map.noMatches') }}
+      </p>
+
       <v-checkbox
-        v-for="layer in props.layers"
+        v-for="layer in visibleLayers"
         :key="layer.id"
         :model-value="props.filters.layers.includes(layer.slug)"
         :color="layer.color"
@@ -81,7 +119,13 @@ const clearFilters = (): void => {
           <span class="d-flex align-center ga-2">
             <span class="color-dot" :style="{ background: layer.color }" aria-hidden="true" />
             <span>{{ layer.name }}</span>
-            <v-chip size="x-small">{{ layer.featureCount }}</v-chip>
+            <v-chip
+              size="x-small"
+              :color="searching ? 'primary' : undefined"
+              :title="searching ? t('map.matchesInLayer') : undefined"
+            >
+              {{ countFor(layer) }}
+            </v-chip>
             <v-chip v-if="!layer.isPublished" size="x-small" color="warning">hidden</v-chip>
           </span>
         </template>
