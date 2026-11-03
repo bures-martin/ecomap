@@ -5,6 +5,7 @@ import { useTranslation } from 'i18next-vue';
 import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuth } from '../auth/auth.js';
+import LinkifiedText from '../components/LinkifiedText.vue';
 import UserAvatar from '../components/UserAvatar.vue';
 import FeatureGallery from './FeatureGallery.vue';
 import { googleMapsDirectionsUrl, navigationTarget } from './navigation.js';
@@ -132,14 +133,14 @@ function formatPropertyValue(
 
       <FeatureGallery :feature="props.feature" />
 
-      <p v-if="props.feature.description" class="pre-wrap">{{ props.feature.description }}</p>
+      <LinkifiedText v-if="props.feature.description" :text="props.feature.description" />
 
       <template v-if="filledFields.length > 0">
         <v-divider />
         <dl class="property-list">
           <div v-for="field in filledFields" :key="field.key">
             <dt class="text-body-small text-medium-emphasis">{{ field.label }}</dt>
-            <dd>{{ field.text }}</dd>
+            <dd><LinkifiedText :text="field.text" tag="span" /></dd>
           </div>
         </dl>
       </template>

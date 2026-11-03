@@ -10,9 +10,14 @@ import {
 import { useTranslation } from 'i18next-vue';
 import L from 'leaflet';
 import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
-import { addBasemap } from './basemaps.js';
+import { addBasemapSwitcher, isBasemap, type BasemapSwitcher } from './basemaps.js';
 import { toLatLng } from './geo.js';
-import { CLUSTER_MAX_ZOOM, buildPointIndex, type PointIndex } from './clustering.js';
+import {
+  CLUSTER_MAX_ZOOM,
+  OPEN_ALL_UP_TO,
+  buildPointIndex,
+  type PointIndex,
+} from './clustering.js';
 import { clusterIcon, markerIcon } from './markerIcon.js';
 import type { DrawingState } from './useDrawing.js';
 
@@ -47,11 +52,11 @@ const emit = defineEmits<{
   drawPosition: [position: Position];
 }>();
 
-const { t } = useTranslation();
+const { t, i18next } = useTranslation();
 const container = useTemplateRef<HTMLDivElement>('container');
 
 let map: L.Map | null = null;
-let removeBasemap: (() => void) | null = null;
+let basemaps: BasemapSwitcher | null = null;
 /** Routes, areas and the selected place. */
 const featureLayer = L.layerGroup();
 /** Single places and groups of places, redrawn as the view changes. */
@@ -99,7 +104,24 @@ onMounted(() => {
     if (props.drawing) emit('drawPosition', [event.latlng.lng, event.latlng.lat]);
   });
 
-  watch(() => props.basemap, showBasemap, { immediate: true });
+  /*
+   * The community's background map, unless this person picked another one in
+   * the switcher - that choice is theirs and is remembered in this browser.
+   */
+  basemaps = addBasemapSwitcher(
+    map,
+    pickedBasemap() ?? props.basemap,
+    (basemap) => t(`basemaps.${basemap}`),
+    rememberBasemap,
+  );
+  watch(
+    () => props.basemap,
+    (basemap) => {
+      if (!pickedBasemap()) basemaps?.show(basemap);
+    },
+  );
+  i18next.on('languageChanged', relabelBasemaps);
+
   watch(
     () => [props.features, props.layersBySlug, props.selectedFeatureId] as const,
     drawFeatures,
@@ -138,6 +160,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  i18next.off('languageChanged', relabelBasemaps);
   map?.remove();
   map = null;
 });
@@ -174,10 +197,28 @@ function drawArea(): void {
   );
 }
 
-function showBasemap(basemap: Basemap): void {
-  if (!map) return;
-  removeBasemap?.();
-  removeBasemap = addBasemap(map, basemap);
+const BASEMAP_STORAGE_KEY = 'ecomap.basemap';
+
+function pickedBasemap(): Basemap | null {
+  try {
+    const stored = localStorage.getItem(BASEMAP_STORAGE_KEY);
+    return isBasemap(stored) ? stored : null;
+  } catch {
+    /* Storage blocked: the community's map it is. */
+    return null;
+  }
+}
+
+function rememberBasemap(basemap: Basemap): void {
+  try {
+    localStorage.setItem(BASEMAP_STORAGE_KEY, basemap);
+  } catch {
+    /* Not remembered across visits, but switched for now. */
+  }
+}
+
+function relabelBasemaps(): void {
+  basemaps?.relabel();
 }
 
 /**
@@ -235,17 +276,47 @@ function drawPoints(): void {
   }
 }
 
-/** A badge with the number of places; clicking it zooms in until they come apart. */
+/**
+ * Room kept free round the places when zooming to a group: the topic chips sit
+ * over the top of the map and the buttons over its corners.
+ */
+const FIT_PADDING = L.point(140, 180);
+
+/** Quick: Leaflet's default flight scales with the distance and takes seconds. */
+const CLUSTER_FLIGHT: L.ZoomPanOptions = { duration: 0.5 };
+
+/**
+ * A badge with the number of places. Clicking a small group flies to show all
+ * of its places at once; a big one zooms in until it splits.
+ */
 function clusterMarker(clusterId: number, count: number, position: L.LatLngTuple): L.Marker {
   const marker = L.marker(position, {
     icon: clusterIcon(count),
+    /* Above single pins, which would otherwise cover a badge and swallow its click. */
+    zIndexOffset: 1000,
     keyboard: true,
     title: t('map.clusterLabel', { count }),
   });
   const expand = (): void => {
     if (!map || !pointIndex) return;
-    const zoom = Math.min(pointIndex.getClusterExpansionZoom(clusterId), CLUSTER_MAX_ZOOM + 1);
-    map.flyTo(position, zoom);
+    /* The zoom at which this group splits - at least one step forward. */
+    const splits = Math.min(pointIndex.getClusterExpansionZoom(clusterId), CLUSTER_MAX_ZOOM + 1);
+    if (count > OPEN_ALL_UP_TO) {
+      map.flyTo(position, splits, CLUSTER_FLIGHT);
+      return;
+    }
+    const bounds = L.latLngBounds(
+      pointIndex.getLeaves(clusterId, Number.POSITIVE_INFINITY).map((leaf) => {
+        const [lng, lat] = leaf.geometry.coordinates as [number, number];
+        return [lat, lng] as L.LatLngTuple;
+      }),
+    );
+    const fits = map.getBoundsZoom(bounds, false, FIT_PADDING);
+    map.flyTo(
+      bounds.getCenter(),
+      Math.min(Math.max(fits, splits), CLUSTER_MAX_ZOOM + 1),
+      CLUSTER_FLIGHT,
+    );
   };
   marker.on('click', expand);
   marker.on('keypress', (event: L.LeafletKeyboardEvent) => {

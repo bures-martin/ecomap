@@ -22,7 +22,7 @@ import {
 import { useTranslation } from 'i18next-vue';
 import L from 'leaflet';
 import { computed, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue';
-import { addBasemap } from '../map/basemaps.js';
+import { addBasemapSwitcher, type BasemapSwitcher } from '../map/basemaps.js';
 import { toLatLng } from '../map/geo.js';
 
 /**
@@ -36,7 +36,7 @@ import { toLatLng } from '../map/geo.js';
 const area = defineModel<ContributionArea | null>({ required: true });
 const props = defineProps<{ basemap: Basemap; initialView: MapView; color: string }>();
 
-const { t } = useTranslation();
+const { t, i18next } = useTranslation();
 const instructionsId = useId();
 const container = useTemplateRef<HTMLDivElement>('container');
 
@@ -48,7 +48,7 @@ const crossesItself = computed(() => corners.value.length >= 4 && !isRingSimple(
 const canFinish = computed(() => (drafting.value?.length ?? 0) >= 3);
 
 let map: L.Map | null = null;
-let removeBasemap: (() => void) | null = null;
+let basemaps: BasemapSwitcher | null = null;
 const shapes = L.layerGroup();
 const handles = L.layerGroup();
 
@@ -77,20 +77,27 @@ onMounted(() => {
     if (drafting.value) drafting.value = [...drafting.value, toPosition(event.latlng)];
   });
 
-  watch(() => props.basemap, showBasemap, { immediate: true });
+  /* A switcher here too: satellite helps when tracing a coastline. */
+  basemaps = addBasemapSwitcher(map, props.basemap, (basemap) => t(`basemaps.${basemap}`));
+  watch(
+    () => props.basemap,
+    (basemap) => {
+      basemaps?.show(basemap);
+    },
+  );
+  i18next.on('languageChanged', relabelBasemaps);
   watch([corners, drafting], render, { immediate: true });
   if (area.value) fitToArea();
 });
 
 onBeforeUnmount(() => {
+  i18next.off('languageChanged', relabelBasemaps);
   map?.remove();
   map = null;
 });
 
-function showBasemap(basemap: Basemap): void {
-  if (!map) return;
-  removeBasemap?.();
-  removeBasemap = addBasemap(map, basemap);
+function relabelBasemaps(): void {
+  basemaps?.relabel();
 }
 
 function handleIcon(kind: 'corner' | 'midpoint'): L.DivIcon {

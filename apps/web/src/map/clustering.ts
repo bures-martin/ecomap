@@ -17,8 +17,17 @@ export interface PointProperties {
 
 export type PointIndex = Supercluster<PointProperties>;
 
-/** Beyond this zoom every place is shown on its own - street level. */
-export const CLUSTER_MAX_ZOOM = 15;
+/**
+ * Beyond this zoom every place is shown on its own: at street level a group
+ * hides more than it helps, and zooming to a small group lands about here.
+ */
+export const CLUSTER_MAX_ZOOM = 13;
+
+/**
+ * Clicking a group this small zooms straight to all of its places, instead of
+ * splitting it one level at a time; bigger groups still open step by step.
+ */
+export const OPEN_ALL_UP_TO = 20;
 
 export function buildPointIndex(
   features: readonly Feature[],
@@ -26,7 +35,7 @@ export function buildPointIndex(
   excludeId: string | null,
 ): PointIndex {
   const index = new Supercluster<PointProperties>({
-    radius: 60,
+    radius: 50,
     maxZoom: CLUSTER_MAX_ZOOM,
     minPoints: 2,
   });

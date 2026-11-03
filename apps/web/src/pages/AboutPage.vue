@@ -2,6 +2,7 @@
 import { useTranslation } from 'i18next-vue';
 import { computed, useId } from 'vue';
 import { useCommunitySettings, useLayers } from '../api/queries.js';
+import LinkifiedText from '../components/LinkifiedText.vue';
 
 const { t } = useTranslation();
 const settingsQuery = useCommunitySettings();
@@ -26,12 +27,12 @@ const contributeHeadingId = useId();
 
     <div class="d-flex flex-column ga-6">
       <!--
-        Rendered as pre-wrapped text rather than parsed as HTML: the content is
+        Rendered as text with only its web addresses made into links, never parsed as HTML: the content is
         admin-authored, but rendering arbitrary markup would be a stored XSS
         waiting to happen the first time an account is compromised.
       -->
       <v-card v-if="settings?.aboutMarkdown" class="pa-6">
-        <p class="pre-wrap">{{ settings.aboutMarkdown }}</p>
+        <LinkifiedText :text="settings.aboutMarkdown" />
       </v-card>
 
       <v-card

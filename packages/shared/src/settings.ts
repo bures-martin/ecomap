@@ -10,15 +10,18 @@ import { localeSchema } from './locales.js';
  * fork: name, colours, where the map opens and where contributions are allowed.
  */
 
-/** Mapy.com needs an API key in the web app; without one it falls back to OpenStreetMap. */
+/**
+ * Free background maps, in the order the map's switcher lists them. The admin
+ * picks the community's default; each visitor can switch for themselves.
+ */
 export const BASEMAPS = [
-  'mapy-outdoor',
-  'mapy-basic',
-  'mapy-aerial',
+  'streets',
   'osm',
+  'light',
+  'dark',
+  'satellite',
   'topo',
   'cyclosm',
-  'humanitarian',
 ] as const;
 export type Basemap = (typeof BASEMAPS)[number];
 export const basemapSchema = z.enum(BASEMAPS);
@@ -76,7 +79,7 @@ export const DEFAULT_COMMUNITY_SETTINGS = {
   primaryColor: '#2f855a',
   accentColor: '#b7791f',
   defaultLocale: 'en',
-  basemap: 'mapy-outdoor',
+  basemap: 'streets',
   initialView: { lat: 55.1, lng: 14.9, zoom: 10 },
   contributionArea: null,
   allowPublicRegistration: true,

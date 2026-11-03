@@ -25,10 +25,9 @@ Open <http://localhost:5173>. The seed creates a superadmin account — the cred
 `SEED_ADMIN_*` values in `.env` (`admin@ecomap.local` / `ChangeMe123!` by default).
 **Change them before this ever leaves your machine.**
 
-**Background map.** The default is Mapy.com's outdoor map, which needs a free API key from
-<https://developer.mapy.com/>: copy `apps/web/.env.example` to `apps/web/.env.local` and set
-`VITE_MAPY_API_KEY`, then restrict the key to your domain in their portal. Without a key the map
-shows OpenStreetMap instead.
+**Background maps.** Free, keyless tile services (Esri streets, light, dark and satellite, OpenStreetMap,
+OpenTopoMap, CyclOSM). An admin picks the default in Settings; everyone can switch in the map's bottom-left corner.
+For a busy public site, check each provider's usage policy or move to a paid or self-hosted service.
 
 **One codebase, one community per deployment.** Nothing in the code is tied to a place: a
 community's name, colours, start view, area and layers are settings an admin edits in the app,

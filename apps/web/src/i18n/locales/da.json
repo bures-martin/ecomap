@@ -60,7 +60,8 @@
     "topics": "Emner",
     "clusterLabel_one": "{{count}} sted her - zoom ind",
     "clusterLabel_other": "{{count}} steder her - zoom ind",
-    "someLayersOff": "Nogle emner er slået fra fra start - sæt flueben, eller tryk på dem over kortet."
+    "someLayersOff": "Nogle emner er slået fra fra start - sæt flueben, eller tryk på dem over kortet.",
+    "moreTopics": "Flere ({{count}})"
   },
   "draw": {
     "chooseLayer": "Hvilket lag?",
@@ -212,6 +213,8 @@
     "blockConfirmBody": "Personen bliver logget ud alle steder med det samme og kan ikke logge ind igen, før blokeringen ophæves. Det, de har tilføjet, bliver på kortet."
   },
   "settingsAdmin": {
+    "basemap": "Baggrundskort",
+    "basemapHelp": "Det kort, der vises fra start. Alle kan selv skifte baggrundskort nederst til venstre.",
     "area": {
       "title": "Fællesskabets område",
       "help": "Tegn det område, jeres fællesskab dækker. Man kan stadig panorere og zoome overalt på kortet, men kun tilføje ting inden for området. Lad det stå tomt for at tillade bidrag overalt.",
@@ -230,17 +233,7 @@
       "cornerHint": "Træk for at flytte, dobbeltklik for at fjerne",
       "midpointHint": "Træk for at tilføje et hjørne her",
       "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
-    },
-    "basemaps": {
-      "mapy-outdoor": "Mapy.com udendørs (vandring og cykling)",
-      "mapy-basic": "Mapy.com basis",
-      "mapy-aerial": "Mapy.com luftfoto",
-      "osm": "OpenStreetMap",
-      "topo": "OpenTopoMap",
-      "cyclosm": "CyclOSM (cykling)",
-      "humanitarian": "Humanitarian OSM"
-    },
-    "mapyKeyMissing": "Mapy.com-kort kræver en API-nøgle (VITE_MAPY_API_KEY). Indtil den er sat, viser kortet OpenStreetMap."
+    }
   },
   "photos": {
     "title": "Billeder",
@@ -274,5 +267,18 @@
     "howTo": "Tryk på et emne øverst på kortet, eller på et sted for at læse mere.",
     "explore": "Udforsk kortet",
     "add": "Tilføj et sted"
+  },
+  "basemaps": {
+    "streets": "Gader",
+    "osm": "OpenStreetMap",
+    "light": "Lyst",
+    "dark": "Mørkt",
+    "satellite": "Satellit",
+    "topo": "Terræn",
+    "cyclosm": "Cykling"
+  },
+  "languages": {
+    "en": "Engelsk",
+    "da": "Dansk"
   }
 }

@@ -74,8 +74,9 @@ const add = (): void => {
 <style scoped>
 .welcome-card {
   position: absolute;
-  left: 16px;
-  bottom: 24px;
+  left: 10px;
+  /* Above the background-map switcher in the bottom-left corner. */
+  bottom: 66px;
   z-index: 1000;
   max-width: 380px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
@@ -84,9 +85,9 @@ const add = (): void => {
 /* On a phone, leave room on the right for the round map buttons. */
 @media (max-width: 599px) {
   .welcome-card {
-    left: 12px;
+    left: 10px;
     right: 84px;
-    bottom: 12px;
+    bottom: 66px;
   }
 }
 </style>

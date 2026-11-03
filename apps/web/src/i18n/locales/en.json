@@ -60,7 +60,8 @@
     "topics": "Topics",
     "clusterLabel_one": "{{count}} place here - zoom in",
     "clusterLabel_other": "{{count}} places here - zoom in",
-    "someLayersOff": "Some topics start switched off - tick them, or tap them above the map."
+    "someLayersOff": "Some topics start switched off - tick them, or tap them above the map.",
+    "moreTopics": "More ({{count}})"
   },
   "draw": {
     "chooseLayer": "Which layer?",
@@ -161,6 +162,7 @@
     "primaryColor": "Main colour",
     "accentColor": "Accent colour",
     "basemap": "Background map",
+    "basemapHelp": "Where the map starts. Everyone can switch background maps for themselves in the bottom-left corner.",
     "defaultLocale": "Default language",
     "initialView": "Where the map opens",
     "initialLat": "Latitude",
@@ -169,15 +171,6 @@
     "useCurrentView": "Use the map's current position",
     "allowPublicRegistration": "Anyone may create an account",
     "saved": "Settings saved",
-    "basemaps": {
-      "mapy-outdoor": "Mapy.com outdoor (hiking and cycling)",
-      "mapy-basic": "Mapy.com basic",
-      "mapy-aerial": "Mapy.com aerial photos",
-      "osm": "OpenStreetMap",
-      "topo": "OpenTopoMap",
-      "cyclosm": "CyclOSM (cycling)",
-      "humanitarian": "Humanitarian OSM"
-    },
     "area": {
       "title": "Community area",
       "help": "Draw the region your community covers. People can still pan and zoom anywhere on the map, but they can only add things inside this area. Leave it empty to allow contributions everywhere.",
@@ -196,8 +189,7 @@
       "cornerHint": "Drag to move, double-click to remove",
       "midpointHint": "Drag to add a corner here",
       "crosses": "The outline crosses itself. Move a corner so the edges do not cross, or the area cannot be saved."
-    },
-    "mapyKeyMissing": "Mapy.com maps need an API key (VITE_MAPY_API_KEY). Until one is set, the map shows OpenStreetMap instead."
+    }
   },
   "moderation": {
     "title": "Waiting for review",
@@ -389,5 +381,18 @@
     "howTo": "Tap a topic at the top of the map, or a place to learn more about it.",
     "explore": "Explore the map",
     "add": "Add a place"
+  },
+  "basemaps": {
+    "streets": "Streets",
+    "osm": "OpenStreetMap",
+    "light": "Light",
+    "dark": "Dark",
+    "satellite": "Satellite",
+    "topo": "Terrain",
+    "cyclosm": "Cycling"
+  },
+  "languages": {
+    "en": "English",
+    "da": "Danish"
   }
 }

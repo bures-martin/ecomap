@@ -2,7 +2,6 @@
 import {
   BASEMAPS,
   LOCALES,
-  LOCALE_LABELS,
   updateCommunitySettingsInputSchema,
   type CommunitySettings,
 } from '@ecomap/shared';
@@ -11,7 +10,6 @@ import { computed, ref, useId } from 'vue';
 import { useUpdateSettings } from '../api/queries.js';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
-import { hasMapyKey, isMapyBasemap } from '../map/basemaps.js';
 import AreaEditor from './AreaEditor.vue';
 import { toSettingsDraft } from './settingsDraft.js';
 
@@ -28,13 +26,11 @@ const draft = ref(toSettingsDraft(props.settings));
 const validationError = ref<string | null>(null);
 
 const basemapItems = computed(() =>
-  BASEMAPS.map((basemap) => ({ title: t(`settingsAdmin.basemaps.${basemap}`), value: basemap })),
+  BASEMAPS.map((basemap) => ({ title: t(`basemaps.${basemap}`), value: basemap })),
 );
-/* A Mapy.com map without a key silently shows OpenStreetMap; say so here. */
-const basemapHint = computed(() =>
-  isMapyBasemap(draft.value.basemap) && !hasMapyKey() ? t('settingsAdmin.mapyKeyMissing') : '',
+const localeItems = computed(() =>
+  LOCALES.map((locale) => ({ title: t(`languages.${locale}`), value: locale })),
 );
-const localeItems = LOCALES.map((locale) => ({ title: LOCALE_LABELS[locale], value: locale }));
 
 const submit = (): void => {
   validationError.value = null;
@@ -108,8 +104,8 @@ const submit = (): void => {
           v-model="draft.basemap"
           :items="basemapItems"
           :label="t('settingsAdmin.basemap')"
-          :hint="basemapHint"
-          :persistent-hint="basemapHint !== ''"
+          :hint="t('settingsAdmin.basemapHelp')"
+          persistent-hint
         />
         <v-select
           v-model="draft.defaultLocale"

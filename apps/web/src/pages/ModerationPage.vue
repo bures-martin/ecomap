@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useTranslation } from 'i18next-vue';
 import { useFeatures, useModerateFeature } from '../api/queries.js';
+import LinkifiedText from '../components/LinkifiedText.vue';
 import QueryBoundary from '../components/QueryBoundary.vue';
 import FeatureGallery from '../map/FeatureGallery.vue';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
@@ -47,7 +48,7 @@ const decide = (id: string, status: 'published' | 'rejected'): void => {
                 <v-chip size="small">{{ feature.layerSlug }}</v-chip>
               </div>
 
-              <p v-if="feature.description" class="pre-wrap">{{ feature.description }}</p>
+              <LinkifiedText v-if="feature.description" :text="feature.description" />
 
               <FeatureGallery :feature="feature" class="moderation-gallery" />
 
