@@ -5,6 +5,7 @@ import { computed } from 'vue';
 import { useSetUserRole, useUsers } from '../api/queries.js';
 import { useAuth } from '../auth/auth.js';
 import QueryBoundary from '../components/QueryBoundary.vue';
+import UserAvatar from '../components/UserAvatar.vue';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
 import { useLanguage } from '../i18n/index.js';
@@ -58,7 +59,12 @@ const changeRole = (person: CurrentUser, role: Role): void => {
             </thead>
             <tbody>
               <tr v-for="person in users" :key="person.id">
-                <td>{{ person.displayName }}</td>
+                <td>
+                  <span class="d-flex align-center ga-3">
+                    <UserAvatar :name="person.displayName" :src="person.avatarUrl" :size="32" />
+                    {{ person.displayName }}
+                  </span>
+                </td>
                 <td>{{ person.email }}</td>
                 <td>
                   <v-chip size="small" :color="person.totpEnabled ? 'success' : undefined">

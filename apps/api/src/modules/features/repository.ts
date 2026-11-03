@@ -1,4 +1,5 @@
 import {
+  avatarPath,
   featureSchema,
   type Feature,
   type FeatureStatus,
@@ -19,6 +20,7 @@ interface FeatureRow {
   status: FeatureStatus;
   createdById: string | null;
   createdByName: string | null;
+  createdByAvatarUpdatedAt: string | null;
   createdAt: string;
   updatedAt: string;
   totalCount?: string;
@@ -40,6 +42,7 @@ function featureColumns(db: Sql) {
     f.status,
     f.created_by                 as "createdById",
     u.display_name               as "createdByName",
+    u.avatar_updated_at          as "createdByAvatarUpdatedAt",
     f.created_at                 as "createdAt",
     f.updated_at                 as "updatedAt"
   `;
@@ -220,6 +223,10 @@ function toFeature(row: FeatureRow): Feature {
     status: row.status,
     createdById: row.createdById,
     createdByName: row.createdByName,
+    createdByAvatarUrl:
+      row.createdById && row.createdByAvatarUpdatedAt
+        ? avatarPath(row.createdById, row.createdByAvatarUpdatedAt)
+        : null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   });

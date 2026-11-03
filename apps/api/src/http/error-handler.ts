@@ -46,6 +46,16 @@ function toApiError(error: unknown): ApiError {
     return ApiError.badRequest('The request body is not valid JSON');
   }
 
+  /* Body parsers flag an oversized body (a JSON payload or an upload) with this type. */
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'type' in error &&
+    error.type === 'entity.too.large'
+  ) {
+    return ApiError.payloadTooLarge();
+  }
+
   /* Never leak internals to the client; the real error is in the log above. */
   return new ApiError(
     'internal_error',

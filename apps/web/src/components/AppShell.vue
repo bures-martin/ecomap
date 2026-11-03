@@ -8,6 +8,7 @@ import { useCommunitySettings } from '../api/queries.js';
 import { useAuth } from '../auth/auth.js';
 import { useToast } from '../composables/useToast.js';
 import ColorSchemeMenu from './ColorSchemeMenu.vue';
+import UserAvatar from './UserAvatar.vue';
 import LanguageMenu from './LanguageMenu.vue';
 
 /**
@@ -92,12 +93,13 @@ const signOut = async (): Promise<void> => {
       </v-btn>
       <v-menu v-else>
         <template #activator="{ props: activator }">
-          <v-btn
-            v-bind="activator"
-            variant="text"
-            :prepend-icon="mdiAccountCircle"
-            :aria-label="auth.user.displayName"
-          >
+          <v-btn v-bind="activator" variant="text" :aria-label="auth.user.displayName">
+            <UserAvatar
+              :name="auth.user.displayName"
+              :src="auth.user.avatarUrl"
+              :size="28"
+              :class="{ 'mr-2': isDesktop }"
+            />
             {{ isDesktop ? auth.user.displayName : '' }}
           </v-btn>
         </template>

@@ -1,19 +1,27 @@
 import {
+  AVATAR_CONTENT_TYPES,
+  AVATAR_MAX_BYTES,
   changePasswordInputSchema,
   loginInputSchema,
   registerInputSchema,
+  sniffAvatarContentType,
   totpDisableInputSchema,
   totpEnableInputSchema,
 } from '@ecomap/shared';
-import { Router, type CookieOptions, type Response } from 'express';
+import express, { Router, type CookieOptions, type Response } from 'express';
 import { requireAuthContext } from '../../auth/context.js';
 import { requireAuth } from '../../auth/middleware.js';
 import { REFRESH_COOKIE_NAME, REFRESH_COOKIE_PATH, type RefreshToken } from '../../auth/tokens.js';
 import type { Sql } from '../../db/client.js';
 import { isProduction } from '../../env.js';
 import { ApiError, parseOrThrow } from '../../http/api-error.js';
-import { authRateLimiter } from '../../http/rate-limit.js';
-import { findUserById, toCurrentUser } from '../users/repository.js';
+import { authRateLimiter, writeRateLimiter } from '../../http/rate-limit.js';
+import {
+  deleteUserAvatar,
+  findUserById,
+  setUserAvatar,
+  toCurrentUser,
+} from '../users/repository.js';
 import * as service from './service.js';
 
 /**
@@ -105,6 +113,41 @@ export function createAuthRouter(db: Sql): Router {
     const input = parseOrThrow(totpDisableInputSchema, req.body);
     await service.disableTotp(db, userId, input.password);
     res.status(204).send();
+  });
+
+  /*
+   * The picture arrives as the raw image body, already cropped and re-encoded
+   * to a small square by the browser. The declared type only gets it past the
+   * body parser: what is stored is decided by the first bytes of the file.
+   */
+  router.put(
+    '/me/avatar',
+    requireAuth,
+    writeRateLimiter,
+    express.raw({ type: [...AVATAR_CONTENT_TYPES], limit: AVATAR_MAX_BYTES }),
+    async (req, res) => {
+      const { userId } = requireAuthContext(req);
+      const body: unknown = req.body;
+      if (!Buffer.isBuffer(body) || body.length === 0) {
+        throw ApiError.badRequest('Upload the picture as a PNG, JPEG or WebP image');
+      }
+
+      const contentType = sniffAvatarContentType(body);
+      if (!contentType) {
+        throw ApiError.badRequest('That file is not a PNG, JPEG or WebP image');
+      }
+
+      const user = await setUserAvatar(db, userId, contentType, body);
+      if (!user) throw ApiError.unauthorized();
+      res.json(toCurrentUser(user));
+    },
+  );
+
+  router.delete('/me/avatar', requireAuth, writeRateLimiter, async (req, res) => {
+    const { userId } = requireAuthContext(req);
+    const user = await deleteUserAvatar(db, userId);
+    if (!user) throw ApiError.unauthorized();
+    res.json(toCurrentUser(user));
   });
 
   return router;

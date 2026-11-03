@@ -24,6 +24,8 @@ export const featureSchema = z.object({
   status: featureStatusSchema,
   createdById: z.uuid().nullable(),
   createdByName: z.string().nullable(),
+  /** Versioned path of the author's profile picture, or null if they have none. */
+  createdByAvatarUrl: z.string().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

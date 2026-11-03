@@ -50,7 +50,8 @@ export function setSessionRefresher(refresher: (() => Promise<string | null>) | 
 }
 
 export interface RequestOptions<T> {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  /** Sent as JSON - or as-is, with its own type, when it is a `Blob` (an image upload). */
   body?: unknown;
   schema?: z.ZodType<T>;
   signal?: AbortSignal;
@@ -59,6 +60,11 @@ export interface RequestOptions<T> {
 }
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
+
+/** Turns a server-relative path such as an `avatarUrl` into one the browser can load. */
+export function apiAssetUrl(path: string): string {
+  return `${API_BASE_URL}${path}`;
+}
 
 export async function apiRequest<T>(path: string, options: RequestOptions<T> = {}): Promise<T> {
   const response = await sendRequest(path, options);
@@ -75,15 +81,23 @@ export async function apiRequest<T>(path: string, options: RequestOptions<T> = {
 
 async function sendRequest<T>(path: string, options: RequestOptions<T>): Promise<Response> {
   const headers = new Headers({ Accept: 'application/json' });
-  if (options.body !== undefined) headers.set('Content-Type', 'application/json');
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+
+  let body: BodyInit | undefined;
+  if (options.body instanceof Blob) {
+    headers.set('Content-Type', options.body.type || 'application/octet-stream');
+    body = options.body;
+  } else if (options.body !== undefined) {
+    headers.set('Content-Type', 'application/json');
+    body = JSON.stringify(options.body);
+  }
 
   return fetch(`${API_BASE_URL}${path}`, {
     method: options.method ?? 'GET',
     headers,
     /* Only the refresh endpoint has a cookie, but it must be sent when it does. */
     credentials: 'include',
-    ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
+    ...(body !== undefined ? { body } : {}),
     ...(options.signal ? { signal: options.signal } : {}),
   });
 }

@@ -40,7 +40,7 @@ export function createApp(db: Sql): Express {
     cors({
       origin: env.CORS_ORIGINS,
       credentials: true,
-      methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     }),
   );
 

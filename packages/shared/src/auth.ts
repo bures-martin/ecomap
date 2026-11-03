@@ -70,6 +70,8 @@ export const currentUserSchema = z.object({
   role: roleSchema,
   permissions: z.array(permissionSchema),
   totpEnabled: z.boolean(),
+  /** Versioned path of the profile picture, or null if none was uploaded. */
+  avatarUrl: z.string().nullable(),
   createdAt: z.iso.datetime(),
 });
 export type CurrentUser = z.infer<typeof currentUserSchema>;

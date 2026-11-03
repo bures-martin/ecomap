@@ -7,6 +7,9 @@ import { env, isTest } from '../env.js';
  */
 export type Sql = postgres.Sql<{ timestamptz: string }>;
 
+/** Either the pool or an open transaction - anything a query fragment can run on. */
+export type Queryable = Sql | postgres.TransactionSql<{ timestamptz: string }>;
+
 export function createSql(connectionString: string): Sql {
   return postgres(connectionString, {
     max: isTest ? 2 : 10,

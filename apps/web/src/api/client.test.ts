@@ -42,6 +42,16 @@ describe('apiRequest', () => {
     expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer token-123');
   });
 
+  it('sends a Blob as raw bytes with its own content type', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
+    const image = new Blob([new Uint8Array([0xff, 0xd8, 0xff])], { type: 'image/jpeg' });
+    await apiRequest('/api/auth/me/avatar', { method: 'PUT', body: image });
+
+    const [, init] = fetchMock.mock.calls[0] ?? [];
+    expect(new Headers(init?.headers).get('Content-Type')).toBe('image/jpeg');
+    expect(init?.body).toBe(image);
+  });
+
   it('returns undefined for a 204 without trying to parse a body', async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
     await expect(apiRequest('/api/features/x', { method: 'DELETE' })).resolves.toBeUndefined();

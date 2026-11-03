@@ -3,10 +3,11 @@ import { useTranslation } from 'i18next-vue';
 import { watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import ChangePasswordSection from '../account/ChangePasswordSection.vue';
+import ProfileCard from '../account/ProfileCard.vue';
 import TwoFactorSection from '../account/TwoFactorSection.vue';
 import { useAuth } from '../auth/auth.js';
 
-/** Password change and two-factor setup for the signed-in user. */
+/** Profile picture, password change and two-factor setup for the signed-in user. */
 const { t } = useTranslation();
 const auth = useAuth();
 const router = useRouter();
@@ -21,12 +22,7 @@ watchEffect(() => {
     <h1 class="text-headline-large font-weight-bold mb-4">{{ t('auth.accountTitle') }}</h1>
 
     <div class="d-flex flex-column ga-6">
-      <v-card class="pa-6">
-        <h2 class="text-title-large">{{ auth.user.displayName }}</h2>
-        <p class="text-medium-emphasis">{{ auth.user.email }}</p>
-        <v-chip size="small" class="mt-2">{{ t(`people.roles.${auth.user.role}`) }}</v-chip>
-      </v-card>
-
+      <ProfileCard :user="auth.user" />
       <TwoFactorSection :user="auth.user" />
       <ChangePasswordSection />
     </div>

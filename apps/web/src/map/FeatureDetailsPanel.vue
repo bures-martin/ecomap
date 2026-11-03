@@ -5,6 +5,7 @@ import { useTranslation } from 'i18next-vue';
 import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuth } from '../auth/auth.js';
+import UserAvatar from '../components/UserAvatar.vue';
 import { useLanguage } from '../i18n/index.js';
 
 /**
@@ -116,19 +117,27 @@ function formatPropertyValue(
 
       <v-divider />
 
-      <p class="text-body-small text-medium-emphasis">
-        {{
-          props.feature.createdByName
-            ? t('feature.addedBy', { name: props.feature.createdByName })
-            : t('feature.addedByUnknown')
-        }}
-        ·
-        {{
-          t('feature.addedOn', {
-            date: new Date(props.feature.createdAt).toLocaleDateString(language),
-          })
-        }}
-      </p>
+      <div class="d-flex align-center ga-2">
+        <UserAvatar
+          v-if="props.feature.createdByName"
+          :name="props.feature.createdByName"
+          :src="props.feature.createdByAvatarUrl"
+          :size="28"
+        />
+        <p class="text-body-small text-medium-emphasis">
+          {{
+            props.feature.createdByName
+              ? t('feature.addedBy', { name: props.feature.createdByName })
+              : t('feature.addedByUnknown')
+          }}
+          ·
+          {{
+            t('feature.addedOn', {
+              date: new Date(props.feature.createdAt).toLocaleDateString(language),
+            })
+          }}
+        </p>
+      </div>
 
       <div
         v-if="auth.can('feature:moderate') && props.feature.status === 'pending'"

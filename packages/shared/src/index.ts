@@ -1,6 +1,7 @@
 export * from './geometry.js';
 export * from './permissions.js';
 export * from './auth.js';
+export * from './avatars.js';
 export * from './layers.js';
 export * from './features.js';
 export * from './settings.js';

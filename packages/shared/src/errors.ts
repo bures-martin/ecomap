@@ -14,6 +14,7 @@ export const API_ERROR_CODES = [
   'not_found',
   'conflict',
   'rate_limited',
+  'payload_too_large',
   'internal_error',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
@@ -44,6 +45,7 @@ export const HTTP_STATUS_BY_ERROR_CODE: Readonly<Record<ApiErrorCode, number>> =
   not_found: 404,
   conflict: 409,
   rate_limited: 429,
+  payload_too_large: 413,
   internal_error: 500,
 };
 

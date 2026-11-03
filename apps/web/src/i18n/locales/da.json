@@ -119,6 +119,28 @@
     "forbidden": "Du har ikke rettigheder til det.",
     "not_found": "Det kunne ikke findes.",
     "rate_limited": "For mange forsøg - vent et øjeblik.",
-    "internal_error": "Noget gik galt hos os."
+    "internal_error": "Noget gik galt hos os.",
+    "payload_too_large": "Filen er for stor."
+  },
+  "avatar": {
+    "title": "Profilbillede",
+    "add": "Tilføj et billede",
+    "change": "Skift billede",
+    "remove": "Fjern billede",
+    "editorTitle": "Dit profilbillede",
+    "intro": "Vælg et billede, og flyt og zoom det, til det sidder godt i cirklen.",
+    "choose": "Vælg et billede",
+    "chooseAnother": "Vælg et andet billede",
+    "dropHint": "eller slip det her",
+    "instructions": "Træk for at flytte billedet, og zoom med skyderen, musehjulet eller to fingre. Med tastaturet: piletasterne flytter, + og − zoomer, R drejer.",
+    "previewLabel": "Billedets placering i cirklen",
+    "zoom": "Zoom",
+    "rotate": "Drej en kvart omgang",
+    "save": "Gem billede",
+    "saved": "Profilbilledet er opdateret.",
+    "removed": "Profilbilledet er fjernet.",
+    "notImage": "Vælg en billedfil - et JPEG-, PNG- eller WebP-billede.",
+    "fileTooLarge": "Billedet er over 20 MB. Vælg et mindre.",
+    "unreadable": "Billedet kunne ikke læses. Prøv et JPEG- eller PNG-billede."
   }
 }

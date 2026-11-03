@@ -54,6 +54,10 @@ export class ApiError extends Error {
   static conflict(message: string): ApiError {
     return new ApiError('conflict', message);
   }
+
+  static payloadTooLarge(message = 'That upload is too large'): ApiError {
+    return new ApiError('payload_too_large', message);
+  }
 }
 
 /**

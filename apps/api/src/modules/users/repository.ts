@@ -1,6 +1,6 @@
-import type { CurrentUser, Role } from '@ecomap/shared';
-import { permissionsForRole } from '@ecomap/shared';
-import type { Sql } from '../../db/client.js';
+import type { AvatarContentType, CurrentUser, Role } from '@ecomap/shared';
+import { avatarPath, permissionsForRole } from '@ecomap/shared';
+import type { Queryable, Sql } from '../../db/client.js';
 
 export interface UserRow {
   id: string;
@@ -10,12 +10,13 @@ export interface UserRow {
   role: Role;
   totpSecret: string | null;
   totpEnabled: boolean;
+  avatarUpdatedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 /** Every query selects the same aliased columns, so `UserRow` always matches. */
-function userColumns(db: Sql) {
+function userColumns(db: Queryable) {
   return db`
     id,
     email,
@@ -24,6 +25,7 @@ function userColumns(db: Sql) {
     role,
     totp_secret   as "totpSecret",
     totp_enabled  as "totpEnabled",
+    avatar_updated_at as "avatarUpdatedAt",
     created_at    as "createdAt",
     updated_at    as "updatedAt"
   `;
@@ -106,6 +108,59 @@ export function toCurrentUser(row: UserRow): CurrentUser {
     role: row.role,
     permissions: [...permissionsForRole(row.role)],
     totpEnabled: row.totpEnabled,
+    avatarUrl: row.avatarUpdatedAt ? avatarPath(row.id, row.avatarUpdatedAt) : null,
     createdAt: row.createdAt,
   };
+}
+
+export interface AvatarRow {
+  contentType: AvatarContentType;
+  data: Buffer;
+  updatedAt: string;
+}
+
+export async function findUserAvatar(db: Sql, userId: string): Promise<AvatarRow | null> {
+  const [row] = await db<AvatarRow[]>`
+    select content_type as "contentType", data, updated_at as "updatedAt"
+    from user_avatars where user_id = ${userId}
+  `;
+  return row ?? null;
+}
+
+/** Stores or replaces the picture and bumps the version on the user row, atomically. */
+export async function setUserAvatar(
+  db: Sql,
+  userId: string,
+  contentType: AvatarContentType,
+  data: Buffer,
+): Promise<UserRow | null> {
+  return db.begin(async (tx) => {
+    const [avatar] = await tx<{ updatedAt: string }[]>`
+      insert into user_avatars (user_id, content_type, data, updated_at)
+      values (${userId}, ${contentType}, ${data}, now())
+      on conflict (user_id) do update
+        set content_type = excluded.content_type,
+            data         = excluded.data,
+            updated_at   = excluded.updated_at
+      returning updated_at as "updatedAt"
+    `;
+    const [row] = await tx<UserRow[]>`
+      update users set avatar_updated_at = ${avatar?.updatedAt ?? null}
+      where id = ${userId}
+      returning ${userColumns(tx)}
+    `;
+    return row ?? null;
+  });
+}
+
+export async function deleteUserAvatar(db: Sql, userId: string): Promise<UserRow | null> {
+  return db.begin(async (tx) => {
+    await tx`delete from user_avatars where user_id = ${userId}`;
+    const [row] = await tx<UserRow[]>`
+      update users set avatar_updated_at = null
+      where id = ${userId}
+      returning ${userColumns(tx)}
+    `;
+    return row ?? null;
+  });
 }

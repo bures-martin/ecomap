@@ -100,6 +100,10 @@ export const authApi = {
     apiRequest('/api/auth/me/totp/enable', { method: 'POST', body: { code } }),
   disableTotp: (password: string): Promise<void> =>
     apiRequest('/api/auth/me/totp/disable', { method: 'POST', body: { password } }),
+  uploadAvatar: (image: Blob): Promise<CurrentUser> =>
+    apiRequest('/api/auth/me/avatar', { method: 'PUT', body: image, schema: currentUserSchema }),
+  removeAvatar: (): Promise<CurrentUser> =>
+    apiRequest('/api/auth/me/avatar', { method: 'DELETE', schema: currentUserSchema }),
 };
 
 const userListSchema = z.array(currentUserSchema);

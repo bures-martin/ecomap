@@ -30,6 +30,8 @@ export interface Auth {
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
   reloadUser: () => Promise<void>;
+  /** Takes a fresh copy of the user that an API call already returned. */
+  setUser: (user: CurrentUser) => void;
   can: (permission: Permission) => boolean;
 }
 
@@ -125,6 +127,10 @@ export function createAuth(
       } catch {
         clearSession();
       }
+    },
+    setUser: (next) => {
+      /* Only ever the signed-in account: never let a stale response swap users. */
+      if (user.value?.id === next.id) user.value = next;
     },
     can: (permission) => hasPermission(user.value?.role, permission),
   };

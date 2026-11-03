@@ -5,7 +5,13 @@ import { assertPermission } from '../../auth/context.js';
 import type { Sql } from '../../db/client.js';
 import { ApiError, parseOrThrow } from '../../http/api-error.js';
 import { writeRateLimiter } from '../../http/rate-limit.js';
-import { findUserById, listUsers, toCurrentUser, updateUserRole } from './repository.js';
+import {
+  findUserAvatar,
+  findUserById,
+  listUsers,
+  toCurrentUser,
+  updateUserRole,
+} from './repository.js';
 
 const idParamSchema = z.object({ id: z.uuid() });
 
@@ -22,6 +28,31 @@ export function createUsersRouter(db: Sql): Router {
     const { limit, offset } = parseOrThrow(listQuerySchema, req.query);
     const users = await listUsers(db, limit, offset);
     res.json(users.map(toCurrentUser));
+  });
+
+  /*
+   * Public, like the display names already shown on contributions. The URL
+   * carries a version, so a cached copy is never stale. It is still cached for
+   * a day only, not forever: a removed picture should not linger for long in
+   * the browsers of everybody who once saw it.
+   * `default-src 'none'` plus `sandbox` mean that even a crafted file that got
+   * past the type check could run nothing when opened directly.
+   */
+  router.get('/:id/avatar', async (req, res) => {
+    const { id } = parseOrThrow(idParamSchema, req.params);
+    const avatar = await findUserAvatar(db, id);
+    if (!avatar) throw ApiError.notFound('That picture');
+
+    res
+      .status(200)
+      .set({
+        'Content-Type': avatar.contentType,
+        'Content-Length': String(avatar.data.length),
+        'Cache-Control': 'public, max-age=86400',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+        'Last-Modified': new Date(avatar.updatedAt).toUTCString(),
+      })
+      .end(avatar.data);
   });
 
   router.patch('/:id/role', writeRateLimiter, async (req, res) => {

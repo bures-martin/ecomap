@@ -253,6 +253,28 @@
     "conflict": "That conflicts with something that already exists.",
     "rate_limited": "Too many attempts - please wait a moment.",
     "internal_error": "Something went wrong on our side.",
-    "offline": "Could not reach the server."
+    "offline": "Could not reach the server.",
+    "payload_too_large": "That file is too large."
+  },
+  "avatar": {
+    "title": "Profile picture",
+    "add": "Add a photo",
+    "change": "Change photo",
+    "remove": "Remove photo",
+    "editorTitle": "Your profile picture",
+    "intro": "Pick a photo, then move and zoom it until it sits nicely in the circle.",
+    "choose": "Choose a photo",
+    "chooseAnother": "Choose another photo",
+    "dropHint": "or drop one here",
+    "instructions": "Drag to move the photo, zoom with the slider, the mouse wheel or two fingers. With the keyboard: arrow keys move it, + and − zoom, R turns it.",
+    "previewLabel": "Photo position in the circle",
+    "zoom": "Zoom",
+    "rotate": "Turn a quarter",
+    "save": "Save photo",
+    "saved": "Profile picture updated.",
+    "removed": "Profile picture removed.",
+    "notImage": "Choose an image file - a JPEG, PNG or WebP photo.",
+    "fileTooLarge": "That photo is over 20 MB. Choose a smaller one.",
+    "unreadable": "That photo could not be read. Try a JPEG or PNG."
   }
 }

@@ -750,6 +750,82 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
   });
 
+  describe('profile pictures', () => {
+    /* Only the header is ever inspected, so a signature plus padding is enough. */
+    const png = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      Buffer.alloc(64, 1),
+    ]);
+
+    const upload = (user: { authHeader: { Authorization: string } }, body: Buffer = png) =>
+      request(app)
+        .put('/api/auth/me/avatar')
+        .set(user.authHeader)
+        .set('Content-Type', 'image/png')
+        .send(body);
+
+    it('stores a picture and serves it back, locked down', async () => {
+      const user = await createTestUser(db);
+
+      const uploaded = await upload(user).expect(200);
+      const avatarUrl = String(uploaded.body.avatarUrl);
+      expect(avatarUrl).toMatch(new RegExp(`^/api/users/${user.id}/avatar\\?v=\\d+$`));
+
+      const served = await request(app).get(avatarUrl).expect(200);
+      expect(served.headers['content-type']).toBe('image/png');
+      expect(served.headers['content-security-policy']).toContain('sandbox');
+      expect(served.headers['x-content-type-options']).toBe('nosniff');
+      expect(Buffer.compare(served.body as Buffer, png)).toBe(0);
+
+      const me = await request(app).get('/api/auth/me').set(user.authHeader).expect(200);
+      expect(me.body.avatarUrl).toBe(avatarUrl);
+    });
+
+    it('gives a replaced picture a new URL', async () => {
+      const user = await createTestUser(db);
+      const first = await upload(user).expect(200);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      const second = await upload(user).expect(200);
+      expect(second.body.avatarUrl).not.toBe(first.body.avatarUrl);
+    });
+
+    it('refuses markup sent with an image content type', async () => {
+      const user = await createTestUser(db);
+      await upload(
+        user,
+        Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>'),
+      ).expect(400);
+    });
+
+    it('refuses a picture over the size limit with a 413', async () => {
+      const user = await createTestUser(db);
+      const response = await upload(user, Buffer.concat([png, Buffer.alloc(300 * 1024)])).expect(
+        413,
+      );
+      expect(response.body.error.code).toBe('payload_too_large');
+    });
+
+    it('needs a signed-in user to upload', async () => {
+      await request(app)
+        .put('/api/auth/me/avatar')
+        .set('Content-Type', 'image/png')
+        .send(png)
+        .expect(401);
+    });
+
+    it('removes the picture', async () => {
+      const user = await createTestUser(db);
+      const uploaded = await upload(user).expect(200);
+
+      const removed = await request(app)
+        .delete('/api/auth/me/avatar')
+        .set(user.authHeader)
+        .expect(200);
+      expect(removed.body.avatarUrl).toBeNull();
+      await request(app).get(String(uploaded.body.avatarUrl)).expect(404);
+    });
+  });
+
   describe('error handling', () => {
     it('answers an unknown endpoint with a structured 404', async () => {
       const response = await request(app).get('/api/nope').expect(404);
