@@ -826,6 +826,215 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
   });
 
+  describe('invitations', () => {
+    const newcomer = {
+      email: 'newcomer@example.test',
+      displayName: 'New Comer',
+      password: 'a-long-enough-passw0rd',
+    };
+
+    function invite(
+      inviter: { authHeader: { Authorization: string } },
+      body: Record<string, unknown> = { role: 'contributor', label: 'For Bo' },
+    ) {
+      return request(app).post('/api/invitations').set(inviter.authHeader).send(body);
+    }
+
+    it('lets an admin invite someone, who joins with the chosen role', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const created = await invite(admin, { role: 'moderator', label: 'Gardening lead' }).expect(
+        201,
+      );
+      const token = String(created.body.token);
+      expect(created.body.invitation).toMatchObject({ role: 'moderator', status: 'pending' });
+
+      const preview = await request(app)
+        .post('/api/auth/invitations/preview')
+        .send({ token })
+        .expect(200);
+      expect(preview.body).toMatchObject({ role: 'moderator', label: 'Gardening lead' });
+
+      const accepted = await request(app)
+        .post('/api/auth/invitations/accept')
+        .send({ ...newcomer, token })
+        .expect(201);
+      expect(accepted.body.user).toMatchObject({ email: newcomer.email, role: 'moderator' });
+      expect(String(accepted.headers['set-cookie'])).toContain('HttpOnly');
+
+      const list = await request(app).get('/api/invitations').set(admin.authHeader).expect(200);
+      expect(list.body[0]).toMatchObject({ status: 'accepted', acceptedByName: 'New Comer' });
+    });
+
+    it('works even when open registration is switched off', async () => {
+      await db`update community_settings set allow_public_registration = false`;
+      const admin = await createTestUser(db, 'admin');
+      const { body } = await invite(admin).expect(201);
+
+      await request(app).post('/api/auth/register').send(newcomer).expect(403);
+      await request(app)
+        .post('/api/auth/invitations/accept')
+        .send({ ...newcomer, token: body.token })
+        .expect(201);
+    });
+
+    it('is single-use', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const { body } = await invite(admin).expect(201);
+
+      await request(app)
+        .post('/api/auth/invitations/accept')
+        .send({ ...newcomer, token: body.token })
+        .expect(201);
+      await request(app)
+        .post('/api/auth/invitations/accept')
+        .send({ ...newcomer, email: 'second@example.test', token: body.token })
+        .expect(404);
+    });
+
+    it('stops working once withdrawn or expired', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const withdrawn = await invite(admin).expect(201);
+      await request(app)
+        .delete(`/api/invitations/${String(withdrawn.body.invitation.id)}`)
+        .set(admin.authHeader)
+        .expect(204);
+      await request(app)
+        .post('/api/auth/invitations/preview')
+        .send({ token: withdrawn.body.token })
+        .expect(404);
+
+      const expired = await invite(admin).expect(201);
+      await db`update invitations set expires_at = now() - interval '1 minute'
+               where id = ${String(expired.body.invitation.id)}`;
+      await request(app)
+        .post('/api/auth/invitations/accept')
+        .send({ ...newcomer, token: expired.body.token })
+        .expect(404);
+    });
+
+    it('stores only a hash of the token', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const { body } = await invite(admin).expect(201);
+      const [row] = await db<{ tokenHash: string }[]>`
+        select token_hash as "tokenHash" from invitations
+      `;
+      expect(row?.tokenHash).not.toContain(String(body.token));
+    });
+
+    it('never lets an admin invite a peer, only the superadmin can', async () => {
+      const admin = await createTestUser(db, 'admin');
+      await invite(admin, { role: 'admin' }).expect(403);
+      await invite(admin, { role: 'superadmin' }).expect(403);
+
+      const superadmin = await createTestUser(db, 'superadmin');
+      await invite(superadmin, { role: 'admin' }).expect(201);
+      await invite(superadmin, { role: 'superadmin' }).expect(403);
+    });
+
+    it('gives moderators no invitations to hand out', async () => {
+      const moderator = await createTestUser(db, 'moderator');
+      await invite(moderator).expect(403);
+      await request(app).get('/api/invitations').set(moderator.authHeader).expect(403);
+    });
+
+    it('refuses an email that already has an account', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const { body } = await invite(admin).expect(201);
+      await request(app)
+        .post('/api/auth/invitations/accept')
+        .send({ ...newcomer, email: admin.email, token: body.token })
+        .expect(409);
+    });
+  });
+
+  describe('blocking accounts', () => {
+    function block(
+      actor: { authHeader: { Authorization: string } },
+      targetId: string,
+      disabled = true,
+    ) {
+      return request(app)
+        .patch(`/api/users/${targetId}/status`)
+        .set(actor.authHeader)
+        .send({ disabled });
+    }
+
+    it('signs a blocked person out everywhere, at once', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const member = await createTestUser(db, 'contributor');
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(200);
+      const cookie = refreshCookieFrom(login)!;
+
+      const blocked = await block(admin, member.id).expect(200);
+      expect(blocked.body.disabled).toBe(true);
+
+      /* The still-unexpired access token no longer works... */
+      await request(app).get('/api/auth/me').set(member.authHeader).expect(401);
+      /* ...nor does the refresh cookie, nor a fresh sign-in. */
+      await request(app).post('/api/auth/refresh').set('Cookie', cookie).expect(401);
+      const again = await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(403);
+      expect(String(again.body.error.message)).toContain('blocked');
+    });
+
+    it('can be undone', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const member = await createTestUser(db, 'contributor');
+      await block(admin, member.id).expect(200);
+      const unblocked = await block(admin, member.id, false).expect(200);
+      expect(unblocked.body.disabled).toBe(false);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(200);
+    });
+
+    it('keeps the wrong password answer for a blocked account', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const member = await createTestUser(db, 'contributor');
+      await block(admin, member.id).expect(200);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: 'not-the-password-1' })
+        .expect(401);
+    });
+
+    it('only works downwards, and never on yourself', async () => {
+      const superadmin = await createTestUser(db, 'superadmin');
+      const admin = await createTestUser(db, 'admin');
+      const otherAdmin = await createTestUser(db, 'admin');
+      const moderator = await createTestUser(db, 'moderator');
+
+      await block(admin, otherAdmin.id).expect(403);
+      await block(admin, superadmin.id).expect(403);
+      await block(admin, admin.id).expect(403);
+      await block(moderator, admin.id).expect(403);
+      await block(superadmin, superadmin.id).expect(403);
+      await block(superadmin, admin.id).expect(200);
+    });
+
+    it('withdraws the invitations a blocked admin handed out', async () => {
+      const superadmin = await createTestUser(db, 'superadmin');
+      const admin = await createTestUser(db, 'admin');
+      const { body } = await request(app)
+        .post('/api/invitations')
+        .set(admin.authHeader)
+        .send({ role: 'contributor' })
+        .expect(201);
+
+      await block(superadmin, admin.id).expect(200);
+      await request(app)
+        .post('/api/auth/invitations/preview')
+        .send({ token: body.token })
+        .expect(404);
+    });
+  });
+
   describe('error handling', () => {
     it('answers an unknown endpoint with a structured 404', async () => {
       const response = await request(app).get('/api/nope').expect(404);

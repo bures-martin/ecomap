@@ -1,7 +1,9 @@
 import {
   AVATAR_CONTENT_TYPES,
   AVATAR_MAX_BYTES,
+  acceptInvitationInputSchema,
   changePasswordInputSchema,
+  invitationTokenInputSchema,
   loginInputSchema,
   registerInputSchema,
   sniffAvatarContentType,
@@ -22,6 +24,7 @@ import {
   setUserAvatar,
   toCurrentUser,
 } from '../users/repository.js';
+import * as invitations from '../invitations/service.js';
 import * as service from './service.js';
 
 /**
@@ -55,6 +58,22 @@ export function createAuthRouter(db: Sql): Router {
   router.post('/register', authRateLimiter, async (req, res) => {
     const input = parseOrThrow(registerInputSchema, req.body);
     const { session, refreshToken } = await service.register(db, input);
+    setRefreshCookie(res, refreshToken);
+    res.status(201).json(session);
+  });
+
+  /*
+   * Invitation links. The token travels in the request body - never in a URL -
+   * so it cannot end up in access logs or a Referer header.
+   */
+  router.post('/invitations/preview', authRateLimiter, async (req, res) => {
+    const { token } = parseOrThrow(invitationTokenInputSchema, req.body);
+    res.json(await invitations.preview(db, token));
+  });
+
+  router.post('/invitations/accept', authRateLimiter, async (req, res) => {
+    const input = parseOrThrow(acceptInvitationInputSchema, req.body);
+    const { session, refreshToken } = await invitations.accept(db, input);
     setRefreshCookie(res, refreshToken);
     res.status(201).json(session);
   });

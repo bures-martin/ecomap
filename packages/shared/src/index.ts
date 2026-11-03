@@ -4,6 +4,7 @@ export * from './auth.js';
 export * from './avatars.js';
 export * from './layers.js';
 export * from './features.js';
+export * from './invitations.js';
 export * from './settings.js';
 export * from './errors.js';
 export * from './locales.js';

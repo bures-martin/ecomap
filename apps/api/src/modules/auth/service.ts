@@ -35,6 +35,9 @@ import {
 } from './repository.js';
 import { getCommunitySettings } from '../settings/repository.js';
 
+export const BLOCKED_MESSAGE =
+  'This account has been blocked. Contact the people who run this map.';
+
 export interface IssuedSession {
   session: AuthSession;
   refreshToken: RefreshToken;
@@ -87,6 +90,14 @@ export async function login(db: Sql, input: LoginInput): Promise<IssuedSession> 
     throw ApiError.invalidCredentials();
   }
 
+  /*
+   * Checked only after the password, so the "blocked" answer cannot be used to
+   * find out which email addresses have an account.
+   */
+  if (user.disabledAt) {
+    throw ApiError.forbidden(BLOCKED_MESSAGE);
+  }
+
   if (user.totpEnabled) {
     if (!input.totpCode) {
       throw ApiError.totpRequired();
@@ -119,6 +130,10 @@ export async function refresh(db: Sql, presentedToken: string): Promise<IssuedSe
   const user = await findUserById(db, stored.userId);
   if (!user) {
     throw ApiError.unauthorized('Your session has expired - please sign in again');
+  }
+  if (user.disabledAt) {
+    await revokeRefreshToken(db, tokenHash);
+    throw ApiError.unauthorized(BLOCKED_MESSAGE);
   }
 
   await revokeRefreshToken(db, tokenHash);
@@ -184,7 +199,7 @@ async function requireUser(db: Sql, userId: string): Promise<UserRow> {
   return user;
 }
 
-async function issueSession(db: Sql, user: UserRow): Promise<IssuedSession> {
+export async function issueSession(db: Sql, user: UserRow): Promise<IssuedSession> {
   const refreshToken = createRefreshToken();
   await insertRefreshToken(db, {
     userId: user.id,

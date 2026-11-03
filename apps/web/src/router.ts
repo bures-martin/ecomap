@@ -29,6 +29,7 @@ export const routes: RouteRecordRaw[] = [
   { path: '/about', component: AboutPage },
   { path: '/sign-in', component: LoginPage },
   { path: '/register', component: RegisterPage },
+  { path: '/join', component: () => import('./pages/JoinPage.vue') },
   { path: '/account', component: () => import('./pages/AccountPage.vue') },
   {
     path: '/admin/layers',

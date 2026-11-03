@@ -1,5 +1,6 @@
 import {
   hasPermission,
+  type AcceptInvitationInput,
   type AuthSession,
   type CurrentUser,
   type LoginInput,
@@ -28,6 +29,8 @@ export interface Auth {
   readonly isLoading: boolean;
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
+  /** Creates the account an invitation link was made for, and signs it in. */
+  acceptInvitation: (input: AcceptInvitationInput) => Promise<void>;
   logout: () => Promise<void>;
   reloadUser: () => Promise<void>;
   /** Takes a fresh copy of the user that an API call already returned. */
@@ -110,6 +113,10 @@ export function createAuth(
     },
     register: async (input) => {
       applySession(await authApi.register(input));
+      await queryClient.invalidateQueries();
+    },
+    acceptInvitation: async (input) => {
+      applySession(await authApi.acceptInvitation(input));
       await queryClient.invalidateQueries();
     },
     logout: async () => {

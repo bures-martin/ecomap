@@ -142,5 +142,65 @@
     "notImage": "Vælg en billedfil - et JPEG-, PNG- eller WebP-billede.",
     "fileTooLarge": "Billedet er over 20 MB. Vælg et mindre.",
     "unreadable": "Billedet kunne ikke læses. Prøv et JPEG- eller PNG-billede."
+  },
+  "invite": {
+    "button": "Invitér nogen",
+    "title": "Invitér nogen",
+    "intro": "Du får et link, som du kan sende, som du vil - mail, chat eller sms. Personen vælger selv sin adgangskode.",
+    "label": "Hvem er den til?",
+    "labelHelp": "Personens navn, så du kan kende dine invitationer fra hinanden. Det kan ændres.",
+    "expiry": "Linket virker i",
+    "expiresInDays_one": "{{count}} dag",
+    "expiresInDays_other": "{{count}} dage",
+    "create": "Opret link",
+    "readyTitle": "Invitationslinket er klar",
+    "readyIntro": "Send linket til den, du inviterer. Det virker én gang.",
+    "link": "Invitationslink",
+    "copy": "Kopiér link",
+    "copied": "Kopieret. Indsæt det i en besked til personen.",
+    "onlyOnce": "Linket vises kun nu. Hvis det bliver væk, så træk invitationen tilbage og lav en ny.",
+    "done": "Færdig",
+    "roleHelp": {
+      "viewer": "Kan se kortet, men ikke tilføje noget.",
+      "contributor": "Kan tilføje steder, ruter og områder og redigere sine egne.",
+      "moderator": "Kan også godkende, redigere og fjerne alles bidrag.",
+      "admin": "Kan også styre lag, indstillinger og brugere.",
+      "superadmin": ""
+    },
+    "listTitle": "Invitationer",
+    "none": "Ingen invitationer endnu.",
+    "for": "Til",
+    "status": "Status",
+    "details": "Detaljer",
+    "statuses": {
+      "pending": "Venter",
+      "accepted": "Tilmeldt",
+      "expired": "Udløbet",
+      "revoked": "Trukket tilbage"
+    },
+    "createdBy": "Af {{name}} · gyldig til {{date}}",
+    "acceptedBy": "{{name}} blev medlem {{date}}",
+    "revoke": "Træk tilbage",
+    "revoked": "Invitationen er trukket tilbage."
+  },
+  "join": {
+    "title": "Bliv en del af {{name}}",
+    "intro": "Du er inviteret som {{role}}. Opret din konto for at komme i gang.",
+    "submit": "Opret min konto",
+    "welcome": "Velkommen til {{name}}!",
+    "signedIn": "Du er logget ind som {{name}}. Log ud først for at tage imod invitationen med en ny konto.",
+    "invalidTitle": "Linket virker ikke",
+    "missing": "Invitationslinket er ufuldstændigt. Åbn det igen fra den besked, du fik."
+  },
+  "people": {
+    "status": "Status",
+    "statusActive": "Aktiv",
+    "statusBlocked": "Blokeret",
+    "block": "Blokér",
+    "unblock": "Ophæv blokering",
+    "blocked": "{{name}} er blokeret og logget ud.",
+    "unblocked": "{{name}} kan logge ind igen.",
+    "blockConfirmTitle": "Blokér {{name}}?",
+    "blockConfirmBody": "Personen bliver logget ud alle steder med det samme og kan ikke logge ind igen, før blokeringen ophæves. Det, de har tilføjet, bliver på kortet."
   }
 }

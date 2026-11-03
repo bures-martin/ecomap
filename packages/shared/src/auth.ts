@@ -72,6 +72,8 @@ export const currentUserSchema = z.object({
   totpEnabled: z.boolean(),
   /** Versioned path of the profile picture, or null if none was uploaded. */
   avatarUrl: z.string().nullable(),
+  /** Blocked accounts can no longer sign in; their contributions stay. */
+  disabled: z.boolean(),
   createdAt: z.iso.datetime(),
 });
 export type CurrentUser = z.infer<typeof currentUserSchema>;

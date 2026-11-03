@@ -1,5 +1,6 @@
 import type {
   CreateFeatureInput,
+  CreateInvitationInputDraft,
   CreateLayerInput,
   Feature,
   ModerateFeatureInput,
@@ -16,7 +17,7 @@ import {
   type QueryClient,
 } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import { featuresApi, layersApi, settingsApi, usersApi } from './endpoints.js';
+import { featuresApi, invitationsApi, layersApi, settingsApi, usersApi } from './endpoints.js';
 import { filtersKey, type MapFilters } from '../map/filters.js';
 
 /** Query keys in one place, so an invalidation can never miss a cache entry. */
@@ -24,6 +25,7 @@ export const queryKeys = {
   settings: ['settings'] as const,
   layers: ['layers'] as const,
   users: ['users'] as const,
+  invitations: ['invitations'] as const,
   features: (filters: MapFilters) => ['features', filtersKey(filters)] as const,
   feature: (id: string) => ['feature', id] as const,
 };
@@ -128,6 +130,44 @@ export function useModerateFeature() {
     mutationFn: ({ id, input }: { id: string; input: ModerateFeatureInput }) =>
       featuresApi.moderate(id, input),
     onSuccess: () => invalidateFeatures(queryClient),
+  });
+}
+
+export function useInvitations(enabled: MaybeRefOrGetter<boolean>) {
+  return useQuery({
+    queryKey: queryKeys.invitations,
+    queryFn: () => invitationsApi.list(),
+    enabled: computed(() => toValue(enabled)),
+  });
+}
+
+export function useCreateInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateInvitationInputDraft) => invitationsApi.create(input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.invitations }),
+  });
+}
+
+export function useRevokeInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => invitationsApi.revoke(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.invitations }),
+  });
+}
+
+export function useSetUserDisabled() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, disabled }: { id: string; disabled: boolean }) =>
+      usersApi.setDisabled(id, disabled),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.users }),
+        /* A blocked admin's open invitations are withdrawn with them. */
+        queryClient.invalidateQueries({ queryKey: queryKeys.invitations }),
+      ]),
   });
 }
 

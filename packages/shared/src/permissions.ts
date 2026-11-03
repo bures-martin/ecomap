@@ -29,6 +29,10 @@ export const PERMISSIONS = [
   'layer:manage',
   'settings:manage',
   'user:manage',
+  /** Create invitation links; which roles depends on the inviter, see `invitableRoles`. */
+  'user:invite',
+  /** Block and unblock accounts below one's own role, see `canBlockUser`. */
+  'user:block',
   'role:assign',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -57,6 +61,8 @@ const ADMIN_PERMISSIONS: readonly Permission[] = [
   'layer:manage',
   'settings:manage',
   'user:manage',
+  'user:invite',
+  'user:block',
 ];
 
 const SUPERADMIN_PERMISSIONS: readonly Permission[] = [...ADMIN_PERMISSIONS, 'role:assign'];
@@ -116,4 +122,33 @@ export function canDeleteFeature(
   if (!actor) return false;
   if (hasPermission(actor.role, 'feature:delete:any')) return true;
   return hasPermission(actor.role, 'feature:delete:own') && feature.createdById === actor.id;
+}
+
+/**
+ * The roles somebody may hand out through an invitation link.
+ *
+ * Strictly below the inviter's own role, so nobody can mint a peer: an admin
+ * invites up to moderator, and only a superadmin can bring in a new admin.
+ * Superadmins are never invited - an existing account is promoted instead.
+ */
+export function invitableRoles(inviterRole: Role | null | undefined): Role[] {
+  if (!hasPermission(inviterRole, 'user:invite') || !inviterRole) return [];
+  const ceiling = Math.min(roleRank(inviterRole) - 1, roleRank('admin'));
+  return ROLES.filter((role) => roleRank(role) <= ceiling);
+}
+
+export interface AccountRef {
+  id: string;
+  role: Role;
+}
+
+/**
+ * Whether `actor` may block or unblock `target`: only someone of a strictly
+ * lower role, and never themselves - so the last superadmin cannot be locked
+ * out, and two admins cannot block each other.
+ */
+export function canBlockUser(actor: AccountRef | null, target: AccountRef): boolean {
+  if (!actor || actor.id === target.id) return false;
+  if (!hasPermission(actor.role, 'user:block')) return false;
+  return roleRank(target.role) < roleRank(actor.role);
 }

@@ -11,6 +11,7 @@ export interface UserRow {
   totpSecret: string | null;
   totpEnabled: boolean;
   avatarUpdatedAt: string | null;
+  disabledAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +27,7 @@ function userColumns(db: Queryable) {
     totp_secret   as "totpSecret",
     totp_enabled  as "totpEnabled",
     avatar_updated_at as "avatarUpdatedAt",
+    disabled_at   as "disabledAt",
     created_at    as "createdAt",
     updated_at    as "updatedAt"
   `;
@@ -38,7 +40,7 @@ export async function findUserById(db: Sql, id: string): Promise<UserRow | null>
   return row ?? null;
 }
 
-export async function findUserByEmail(db: Sql, email: string): Promise<UserRow | null> {
+export async function findUserByEmail(db: Queryable, email: string): Promise<UserRow | null> {
   const [row] = await db<UserRow[]>`
     select ${userColumns(db)} from users where email = ${email}
   `;
@@ -46,7 +48,7 @@ export async function findUserByEmail(db: Sql, email: string): Promise<UserRow |
 }
 
 export async function insertUser(
-  db: Sql,
+  db: Queryable,
   input: { email: string; displayName: string; passwordHash: string; role: Role },
 ): Promise<UserRow> {
   const [row] = await db<UserRow[]>`
@@ -109,6 +111,7 @@ export function toCurrentUser(row: UserRow): CurrentUser {
     permissions: [...permissionsForRole(row.role)],
     totpEnabled: row.totpEnabled,
     avatarUrl: row.avatarUpdatedAt ? avatarPath(row.id, row.avatarUpdatedAt) : null,
+    disabled: row.disabledAt !== null,
     createdAt: row.createdAt,
   };
 }
@@ -163,4 +166,30 @@ export async function deleteUserAvatar(db: Sql, userId: string): Promise<UserRow
     `;
     return row ?? null;
   });
+}
+
+/**
+ * Whether the account behind a still-valid access token may act right now.
+ * One primary-key lookup per authenticated request, so blocking takes effect
+ * immediately instead of when the token expires.
+ */
+export async function isUserActive(db: Sql, userId: string): Promise<boolean> {
+  const [row] = await db<{ disabled: boolean }[]>`
+    select disabled_at is not null as disabled from users where id = ${userId}
+  `;
+  return row !== undefined && !row.disabled;
+}
+
+export async function setUserDisabled(
+  db: Sql,
+  userId: string,
+  disabled: boolean,
+): Promise<UserRow | null> {
+  const [row] = await db<UserRow[]>`
+    update users
+    set disabled_at = ${disabled ? db`coalesce(disabled_at, now())` : null}
+    where id = ${userId}
+    returning ${userColumns(db)}
+  `;
+  return row ?? null;
 }

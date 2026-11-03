@@ -1,6 +1,8 @@
 import { hasPermission, type Permission } from '@ecomap/shared';
 import type { RequestHandler } from 'express';
+import type { Sql } from '../db/client.js';
 import { ApiError } from '../http/api-error.js';
+import { isUserActive } from '../modules/users/repository.js';
 import { verifyAccessToken } from './tokens.js';
 
 /**
@@ -10,23 +12,27 @@ import { verifyAccessToken } from './tokens.js';
  * to know who is asking (to show their own drafts, for instance). Enforcement is
  * `requireAuth` / `requirePermission`, or an explicit check in the handler.
  *
- * The role travels inside the token, so an authenticated request costs no query.
- * The trade-off is that a role change only takes effect at the next refresh,
- * which is at most `ACCESS_TOKEN_TTL` (15 minutes by default).
+ * The role travels inside the token, so a role change only takes effect at the
+ * next refresh - at most `ACCESS_TOKEN_TTL` (15 minutes by default). Blocking
+ * cannot wait that long, so each authenticated request also makes one
+ * primary-key lookup: a blocked account's token is ignored straight away, and
+ * the caller is treated as signed out.
  */
-export const authenticate: RequestHandler = async (req, _res, next) => {
-  const header = req.header('authorization');
-  if (!header?.toLowerCase().startsWith('bearer ')) {
-    next();
-    return;
-  }
+export function createAuthenticate(db: Sql): RequestHandler {
+  return async (req, _res, next) => {
+    const header = req.header('authorization');
+    if (!header?.toLowerCase().startsWith('bearer ')) {
+      next();
+      return;
+    }
 
-  const claims = await verifyAccessToken(header.slice('bearer '.length).trim());
-  if (claims) {
-    req.auth = claims;
-  }
-  next();
-};
+    const claims = await verifyAccessToken(header.slice('bearer '.length).trim());
+    if (claims && (await isUserActive(db, claims.userId))) {
+      req.auth = claims;
+    }
+    next();
+  };
+}
 
 export const requireAuth: RequestHandler = (req, _res, next) => {
   if (!req.auth) {

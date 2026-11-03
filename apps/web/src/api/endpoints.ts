@@ -1,19 +1,27 @@
 import {
   authSessionSchema,
   communitySettingsSchema,
+  createdInvitationSchema,
   currentUserSchema,
   featureCollectionSchema,
   featureSchema,
   fromFeatureCollection,
+  invitationPreviewSchema,
+  invitationSchema,
   layerSchema,
   totpSetupSchema,
+  type AcceptInvitationInput,
   type AuthSession,
   type CommunitySettings,
+  type CreatedInvitation,
+  type CreateInvitationInputDraft,
   type CreateFeatureInput,
   type CreateLayerInput,
   type CurrentUser,
   type Feature,
   type FeatureStatus,
+  type Invitation,
+  type InvitationPreview,
   type Layer,
   type LoginInput,
   type ModerateFeatureInput,
@@ -104,6 +112,33 @@ export const authApi = {
     apiRequest('/api/auth/me/avatar', { method: 'PUT', body: image, schema: currentUserSchema }),
   removeAvatar: (): Promise<CurrentUser> =>
     apiRequest('/api/auth/me/avatar', { method: 'DELETE', schema: currentUserSchema }),
+  /* The invitation token always travels in the body, never in a URL. */
+  previewInvitation: (token: string): Promise<InvitationPreview> =>
+    apiRequest('/api/auth/invitations/preview', {
+      method: 'POST',
+      body: { token },
+      schema: invitationPreviewSchema,
+    }),
+  acceptInvitation: (input: AcceptInvitationInput): Promise<AuthSession> =>
+    apiRequest('/api/auth/invitations/accept', {
+      method: 'POST',
+      body: input,
+      schema: authSessionSchema,
+    }),
+};
+
+const invitationListSchema = z.array(invitationSchema);
+
+export const invitationsApi = {
+  list: (): Promise<Invitation[]> =>
+    apiRequest('/api/invitations', { schema: invitationListSchema }),
+  create: (input: CreateInvitationInputDraft): Promise<CreatedInvitation> =>
+    apiRequest('/api/invitations', {
+      method: 'POST',
+      body: input,
+      schema: createdInvitationSchema,
+    }),
+  revoke: (id: string): Promise<void> => apiRequest(`/api/invitations/${id}`, { method: 'DELETE' }),
 };
 
 const userListSchema = z.array(currentUserSchema);
@@ -114,6 +149,12 @@ export const usersApi = {
     apiRequest(`/api/users/${id}/role`, {
       method: 'PATCH',
       body: { role },
+      schema: currentUserSchema,
+    }),
+  setDisabled: (id: string, disabled: boolean): Promise<CurrentUser> =>
+    apiRequest(`/api/users/${id}/status`, {
+      method: 'PATCH',
+      body: { disabled },
       schema: currentUserSchema,
     }),
 };

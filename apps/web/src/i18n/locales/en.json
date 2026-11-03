@@ -197,7 +197,16 @@
       "moderator": "Moderator",
       "admin": "Admin",
       "superadmin": "Superadmin"
-    }
+    },
+    "status": "Status",
+    "statusActive": "Active",
+    "statusBlocked": "Blocked",
+    "block": "Block",
+    "unblock": "Unblock",
+    "blocked": "{{name}} is blocked and has been signed out.",
+    "unblocked": "{{name}} can sign in again.",
+    "blockConfirmTitle": "Block {{name}}?",
+    "blockConfirmBody": "They are signed out everywhere straight away and cannot sign in again until unblocked. What they added stays on the map."
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -276,5 +285,54 @@
     "notImage": "Choose an image file - a JPEG, PNG or WebP photo.",
     "fileTooLarge": "That photo is over 20 MB. Choose a smaller one.",
     "unreadable": "That photo could not be read. Try a JPEG or PNG."
+  },
+  "invite": {
+    "button": "Invite someone",
+    "title": "Invite someone",
+    "intro": "You get a link to send them however you like - email, chat or a text message. They choose their own password.",
+    "label": "Who is it for?",
+    "labelHelp": "Their name, so you can tell your invitations apart. They can change it.",
+    "expiry": "Link works for",
+    "expiresInDays_one": "{{count}} day",
+    "expiresInDays_other": "{{count}} days",
+    "create": "Create link",
+    "readyTitle": "Invitation link ready",
+    "readyIntro": "Send this link to the person you are inviting. It works once.",
+    "link": "Invitation link",
+    "copy": "Copy link",
+    "copied": "Copied. Paste it into a message to them.",
+    "onlyOnce": "This link is shown only now. If it gets lost, withdraw the invitation and make a new one.",
+    "done": "Done",
+    "roleHelp": {
+      "viewer": "Can look at the map, but not add anything.",
+      "contributor": "Can add places, routes and areas, and edit their own.",
+      "moderator": "Can also review, edit and remove anyone’s contributions.",
+      "admin": "Can also manage layers, settings and people.",
+      "superadmin": ""
+    },
+    "listTitle": "Invitations",
+    "none": "No invitations yet.",
+    "for": "For",
+    "status": "Status",
+    "details": "Details",
+    "statuses": {
+      "pending": "Waiting",
+      "accepted": "Joined",
+      "expired": "Expired",
+      "revoked": "Withdrawn"
+    },
+    "createdBy": "By {{name}} · valid until {{date}}",
+    "acceptedBy": "{{name}} joined on {{date}}",
+    "revoke": "Withdraw",
+    "revoked": "Invitation withdrawn."
+  },
+  "join": {
+    "title": "Join {{name}}",
+    "intro": "You have been invited as {{role}}. Create your account to get started.",
+    "submit": "Create my account",
+    "welcome": "Welcome to {{name}}!",
+    "signedIn": "You are signed in as {{name}}. Sign out first to accept this invitation with a new account.",
+    "invalidTitle": "This link does not work",
+    "missing": "The invitation link is incomplete. Open it again from the message you received."
   }
 }

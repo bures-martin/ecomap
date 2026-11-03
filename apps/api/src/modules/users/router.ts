@@ -1,14 +1,22 @@
-import { isAtLeast, updateUserRoleInputSchema } from '@ecomap/shared';
+import {
+  canBlockUser,
+  isAtLeast,
+  updateUserRoleInputSchema,
+  updateUserStatusInputSchema,
+} from '@ecomap/shared';
 import { Router } from 'express';
 import { z } from 'zod';
 import { assertPermission } from '../../auth/context.js';
 import type { Sql } from '../../db/client.js';
 import { ApiError, parseOrThrow } from '../../http/api-error.js';
 import { writeRateLimiter } from '../../http/rate-limit.js';
+import { revokeAllRefreshTokensForUser } from '../auth/repository.js';
+import { revokeInvitationsCreatedBy } from '../invitations/repository.js';
 import {
   findUserAvatar,
   findUserById,
   listUsers,
+  setUserDisabled,
   toCurrentUser,
   updateUserRole,
 } from './repository.js';
@@ -53,6 +61,31 @@ export function createUsersRouter(db: Sql): Router {
         'Last-Modified': new Date(avatar.updatedAt).toUTCString(),
       })
       .end(avatar.data);
+  });
+
+  /*
+   * Blocking: the account stays (so its contributions keep their author), but
+   * every session ends now and any invitations it handed out are withdrawn.
+   * Only someone of a higher role may do it, and never to themselves.
+   */
+  router.patch('/:id/status', writeRateLimiter, async (req, res) => {
+    const actor = assertPermission(req, 'user:block');
+    const { id } = parseOrThrow(idParamSchema, req.params);
+    const { disabled } = parseOrThrow(updateUserStatusInputSchema, req.body);
+
+    const target = await findUserById(db, id);
+    if (!target) throw ApiError.notFound('That account');
+    if (!canBlockUser({ id: actor.userId, role: actor.role }, target)) {
+      throw ApiError.forbidden('You can only block people with a lower role than yours');
+    }
+
+    const updated = await setUserDisabled(db, id, disabled);
+    if (!updated) throw ApiError.notFound('That account');
+    if (disabled) {
+      await revokeAllRefreshTokensForUser(db, id);
+      await revokeInvitationsCreatedBy(db, id);
+    }
+    res.json(toCurrentUser(updated));
   });
 
   router.patch('/:id/role', writeRateLimiter, async (req, res) => {

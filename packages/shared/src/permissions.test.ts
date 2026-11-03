@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   ROLES,
   canDeleteFeature,
+  canBlockUser,
   canEditFeature,
+  invitableRoles,
   hasPermission,
   isAtLeast,
   permissionsForRole,
@@ -71,5 +73,52 @@ describe('feature ownership rules', () => {
   it('never lets anyone claim an orphaned feature by ownership', () => {
     expect(canEditFeature(author, { createdById: null })).toBe(false);
     expect(canEditFeature(moderator, { createdById: null })).toBe(true);
+  });
+});
+
+describe('invitableRoles', () => {
+  it('lets an admin invite up to moderator, never a peer', () => {
+    expect(invitableRoles('admin')).toEqual(['viewer', 'contributor', 'moderator']);
+  });
+
+  it('lets a superadmin invite up to admin, but never another superadmin', () => {
+    expect(invitableRoles('superadmin')).toEqual(['viewer', 'contributor', 'moderator', 'admin']);
+  });
+
+  it('gives nobody below admin an invitation to hand out', () => {
+    expect(invitableRoles('moderator')).toEqual([]);
+    expect(invitableRoles('contributor')).toEqual([]);
+    expect(invitableRoles(null)).toEqual([]);
+  });
+});
+
+describe('canBlockUser', () => {
+  const superadmin = { id: 's', role: 'superadmin' as const };
+  const admin = { id: 'a', role: 'admin' as const };
+  const otherAdmin = { id: 'a2', role: 'admin' as const };
+  const moderator = { id: 'm', role: 'moderator' as const };
+  const contributor = { id: 'c', role: 'contributor' as const };
+
+  it('lets an admin block anyone below admin', () => {
+    expect(canBlockUser(admin, moderator)).toBe(true);
+    expect(canBlockUser(admin, contributor)).toBe(true);
+  });
+
+  it('stops admins blocking each other or the superadmin', () => {
+    expect(canBlockUser(admin, otherAdmin)).toBe(false);
+    expect(canBlockUser(admin, superadmin)).toBe(false);
+  });
+
+  it('lets the superadmin block an admin', () => {
+    expect(canBlockUser(superadmin, admin)).toBe(true);
+  });
+
+  it('never lets anyone block themselves', () => {
+    expect(canBlockUser(superadmin, superadmin)).toBe(false);
+  });
+
+  it('gives a moderator no blocking power at all', () => {
+    expect(canBlockUser(moderator, contributor)).toBe(false);
+    expect(canBlockUser(null, contributor)).toBe(false);
   });
 });

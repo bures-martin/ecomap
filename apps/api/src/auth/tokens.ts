@@ -78,6 +78,17 @@ export function createRefreshToken(): RefreshToken {
  * is no dictionary to run against it and lookups happen on every refresh.
  */
 export function hashRefreshToken(token: string): string {
+  return hashOpaqueToken(token);
+}
+
+/** A random, URL-safe secret, such as the one in an invitation link, and its hash. */
+export function createOpaqueToken(): { token: string; hash: string } {
+  const token = randomBytes(32).toString('base64url');
+  return { token, hash: hashOpaqueToken(token) };
+}
+
+/** SHA-256 is enough for long random tokens: there is no dictionary to try. */
+export function hashOpaqueToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
