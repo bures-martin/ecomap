@@ -2,7 +2,8 @@
 import { useTranslation } from 'i18next-vue';
 import { computed, useId } from 'vue';
 import { useCommunitySettings, useLayers } from '../api/queries.js';
-import LinkifiedText from '../components/LinkifiedText.vue';
+import SimpleMarkdown from '../components/SimpleMarkdown.vue';
+import { layerIconPath } from '../map/layerIcons.js';
 
 const { t } = useTranslation();
 const settingsQuery = useCommunitySettings();
@@ -11,6 +12,7 @@ const layersQuery = useLayers();
 const settings = computed(() => settingsQuery.data.value);
 const layers = computed(() => layersQuery.data.value ?? []);
 
+const whyHeadingId = useId();
 const layersHeadingId = useId();
 const contributeHeadingId = useId();
 </script>
@@ -26,13 +28,27 @@ const contributeHeadingId = useId();
     </p>
 
     <div class="d-flex flex-column ga-6">
+      <!-- Why this map: the same for every community, in the reader's language. -->
+      <v-card tag="section" class="pa-6" :aria-labelledby="whyHeadingId">
+        <h2 :id="whyHeadingId" class="text-title-large mb-3">{{ t('about.whyHeading') }}</h2>
+        <p class="mb-3">{{ t('about.whyBody') }}</p>
+        <ul class="why-list">
+          <li>{{ t('about.whyLocal') }}</li>
+          <li>{{ t('about.whyRepair') }}</li>
+          <li>{{ t('about.whyMove') }}</li>
+          <li>{{ t('about.whyShare') }}</li>
+        </ul>
+        <p class="mt-3">{{ t('about.whyClose') }}</p>
+      </v-card>
+
       <!--
-        Rendered as text with only its web addresses made into links, never parsed as HTML: the content is
-        admin-authored, but rendering arbitrary markup would be a stored XSS
-        waiting to happen the first time an account is compromised.
+        The community's own text from Settings, with headings, lists and links.
+        Rendered as elements, never parsed as HTML: the content is admin-authored,
+        but arbitrary markup would be a stored XSS waiting to happen the first
+        time an account is compromised.
       -->
       <v-card v-if="settings?.aboutMarkdown" class="pa-6">
-        <LinkifiedText :text="settings.aboutMarkdown" />
+        <SimpleMarkdown :source="settings.aboutMarkdown" />
       </v-card>
 
       <v-card
@@ -42,10 +58,21 @@ const contributeHeadingId = useId();
         :aria-labelledby="layersHeadingId"
       >
         <h2 :id="layersHeadingId" class="text-title-large mb-3">{{ t('map.layersHeading') }}</h2>
+        <!-- The same chips as over the map; each opens the map on that topic. -->
         <div class="d-flex flex-wrap ga-2">
-          <v-chip v-for="layer in layers" :key="layer.id" variant="flat" :color="layer.color">
-            {{ `${layer.name} (${String(layer.featureCount)})` }}
-          </v-chip>
+          <RouterLink
+            v-for="layer in layers"
+            :key="layer.id"
+            class="topic-chip"
+            :style="{ '--topic-color': layer.color }"
+            :to="{ path: '/', query: { layers: layer.slug } }"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+              <path :d="layerIconPath(layer.icon)" fill="currentColor" />
+            </svg>
+            <span>{{ layer.name }}</span>
+            <span class="topic-count">{{ layer.featureCount }}</span>
+          </RouterLink>
         </div>
       </v-card>
 
@@ -65,3 +92,21 @@ const contributeHeadingId = useId();
     </div>
   </v-container>
 </template>
+
+<style scoped>
+/* How many places the topic holds, as a small badge inside the chip. */
+.topic-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: rgba(var(--v-theme-on-header), 0.08);
+}
+
+.why-list {
+  padding-left: 1.4em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+</style>

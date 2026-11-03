@@ -78,7 +78,9 @@
     "cancelDrawing": "Annullér",
     "needMorePoints": "Tilføj mindst {{count}} punkter først.",
     "outsideBounds": "Det ligger uden for det område, fællesskabet dækker.",
-    "drawing": "Tegner på kortet"
+    "drawing": "Tegner på kortet",
+    "moveHint": "Klik der, hvor stedet ligger - satellitkortet nederst til venstre hjælper.",
+    "useThisPosition": "Brug denne placering"
   },
   "feature": {
     "addTitle": "Tilføj til {{layer}}",
@@ -106,7 +108,10 @@
       "rejected": "Ikke godkendt"
     },
     "navigate": "Navigér",
-    "navigateToStart": "Navigér til start"
+    "navigateToStart": "Navigér til start",
+    "writeInLanguage": "Skriv gerne på {{language}}, hvis du kan - det er kortets sprog.",
+    "move": "Flyt på kortet",
+    "movedNote": "Ny placering valgt på kortet. Gem for at beholde den."
   },
   "auth": {
     "signInTitle": "Log ind",
@@ -233,7 +238,8 @@
       "cornerHint": "Træk for at flytte, dobbeltklik for at fjerne",
       "midpointHint": "Træk for at tilføje et hjørne her",
       "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
-    }
+    },
+    "aboutHelp": "Vises på Om-siden. Brug ## til en overskrift, - til et punkt, **fed** og [tekst](https://…) til et link."
   },
   "photos": {
     "title": "Billeder",
@@ -258,7 +264,10 @@
   },
   "layerAdmin": {
     "visibleByDefault": "Vis, når kortet åbner",
-    "visibleByDefaultHelp": "Fra holder kortet roligt i starten: laget er stadig ét tryk væk, og en søgning tager det altid med."
+    "visibleByDefaultHelp": "Fra holder kortet roligt i starten: laget er stadig ét tryk væk, og en søgning tager det altid med.",
+    "fieldTypes": {
+      "openingHours": "Åbningstider"
+    }
   },
   "welcome": {
     "label": "Velkommen",
@@ -280,5 +289,71 @@
   "languages": {
     "en": "Engelsk",
     "da": "Dansk"
+  },
+  "openingHours": {
+    "always": "Åbent døgnet rundt",
+    "openNow": "Åbent nu",
+    "until": "til {{time}}",
+    "closedNow": "Lukket",
+    "opensToday": "åbner kl. {{time}}",
+    "opensTomorrow": "åbner i morgen kl. {{time}}",
+    "opensOn": "åbner {{day}} kl. {{time}}",
+    "closed": "Lukket",
+    "allDay": "Åbent hele dagen",
+    "publicHolidays": "Helligdage",
+    "restOfYear": "Resten af året",
+    "now": "nu",
+    "unreadable": "Disse tider er skrevet på en måde, skemaet ikke kan vise. Angiv dem nedenfor for at erstatte dem:",
+    "alwaysOpenSwitch": "Åbent døgnet rundt, alle dage",
+    "months": "Måneder",
+    "removeSeason": "Fjern disse måneder",
+    "from": "åbner",
+    "to": "lukker",
+    "removeRange": "Fjern disse tider",
+    "addRange": "Tilføj flere tider denne dag (fx efter frokostpause)",
+    "holidaysUsual": "Som andre dage",
+    "holidaysClosed": "Lukket",
+    "holidaysSpecial": "Særlige tider",
+    "copyMonday": "Kopiér mandag til tir–fre",
+    "addSeason": "Andre tider i nogle måneder",
+    "closedSeason": "Lukket på denne tid af året"
+  },
+  "suggestion": {
+    "button": "Foreslå en ændring",
+    "title": "Foreslå en ændring til {{name}}",
+    "explain": "Din ændring sendes til en moderator. Stedet forbliver uændret, indtil den er godkendt. Billeder kan ikke ændres her.",
+    "submit": "Send forslag",
+    "sent": "Tak! Dit forslag venter på en moderator.",
+    "nothingChanged": "Intet blev ændret.",
+    "queueTitle": "Foreslåede ændringer",
+    "queueEmpty": "Ingen foreslåede ændringer venter.",
+    "by": "Foreslået af {{name}} · {{date}}",
+    "byUnknown": "Foreslået · {{date}}",
+    "before": "Nu",
+    "after": "Forslag",
+    "approve": "Godkend ændring",
+    "reject": "Afvis",
+    "approved": "Ændringen er gennemført",
+    "rejected": "Forslaget er afvist",
+    "fieldName": "Navn",
+    "fieldDescription": "Beskrivelse",
+    "fieldLocation": "Placering",
+    "moved": "Flyttet på kortet",
+    "empty": "(tom)",
+    "openPlace": "Vis på kortet"
+  },
+  "about": {
+    "title": "Om",
+    "whyHeading": "Små valg gør en forskel",
+    "whyBody": "Du behøver ikke at redde verden alene. Den største forskel gøres af hverdagens valg, tæt på hvor du bor - og de er lettere, når du ved, hvor du skal gå hen.",
+    "whyLocal": "Køb lokalt: gårdbutikker og vejboder sparer transport og holder pengene på øen.",
+    "whyRepair": "Reparér, byt og køb brugt, før du køber nyt.",
+    "whyMove": "Gå, cykl eller tag bussen, når du kan - og lad bilen op, hvor vinden blæser.",
+    "whyShare": "Del det, du ved: et godt sted på kortet hjælper den næste til at vælge grønt.",
+    "whyClose": "Kortet bliver lavet af dem, der bor her. Hvert sted, nogen tilføjer, gør det grønne valg en smule lettere for alle andre.",
+    "contributeHeading": "Sådan tilføjer du noget",
+    "contributeBody": "Opret en konto, vælg et emne, og klik på kortet, hvor det skal ligge. Alt bliver tjekket af en moderator, før det vises, og du kan foreslå ændringer til steder, der allerede er på kortet.",
+    "openDataHeading": "Åbne data, åbent kort",
+    "openDataBody": "Eksempelstederne kommer fra OpenStreetMap, og koden er open source, så andre fællesskaber kan køre deres egen udgave."
   }
 }

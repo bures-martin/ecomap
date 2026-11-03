@@ -264,3 +264,52 @@ body,
   outline: 3px solid rgb(var(--v-theme-primary));
   outline-offset: 2px;
 }
+
+/*
+ * A topic chip: a layer's icon in its colour and its name, on the header's
+ * soft surface - over the map (TopicChips) and on the About page alike.
+ */
+.topic-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px 0 10px;
+  border-radius: 17px;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: rgb(var(--v-theme-header));
+  color: rgb(var(--v-theme-on-header));
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  text-decoration: none;
+  /* The chip row over the map lets clicks through; the chips themselves take them. */
+  pointer-events: auto;
+}
+
+.topic-chip svg {
+  color: var(--topic-color);
+}
+
+.topic-chip:hover {
+  filter: brightness(0.97);
+}
+
+.topic-chip:focus-visible {
+  outline: 3px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
+
+.topic-chip--active {
+  background: var(--topic-color);
+  border-color: var(--topic-color);
+  color: #ffffff;
+}
+
+.topic-chip--active svg {
+  color: #ffffff;
+}

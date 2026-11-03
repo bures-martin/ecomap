@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   DEFAULT_COMMUNITY_SETTINGS,
+  editIsSuggestion,
   isGeometryWithinArea,
   isPositionInArea,
   type Feature,
@@ -8,6 +9,7 @@ import {
   type GeometryKind,
   type Layer,
   type Position,
+  type SuggestFeatureInput,
 } from '@ecomap/shared';
 import { mdiFilterVariant, mdiPlus } from '@mdi/js';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -22,6 +24,7 @@ import {
   useFeatures,
   useLayers,
   useModerateFeature,
+  useSuggestEdit,
   useUpdateFeature,
 } from '../api/queries.js';
 import { useAuth } from '../auth/auth.js';
@@ -38,6 +41,7 @@ import type { FeatureFormValues } from '../map/featureForm.js';
 import {
   effectiveLayers,
   readFilters,
+  showsNoLayers,
   visibleLayerSlugs,
   writeFilters,
   type MapFilters,
@@ -94,7 +98,7 @@ const featuresQuery = useFeatures(
     ...activeFilters.value,
     layers: effectiveLayers(activeFilters.value, layersForMap.value),
   }),
-  () => layersQuery.data.value !== undefined,
+  () => layersQuery.data.value !== undefined && !showsNoLayers(activeFilters.value),
 );
 const visibleSlugs = computed(() => visibleLayerSlugs(activeFilters.value, layersForMap.value));
 
@@ -118,12 +122,16 @@ const {
 } = useDrawing();
 const createFeature = useCreateFeature();
 const updateFeature = useUpdateFeature();
+const suggestEdit = useSuggestEdit();
 const deleteFeature = useDeleteFeature();
 const moderateFeature = useModerateFeature();
 
 const settings = computed(() => settingsQuery.data.value);
 const layers = computed(() => layersQuery.data.value ?? []);
-const features = computed(() => featuresQuery.data.value?.features ?? []);
+/* Every layer unticked: an empty map, not the last result kept on screen. */
+const features = computed(() =>
+  showsNoLayers(activeFilters.value) ? [] : (featuresQuery.data.value?.features ?? []),
+);
 
 /** Matches per layer while searching, for the layer list; null when not searching. */
 const searchMatches = computed((): ReadonlyMap<string, number> | null => {
@@ -202,6 +210,14 @@ const formLayer = computed(() =>
   editing.value ? layersBySlug.value.get(editing.value.layerSlug) : drawing.value?.layer,
 );
 
+/** Editing someone else's place, or one that needs review, sends a suggestion instead. */
+const editingIsSuggestion = computed(() => {
+  const user = auth.user;
+  const layer = formLayer.value;
+  if (!editing.value || !layer || !user) return false;
+  return editIsSuggestion({ id: user.id, role: user.role }, layer, editing.value);
+});
+
 const selectedLayer = computed(() =>
   selectedFeature.value ? layersBySlug.value.get(selectedFeature.value.layerSlug) : undefined,
 );
@@ -275,6 +291,26 @@ const submitForm = (values: FeatureFormValues): void => {
     toast.showError(errorMessage(error));
   };
 
+  if (editing.value && editingIsSuggestion.value) {
+    const changes = changedParts(editing.value, values);
+    if (Object.keys(changes).length === 0) {
+      toast.showSuccess(t('suggestion.nothingChanged'));
+      closeForm();
+      return;
+    }
+    suggestEdit.mutate(
+      { id: editing.value.id, input: changes },
+      {
+        onSuccess: () => {
+          toast.showSuccess(t('suggestion.sent'));
+          closeForm();
+        },
+        onError,
+      },
+    );
+    return;
+  }
+
   if (editing.value) {
     updateFeature.mutate(
       {
@@ -283,6 +319,7 @@ const submitForm = (values: FeatureFormValues): void => {
           name: values.name,
           description: values.description,
           properties: values.properties,
+          ...(pendingGeometry.value ? { geometry: pendingGeometry.value } : {}),
         },
       },
       {
@@ -326,6 +363,27 @@ const submitForm = (values: FeatureFormValues): void => {
   );
 };
 
+/** Only what the member changed, so the moderator sees exactly that. */
+function changedParts(feature: Feature, values: FeatureFormValues): SuggestFeatureInput {
+  const sameProperties =
+    JSON.stringify(sortedEntries(feature.properties)) ===
+    JSON.stringify(sortedEntries(values.properties));
+  return {
+    ...(values.name.trim() !== feature.name ? { name: values.name.trim() } : {}),
+    ...(values.description.trim() !== feature.description
+      ? { description: values.description.trim() }
+      : {}),
+    ...(sameProperties ? {} : { properties: values.properties }),
+    ...(pendingGeometry.value ? { geometry: pendingGeometry.value } : {}),
+  };
+}
+
+function sortedEntries(bag: Record<string, unknown>): [string, unknown][] {
+  return Object.entries(bag)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .sort(([a], [b]) => a.localeCompare(b));
+}
+
 const confirmDelete = (): void => {
   const target = deleting.value;
   if (!target) return;
@@ -340,6 +398,26 @@ const confirmDelete = (): void => {
       deleting.value = null;
     },
   });
+};
+
+/**
+ * Moving a point: the map waits for a click on the right spot - satellite view
+ * helps - and then the edit form (or the suggestion form) opens with the new
+ * position. Navigation follows, as it aims at these coordinates.
+ */
+const startMoving = (feature: Feature): void => {
+  const layer = layersBySlug.value.get(feature.layerSlug);
+  if (!layer || feature.geometry.type !== 'Point') return;
+  selectFeature(null);
+  editing.value = feature;
+  pendingGeometry.value = null;
+  startDrawingState(layer, 'Point');
+  addPosition(feature.geometry.coordinates);
+};
+
+const cancelDrawingOrMove = (): void => {
+  if (!formOpen.value) editing.value = null;
+  cancelDrawing();
 };
 
 const startEditing = (feature: Feature): void => {
@@ -432,10 +510,11 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         v-if="drawing"
         :drawing="drawing"
         :can-finish="canFinish"
+        :moving="editing !== null"
         @finish="finishDrawing"
         @undo="undo"
         @reset="reset"
-        @cancel="cancelDrawing"
+        @cancel="cancelDrawingOrMove"
       />
       <TopicChips v-else :layers="layers" :filters="filters" @update:filters="applyFilters" />
 
@@ -493,8 +572,14 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
       :layer="formLayer"
       :geometry="pendingGeometry"
       :existing="editing"
-      :submitting="createFeature.isPending.value || updateFeature.isPending.value || savingPhotos"
-      :error="createFeature.error.value ?? updateFeature.error.value"
+      :suggesting="editingIsSuggestion"
+      :submitting="
+        createFeature.isPending.value ||
+        updateFeature.isPending.value ||
+        suggestEdit.isPending.value ||
+        savingPhotos
+      "
+      :error="createFeature.error.value ?? updateFeature.error.value ?? suggestEdit.error.value"
       @submit="submitForm"
       @cancel="closeForm"
     />
@@ -504,6 +589,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
       :layer="selectedLayer"
       @close="selectFeature(null)"
       @edit="startEditing"
+      @move="startMoving"
       @delete="(feature) => (deleting = feature)"
       @moderate="moderate"
     />

@@ -4,6 +4,7 @@ import {
   effectiveLayers,
   layersAfterChip,
   layersAfterToggle,
+  NO_LAYERS,
   visibleLayerSlugs,
   filtersKey,
   hasActiveFilters,
@@ -143,8 +144,14 @@ describe('which layers show', () => {
     expect(layersAfterToggle(picked, layers, 'ev', false)).toEqual([]);
   });
 
-  it('goes back to the starting view when the only layer left is unticked', () => {
-    expect(layersAfterToggle({ ...none, layers: ['ev'] }, layers, 'ev', false)).toEqual([]);
+  it('leaves nothing ticked when the only layer left is unticked', () => {
+    const emptied = layersAfterToggle({ ...none, layers: ['ev'] }, layers, 'ev', false);
+    expect(emptied).toEqual([NO_LAYERS]);
+    expect(visibleLayerSlugs({ ...none, layers: emptied }, layers).size).toBe(0);
+  });
+
+  it('ticks a layer back on from an empty map', () => {
+    expect(layersAfterToggle({ ...none, layers: [NO_LAYERS] }, layers, 'ev', true)).toEqual(['ev']);
   });
 
   it('makes a chip pick just its topic, and a second tap let go', () => {

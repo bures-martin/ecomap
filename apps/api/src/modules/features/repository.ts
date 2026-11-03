@@ -8,7 +8,7 @@ import {
   type PropertyBag,
 } from '@ecomap/shared';
 import type { BBox } from '@ecomap/shared';
-import type { Sql } from '../../db/client.js';
+import type { Queryable, Sql } from '../../db/client.js';
 
 interface FeatureRow {
   id: string;
@@ -32,7 +32,7 @@ interface FeatureRow {
  * PostGIS keeps the geometry in its own binary form; `ST_AsGeoJSON` hands it back
  * as the GeoJSON the client and the shared schemas already speak.
  */
-function featureColumns(db: Sql) {
+function featureColumns(db: Queryable) {
   return db`
     f.id,
     f.layer_id                   as "layerId",
@@ -59,7 +59,7 @@ function featureColumns(db: Sql) {
   `;
 }
 
-function featureJoins(db: Sql) {
+function featureJoins(db: Queryable) {
   return db`
     from features f
     join layers l on l.id = f.layer_id
@@ -151,7 +151,7 @@ export async function listFeatures(
   };
 }
 
-export async function findFeatureById(db: Sql, id: string): Promise<Feature | null> {
+export async function findFeatureById(db: Queryable, id: string): Promise<Feature | null> {
   const [row] = await db<FeatureRow[]>`
     select ${featureColumns(db)} ${featureJoins(db)} where f.id = ${id}
   `;
@@ -199,7 +199,7 @@ export interface UpdateFeatureFields {
 }
 
 export async function updateFeature(
-  db: Sql,
+  db: Queryable,
   id: string,
   fields: UpdateFeatureFields,
   updatedBy: string | null,

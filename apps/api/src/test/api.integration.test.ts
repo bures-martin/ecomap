@@ -715,7 +715,7 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       await request(app).delete(`/api/features/${feature.id}`).set(author.authHeader).expect(204);
     });
 
-    it("stops a contributor editing somebody else's contribution", async () => {
+    it("stops a contributor editing somebody else's contribution directly", async () => {
       const layer = await createTestLayer(db, { slug: 'theirs', name: 'Theirs' });
       const author = await createTestUser(db, 'contributor');
       const stranger = await createTestUser(db, 'contributor');
@@ -725,7 +725,7 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
         .patch(`/api/features/${feature.id}`)
         .set(stranger.authHeader)
         .send({ name: 'Hijacked' })
-        .expect(403);
+        .expect(409);
 
       await request(app).delete(`/api/features/${feature.id}`).set(stranger.authHeader).expect(403);
     });
@@ -801,6 +801,125 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       const feature = await createFeatureAs(layer.id, author.authHeader, 'Pending');
 
       await request(app).get(`/api/features/${feature.id}`).set(stranger.authHeader).expect(404);
+    });
+  });
+
+  describe('suggested changes', () => {
+    async function publishedPlace(layerOverrides = {}) {
+      const layer = await createTestLayer(db, layerOverrides);
+      const author = await createTestUser(db, 'contributor');
+      const response = await request(app)
+        .post('/api/features')
+        .set(author.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'Farm shop',
+          description: 'Eggs',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(201);
+      const moderator = await createTestUser(db, 'moderator');
+      if (response.body.status !== 'published') {
+        await request(app)
+          .post(`/api/features/${String(response.body.id)}/moderate`)
+          .set(moderator.authHeader)
+          .send({ status: 'published' })
+          .expect(200);
+      }
+      return { id: String(response.body.id), author, moderator };
+    }
+
+    const suggest = (actor: { authHeader: { Authorization: string } }, id: string, body: object) =>
+      request(app).post(`/api/features/${id}/suggestions`).set(actor.authHeader).send(body);
+
+    const decideUrl = (created: request.Response) =>
+      `/api/suggestions/${String(created.body.id)}/decide`;
+
+    it('keeps the place as it is until a moderator approves the change', async () => {
+      const { id, moderator } = await publishedPlace();
+      const neighbour = await createTestUser(db, 'contributor');
+
+      const created = await suggest(neighbour, id, { description: 'Eggs and honey' }).expect(201);
+      expect(created.body).toMatchObject({
+        status: 'pending',
+        changes: { description: 'Eggs and honey' },
+        current: { description: 'Eggs' },
+      });
+
+      const before = await request(app).get(`/api/features/${id}`).expect(200);
+      expect(before.body.description).toBe('Eggs');
+
+      const queue = await request(app)
+        .get('/api/suggestions')
+        .set(moderator.authHeader)
+        .expect(200);
+      expect(queue.body).toHaveLength(1);
+
+      const decided = await request(app)
+        .post(decideUrl(created))
+        .set(moderator.authHeader)
+        .send({ decision: 'approve' })
+        .expect(200);
+      expect(decided.body.suggestion.status).toBe('approved');
+      expect(decided.body.feature.description).toBe('Eggs and honey');
+
+      const after = await request(app)
+        .get('/api/suggestions')
+        .set(moderator.authHeader)
+        .expect(200);
+      expect(after.body).toHaveLength(0);
+    });
+
+    it('leaves the place untouched when the change is rejected, and decides only once', async () => {
+      const { id, moderator } = await publishedPlace();
+      const neighbour = await createTestUser(db, 'contributor');
+      const created = await suggest(neighbour, id, { name: 'Wrong name' }).expect(201);
+      const decide = () =>
+        request(app)
+          .post(decideUrl(created))
+          .set(moderator.authHeader)
+          .send({ decision: 'reject' });
+
+      await decide().expect(200);
+      await decide().expect(409);
+      const place = await request(app).get(`/api/features/${id}`).expect(200);
+      expect(place.body.name).toBe('Farm shop');
+    });
+
+    it('sends an author edit of a reviewed, published place through a suggestion', async () => {
+      const { id, author } = await publishedPlace({ requiresModeration: true });
+      await request(app)
+        .patch(`/api/features/${id}`)
+        .set(author.authHeader)
+        .send({ name: 'Renamed' })
+        .expect(409);
+      await suggest(author, id, { name: 'Renamed' }).expect(201);
+      const place = await request(app).get(`/api/features/${id}`).expect(200);
+      expect(place.body.status).toBe('published');
+      expect(place.body.name).toBe('Farm shop');
+    });
+
+    it('checks a suggestion like an edit, and only members may make one', async () => {
+      const { id, moderator } = await publishedPlace({ allowedGeometries: ['Point'] });
+      const neighbour = await createTestUser(db, 'contributor');
+
+      await request(app)
+        .post(`/api/features/${id}/suggestions`)
+        .send({ name: 'Anonymous' })
+        .expect(401);
+      await suggest(neighbour, id, {}).expect(422);
+      /* The layer takes points only, so a line is refused - as it would be for an edit. */
+      await suggest(neighbour, id, {
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [14.9, 55.1],
+            [14.91, 55.11],
+          ],
+        },
+      }).expect(400);
+      await request(app).get('/api/suggestions').set(neighbour.authHeader).expect(403);
+      await request(app).get('/api/suggestions').set(moderator.authHeader).expect(200);
     });
   });
 

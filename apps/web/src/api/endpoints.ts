@@ -5,6 +5,7 @@ import {
   currentUserSchema,
   featureCollectionSchema,
   featureSchema,
+  featureSuggestionSchema,
   fromFeatureCollection,
   invitationPreviewSchema,
   invitationSchema,
@@ -18,7 +19,9 @@ import {
   type CreateFeatureInput,
   type CreateLayerInput,
   type CurrentUser,
+  type DecideSuggestionInput,
   type Feature,
+  type FeatureSuggestion,
   type FeatureStatus,
   type Invitation,
   type InvitationPreview,
@@ -26,6 +29,8 @@ import {
   type LoginInput,
   type ModerateFeatureInput,
   type RegisterInput,
+  type SuggestFeatureInput,
+  type SuggestionStatus,
   type TotpSetup,
   type UpdateCommunitySettingsInput,
   type UpdateFeatureInput,
@@ -64,6 +69,22 @@ export interface FeatureListResult {
   total: number;
 }
 
+const decidedSuggestionSchema = z.object({
+  suggestion: featureSuggestionSchema,
+  feature: featureSchema.nullable(),
+});
+
+export const suggestionsApi = {
+  list: (status: SuggestionStatus = 'pending'): Promise<FeatureSuggestion[]> =>
+    apiRequest(`/api/suggestions?status=${status}`, { schema: z.array(featureSuggestionSchema) }),
+  decide: (id: string, input: DecideSuggestionInput) =>
+    apiRequest(`/api/suggestions/${id}/decide`, {
+      method: 'POST',
+      body: input,
+      schema: decidedSuggestionSchema,
+    }),
+};
+
 export const featuresApi = {
   list: async (filters: MapFilters, signal?: AbortSignal): Promise<FeatureListResult> => {
     const collection = await apiRequest(`/api/features?${featureQueryString(filters)}`, {
@@ -97,6 +118,13 @@ export const featuresApi = {
       method: 'PATCH',
       body: { alt },
       schema: featureSchema,
+    }),
+  /** A member's suggested change; the place itself stays as it is until approved. */
+  suggest: (id: string, input: SuggestFeatureInput): Promise<FeatureSuggestion> =>
+    apiRequest(`/api/features/${id}/suggestions`, {
+      method: 'POST',
+      body: input,
+      schema: featureSuggestionSchema,
     }),
   removeImage: (featureId: string, imageId: string): Promise<Feature> =>
     apiRequest(`/api/features/${featureId}/images/${imageId}`, {

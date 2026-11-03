@@ -48,8 +48,18 @@ export const createFeatureInputSchema = z.object({
 });
 export type CreateFeatureInput = z.infer<typeof createFeatureInputSchema>;
 
-export const updateFeatureInputSchema = createFeatureInputSchema
-  .omit({ layerId: true, isDraft: true })
+/**
+ * Only what the caller sends changes. Built without the create schema's
+ * defaults: a partial of it would turn a missing description into an empty one
+ * and wipe the place's fields on every rename.
+ */
+export const updateFeatureInputSchema = z
+  .object({
+    name: createFeatureInputSchema.shape.name,
+    description: z.string().trim().max(4000),
+    geometry: geometrySchema,
+    properties: featurePropertiesSchema,
+  })
   .partial();
 export type UpdateFeatureInput = z.infer<typeof updateFeatureInputSchema>;
 

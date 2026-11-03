@@ -3,6 +3,7 @@ import {
   createLayerInputSchema,
   layerFieldSchema,
   layerPropertiesSchema,
+  updateLayerInputSchema,
   slugSchema,
 } from './layers.js';
 
@@ -105,5 +106,13 @@ describe('layerPropertiesSchema', () => {
 
   it('rejects a malformed url', () => {
     expect(schema.safeParse({ species: 'Common toad', website: 'not a url' }).success).toBe(false);
+  });
+});
+
+describe('updateLayerInputSchema', () => {
+  it('leaves out what the caller did not send, instead of filling in defaults', () => {
+    expect(updateLayerInputSchema.parse({ name: 'Fællesskabshaver' })).toEqual({
+      name: 'Fællesskabshaver',
+    });
   });
 });

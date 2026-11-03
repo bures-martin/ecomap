@@ -59,6 +59,8 @@ export async function createTestLayer(
     slug:
       overrides.slug ?? `layer-${String(Date.now())}-${String(Math.floor(Math.random() * 1e6))}`,
     name: 'Test layer',
+    /* Tests that are about review say so; the rest publish straight away. */
+    requiresModeration: false,
     ...overrides,
   });
   return insertLayer(db, input, null);

@@ -9,7 +9,6 @@ import { useAuth } from '../auth/auth.js';
 import { useToast } from '../composables/useToast.js';
 import ColorSchemeMenu from './ColorSchemeMenu.vue';
 import UserAvatar from './UserAvatar.vue';
-import LanguageMenu from './LanguageMenu.vue';
 
 /**
  * The frame around every page: a skip link, a header with the community's name,
@@ -84,7 +83,11 @@ const signOut = async (): Promise<void> => {
         </v-btn>
       </nav>
 
-      <LanguageMenu />
+      <!--
+        Language switch: prepared, but hidden while the map is Danish only.
+        To bring it back, import LanguageMenu from './LanguageMenu.vue', put
+        <LanguageMenu /> here and set VITE_LANGUAGE_SWITCH=true (see i18n/index.ts).
+      -->
       <ColorSchemeMenu />
 
       <v-btn

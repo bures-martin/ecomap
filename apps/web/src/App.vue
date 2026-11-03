@@ -6,6 +6,7 @@ import { useCommunitySettings } from './api/queries.js';
 import RequirePermission from './auth/RequirePermission.vue';
 import AppShell from './components/AppShell.vue';
 import ToastHost from './components/ToastHost.vue';
+import { applyCommunityLanguage } from './i18n/index.js';
 import { applyCommunityColors } from './plugins/vuetify.js';
 
 /**
@@ -20,6 +21,7 @@ watchEffect(() => {
   const settings = settingsQuery.data.value;
   if (settings) {
     applyCommunityColors(theme.themes.value, settings.primaryColor, settings.accentColor);
+    applyCommunityLanguage(settings.defaultLocale);
   }
 });
 </script>

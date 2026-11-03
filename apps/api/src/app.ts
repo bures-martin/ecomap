@@ -11,6 +11,7 @@ import { apiRateLimiter } from './http/rate-limit.js';
 import { logger } from './logger.js';
 import { createAuthRouter } from './modules/auth/router.js';
 import { createFeaturesRouter } from './modules/features/router.js';
+import { createSuggestionsRouter } from './modules/suggestions/router.js';
 import { createInvitationsRouter } from './modules/invitations/router.js';
 import { createLayersRouter } from './modules/layers/router.js';
 import { createSettingsRouter } from './modules/settings/router.js';
@@ -62,6 +63,7 @@ export function createApp(db: Sql): Express {
   app.use('/api/auth', createAuthRouter(db));
   app.use('/api/layers', createLayersRouter(db));
   app.use('/api/features', createFeaturesRouter(db));
+  app.use('/api/suggestions', createSuggestionsRouter(db));
   app.use('/api/settings', createSettingsRouter(db));
   app.use('/api/users', createUsersRouter(db));
   app.use('/api/invitations', createInvitationsRouter(db));

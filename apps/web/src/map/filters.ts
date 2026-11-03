@@ -83,6 +83,17 @@ export function filtersKey(filters: MapFilters): string {
 type LayerVisibility = Pick<Layer, 'slug' | 'visibleByDefault'>;
 
 /**
+ * "No layer ticked" - an empty map on purpose, after unticking every layer.
+ * Kept apart from an empty list, which means "the starting view". A single
+ * dash can never be a layer slug (those are at least two characters).
+ */
+export const NO_LAYERS = '-';
+
+export function showsNoLayers(filters: MapFilters): boolean {
+  return filters.layers.length === 1 && filters.layers[0] === NO_LAYERS;
+}
+
+/**
  * The layers the map asks the API for. An explicit pick (a ticked box or a
  * chip) always wins; a search looks through every layer, so "charger" finds
  * the chargers even when that layer starts switched off; otherwise the map
@@ -104,6 +115,7 @@ export function visibleLayerSlugs(
   filters: MapFilters,
   layers: readonly LayerVisibility[],
 ): Set<string> {
+  if (showsNoLayers(filters)) return new Set();
   const effective = effectiveLayers(filters, layers);
   return new Set(effective.length > 0 ? effective : layers.map((layer) => layer.slug));
 }
@@ -124,8 +136,8 @@ export function layersAfterToggle(
   else visible.delete(slug);
 
   const next = layers.map((layer) => layer.slug).filter((candidate) => visible.has(candidate));
-  /* Unticking the only layer left goes back to the starting view, not to an empty map. */
-  if (next.length === 0) return [];
+  /* Unticking the last layer leaves the map empty, as the ticks say. */
+  if (next.length === 0) return [NO_LAYERS];
   const defaults = visibleLayerSlugs({ ...filters, layers: [], q: '' }, layers);
   const isDefault =
     next.length === defaults.size && next.every((candidate) => defaults.has(candidate));

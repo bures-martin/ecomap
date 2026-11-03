@@ -39,7 +39,7 @@ const pick = (slug: string): void => {
 /** Must match `gap` in the styles below. */
 const GAP = 8;
 /** Must match `max-width` of `.topic-chip--more` below. */
-const MORE_MAX_WIDTH = 200;
+const MORE_MAX_WIDTH = 240;
 
 /**
  * Fits the chips to the row, using an invisible copy of every chip (and of the
@@ -77,7 +77,8 @@ function layout(): void {
   /* An active topic in the menu puts its name on the menu chip: make room for it. */
   const active = topics.value.findIndex((layer) => isOnlyLayer(props.filters, layer.slug));
   if (active >= count) {
-    count = fitting(Math.max(moreWidth, Math.min(MORE_MAX_WIDTH, widths[active] ?? 0)));
+    /* Its icon and name, plus the menu arrow. */
+    count = fitting(Math.max(moreWidth, Math.min(MORE_MAX_WIDTH, (widths[active] ?? 0) + 20)));
   }
   visibleCount.value = count;
 }
@@ -130,6 +131,16 @@ watch([topics, () => props.filters], async () => {
           :style="hiddenActive ? { '--topic-color': hiddenActive.color } : undefined"
           v-bind="menuProps"
         >
+          <svg
+            v-if="hiddenActive"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path :d="layerIconPath(hiddenActive.icon)" fill="currentColor" />
+          </svg>
           <span class="topic-chip__label">{{
             hiddenActive?.name ?? t('map.moreTopics', { count: hidden.length })
           }}</span>
@@ -202,31 +213,10 @@ watch([topics, () => props.filters], async () => {
   pointer-events: none;
 }
 
-.topic-chip {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 14px 0 10px;
-  border-radius: 17px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  background: rgb(var(--v-theme-header));
-  color: rgb(var(--v-theme-on-header));
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-  /* The row lets clicks through to the map; the chips themselves take them. */
-  pointer-events: auto;
-}
-
 .topic-chip--more {
   padding: 0 8px 0 14px;
   gap: 2px;
-  max-width: 200px;
+  max-width: 240px;
 }
 
 .topic-chip__label {
@@ -234,31 +224,13 @@ watch([topics, () => props.filters], async () => {
   text-overflow: ellipsis;
 }
 
-.topic-chip svg {
-  color: var(--topic-color);
-}
-
-.topic-chip--more svg,
 .topic-chip--more .v-icon {
   color: inherit;
 }
 
-.topic-chip:hover {
-  filter: brightness(0.97);
-}
-
-.topic-chip:focus-visible {
-  outline: 3px solid rgb(var(--v-theme-primary));
-  outline-offset: 2px;
-}
-
-.topic-chip--active {
-  background: var(--topic-color);
-  border-color: var(--topic-color);
-  color: #ffffff;
-}
-
-.topic-chip--active svg {
-  color: #ffffff;
+/* The menu chip named after a topic picked from it: same look as the others. */
+.topic-chip--more.topic-chip--active {
+  padding-left: 10px;
+  gap: 6px;
 }
 </style>

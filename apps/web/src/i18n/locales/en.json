@@ -78,7 +78,9 @@
     "cancelDrawing": "Cancel",
     "needMorePoints": "Add at least {{count}} points first.",
     "outsideBounds": "That is outside the area this community covers.",
-    "drawing": "Drawing on the map"
+    "drawing": "Drawing on the map",
+    "moveHint": "Click where the place really is - satellite view in the bottom-left corner helps.",
+    "useThisPosition": "Use this position"
   },
   "feature": {
     "addTitle": "Add to {{layer}}",
@@ -106,7 +108,10 @@
       "rejected": "Not accepted"
     },
     "navigate": "Navigate",
-    "navigateToStart": "Navigate to start"
+    "navigateToStart": "Navigate to start",
+    "writeInLanguage": "Please write in {{language}} if you can - it is the language of this map.",
+    "move": "Move on the map",
+    "movedNote": "New position chosen on the map. Save to keep it."
   },
   "layerAdmin": {
     "title": "Layers",
@@ -147,7 +152,8 @@
       "boolean": "Yes or no",
       "url": "Link",
       "date": "Date",
-      "select": "Choice"
+      "select": "Choice",
+      "openingHours": "Opening hours"
     },
     "visibleByDefault": "Show when the map opens",
     "visibleByDefaultHelp": "Off keeps the map calm at first: the layer is still one tap away, and a search always includes it."
@@ -158,7 +164,7 @@
     "name": "Community name",
     "tagline": "Tagline",
     "about": "About this map",
-    "aboutHelp": "Shown on the About page. Plain text or Markdown.",
+    "aboutHelp": "Shown on the About page. Use ## for a heading, - for a list item, **bold**, and [text](https://…) for a link.",
     "primaryColor": "Main colour",
     "accentColor": "Accent colour",
     "basemap": "Background map",
@@ -265,9 +271,16 @@
   "about": {
     "title": "About",
     "contributeHeading": "How to add something",
-    "contributeBody": "Create an account, choose a layer, then click the map to place what you want to add. Some layers are reviewed by a moderator before they appear.",
+    "contributeBody": "Create an account, choose a topic, then click the map to place what you want to add. Everything is checked by a moderator before it appears, and you can suggest changes to places that are already on the map.",
     "openDataHeading": "Open data, open map",
-    "openDataBody": "The background map comes from OpenStreetMap. This site is open source, so another community can run its own copy."
+    "openDataBody": "The example places come from OpenStreetMap, and the code is open source, so another community can run its own copy.",
+    "whyHeading": "Small choices make a difference",
+    "whyBody": "You do not have to change the world on your own. Most of the difference is made by everyday choices, close to home - and they are easier when you know where to go.",
+    "whyLocal": "Buy local: farm shops and roadside stalls cut transport and keep the money on the island.",
+    "whyRepair": "Repair, swap and buy second-hand before you buy new.",
+    "whyMove": "Walk, cycle or take the bus when you can - and charge the car where the wind blows.",
+    "whyShare": "Share what you know: a good place on the map helps the next person choose green.",
+    "whyClose": "This map is made by the people who live here. Every place someone adds makes the green choice a little easier for everybody else."
   },
   "errors": {
     "bad_request": "That request could not be handled.",
@@ -394,5 +407,57 @@
   "languages": {
     "en": "English",
     "da": "Danish"
+  },
+  "openingHours": {
+    "always": "Open 24/7",
+    "openNow": "Open now",
+    "until": "until {{time}}",
+    "closedNow": "Closed",
+    "opensToday": "opens at {{time}}",
+    "opensTomorrow": "opens tomorrow at {{time}}",
+    "opensOn": "opens {{day}} at {{time}}",
+    "closed": "Closed",
+    "allDay": "Open all day",
+    "publicHolidays": "Public holidays",
+    "restOfYear": "Rest of the year",
+    "now": "now",
+    "unreadable": "These hours were written in a way the timetable cannot show. Set them below to replace them:",
+    "alwaysOpenSwitch": "Open 24 hours, every day",
+    "months": "Months",
+    "removeSeason": "Remove these months",
+    "from": "opens",
+    "to": "closes",
+    "removeRange": "Remove these hours",
+    "addRange": "Add more hours this day (e.g. after a lunch break)",
+    "holidaysUsual": "As on other days",
+    "holidaysClosed": "Closed",
+    "holidaysSpecial": "Special hours",
+    "copyMonday": "Copy Monday to Tue–Fri",
+    "addSeason": "Different hours in some months",
+    "closedSeason": "Closed at this time of year"
+  },
+  "suggestion": {
+    "button": "Suggest a change",
+    "title": "Suggest a change to {{name}}",
+    "explain": "Your change is sent to a moderator. The place stays as it is until they approve it. Photos cannot be changed here.",
+    "submit": "Send suggestion",
+    "sent": "Thank you! Your suggestion is waiting for a moderator.",
+    "nothingChanged": "Nothing was changed.",
+    "queueTitle": "Suggested changes",
+    "queueEmpty": "No suggested changes waiting.",
+    "by": "Suggested by {{name}} · {{date}}",
+    "byUnknown": "Suggested · {{date}}",
+    "before": "Now",
+    "after": "Suggested",
+    "approve": "Approve change",
+    "reject": "Reject",
+    "approved": "Change applied",
+    "rejected": "Suggestion rejected",
+    "fieldName": "Name",
+    "fieldDescription": "Description",
+    "fieldLocation": "Location",
+    "moved": "Moved on the map",
+    "empty": "(empty)",
+    "openPlace": "Show on the map"
   }
 }

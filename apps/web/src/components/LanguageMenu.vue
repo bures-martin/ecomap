@@ -2,13 +2,19 @@
 import { LOCALES, LOCALE_LABELS, isLocale, type Locale } from '@ecomap/shared';
 import { useTranslation } from 'i18next-vue';
 import { computed } from 'vue';
-import { useLanguage } from '../i18n/index.js';
+import { rememberLanguage, useLanguage } from '../i18n/index.js';
 import FlagIcon from './FlagIcon.vue';
 
 const { t, i18next } = useTranslation();
 const language = useLanguage();
 
 const current = computed(() => (isLocale(language.value) ? language.value : 'en'));
+
+/** A pick in the menu is remembered, and beats the community's default. */
+const pick = (locale: Locale): void => {
+  rememberLanguage(locale);
+  void i18next.changeLanguage(locale);
+};
 
 /**
  * Each language is named in the current one ("Engelsk" in Danish), with its own
@@ -39,7 +45,7 @@ const nativeName = (locale: Locale): string =>
         :title="t(`languages.${locale}`)"
         :subtitle="nativeName(locale)"
         :active="locale === current"
-        @click="i18next.changeLanguage(locale)"
+        @click="pick(locale)"
       >
         <template #prepend>
           <FlagIcon :locale="locale" class="mr-3" />

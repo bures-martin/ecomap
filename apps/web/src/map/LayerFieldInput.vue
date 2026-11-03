@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LayerField, PropertyBag } from '@ecomap/shared';
 import { computed } from 'vue';
+import OpeningHoursInput from './OpeningHoursInput.vue';
 
 type PropertyValue = PropertyBag[string];
 
@@ -49,6 +50,15 @@ const onCheckbox = (checked: boolean | null): void => {
     :persistent-hint="hint !== undefined"
     :hide-details="hint === undefined && errorMessages.length === 0"
     @update:model-value="onCheckbox"
+  />
+
+  <OpeningHoursInput
+    v-else-if="props.field.type === 'openingHours'"
+    :value="textValue"
+    :label="props.field.label"
+    :error="props.error"
+    :hint="hint"
+    @change="onText"
   />
 
   <v-select

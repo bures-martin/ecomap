@@ -23,6 +23,8 @@ export const PERMISSIONS = [
   'feature:update:any',
   'feature:delete:own',
   'feature:delete:any',
+  /** Suggest a change to anyone's published place; a moderator approves it. */
+  'feature:suggest',
   'feature:moderate',
   'feature:read:unpublished',
   'layer:read:unpublished',
@@ -45,6 +47,7 @@ const CONTRIBUTOR_PERMISSIONS: readonly Permission[] = [
   'feature:create',
   'feature:update:own',
   'feature:delete:own',
+  'feature:suggest',
 ];
 
 const MODERATOR_PERMISSIONS: readonly Permission[] = [

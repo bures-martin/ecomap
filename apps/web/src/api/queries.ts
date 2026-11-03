@@ -3,8 +3,10 @@ import type {
   CreateInvitationInputDraft,
   CreateLayerInput,
   Feature,
+  DecideSuggestionInput,
   ModerateFeatureInput,
   Role,
+  SuggestFeatureInput,
   UpdateCommunitySettingsInput,
   UpdateFeatureInput,
   UpdateLayerInput,
@@ -17,7 +19,14 @@ import {
   type QueryClient,
 } from '@tanstack/vue-query';
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
-import { featuresApi, invitationsApi, layersApi, settingsApi, usersApi } from './endpoints.js';
+import {
+  featuresApi,
+  invitationsApi,
+  layersApi,
+  settingsApi,
+  suggestionsApi,
+  usersApi,
+} from './endpoints.js';
 import { filtersKey, type MapFilters } from '../map/filters.js';
 
 /** Query keys in one place, so an invalidation can never miss a cache entry. */
@@ -26,6 +35,7 @@ export const queryKeys = {
   layers: ['layers'] as const,
   users: ['users'] as const,
   invitations: ['invitations'] as const,
+  suggestions: ['suggestions'] as const,
   features: (filters: MapFilters) => ['features', filtersKey(filters)] as const,
   feature: (id: string) => ['feature', id] as const,
 };
@@ -134,6 +144,37 @@ export function useModerateFeature() {
     mutationFn: ({ id, input }: { id: string; input: ModerateFeatureInput }) =>
       featuresApi.moderate(id, input),
     onSuccess: () => invalidateFeatures(queryClient),
+  });
+}
+
+/** Suggests a change; nothing on the map moves until a moderator approves it. */
+export function useSuggestEdit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: SuggestFeatureInput }) =>
+      featuresApi.suggest(id, input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.suggestions }),
+  });
+}
+
+export function useSuggestions(enabled: MaybeRefOrGetter<boolean>) {
+  return useQuery({
+    queryKey: queryKeys.suggestions,
+    queryFn: () => suggestionsApi.list(),
+    enabled: computed(() => toValue(enabled)),
+  });
+}
+
+export function useDecideSuggestion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: DecideSuggestionInput }) =>
+      suggestionsApi.decide(id, input),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.suggestions }),
+        invalidateFeatures(queryClient),
+      ]),
   });
 }
 

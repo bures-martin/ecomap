@@ -4,6 +4,7 @@ import {
   featureQuerySchema,
   fromFeatureCollection,
   toFeatureCollection,
+  updateFeatureInputSchema,
   type Feature,
 } from './features.js';
 
@@ -79,5 +80,11 @@ describe('GeoJSON conversion', () => {
 
   it('defaults total to the number of features given', () => {
     expect(toFeatureCollection([feature]).total).toBe(1);
+  });
+});
+
+describe('updateFeatureInputSchema', () => {
+  it('keeps out what was not sent, so a rename does not wipe the description', () => {
+    expect(updateFeatureInputSchema.parse({ name: 'Gårdbutik' })).toEqual({ name: 'Gårdbutik' });
   });
 });

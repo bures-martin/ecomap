@@ -17,7 +17,12 @@ const HINT_KEY: Readonly<Record<GeometryKind, string>> = {
  * It is a live region: the running point count is announced, which is the only
  * feedback a screen-reader user gets from clicking on a map.
  */
-const props = defineProps<{ drawing: DrawingState; canFinish: boolean }>();
+const props = defineProps<{
+  drawing: DrawingState;
+  canFinish: boolean;
+  /** Moving an existing place rather than drawing a new one. */
+  moving?: boolean;
+}>();
 const emit = defineEmits<{ finish: []; undo: []; reset: []; cancel: [] }>();
 
 const { t } = useTranslation();
@@ -34,7 +39,8 @@ const needed = computed(() => MINIMUM_POSITIONS[props.drawing.kind]);
     class="drawing-toolbar px-4 py-3"
   >
     <p class="text-body-medium mb-2" aria-live="polite">
-      <strong>{{ props.drawing.layer.name }}</strong> · {{ t(HINT_KEY[props.drawing.kind]) }}
+      <strong>{{ props.drawing.layer.name }}</strong> ·
+      {{ props.moving ? t('draw.moveHint') : t(HINT_KEY[props.drawing.kind]) }}
       <template v-if="count > 0">({{ count }})</template>
       <template v-if="!props.canFinish && count > 0">
         {{ t('draw.needMorePoints', { count: needed }) }}
@@ -50,7 +56,7 @@ const needed = computed(() => MINIMUM_POSITIONS[props.drawing.kind]);
         :disabled="!props.canFinish"
         @click="emit('finish')"
       >
-        {{ t('draw.finish') }}
+        {{ props.moving ? t('draw.useThisPosition') : t('draw.finish') }}
       </v-btn>
       <v-btn
         size="small"

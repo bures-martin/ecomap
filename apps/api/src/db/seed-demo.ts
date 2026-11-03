@@ -4,6 +4,7 @@ import { isMainModule } from '../lib/main-module.js';
 import { insertFeature } from '../modules/features/repository.js';
 import { createSql, type Sql } from './client.js';
 import { BORNHOLM_DEMO_PLACES } from './demo/bornholm.js';
+import { BORNHOLM_ABOUT } from './demo/bornholmAbout.js';
 import { seed } from './seed.js';
 
 /**
@@ -70,6 +71,12 @@ export async function seedDemo(db: Sql): Promise<{ added: number; removed: numbe
     });
     added += 1;
   }
+
+  /* The showcase's About text, unless an admin has written one already. */
+  await db`
+    update community_settings set about_markdown = ${BORNHOLM_ABOUT}
+    where about_markdown = ''
+  `;
 
   logger.info(
     { added, alreadyThere: BORNHOLM_DEMO_PLACES.length - added },

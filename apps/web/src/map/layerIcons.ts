@@ -6,6 +6,7 @@ import {
   mdiBasket,
   mdiBike,
   mdiBookOpenVariant,
+  mdiCarrot,
   mdiEvStation,
   mdiHeart,
   mdiLeaf,
@@ -13,6 +14,7 @@ import {
   mdiPaw,
   mdiPineTree,
   mdiRecycle,
+  mdiStorefrontOutline,
   mdiWater,
   mdiWhiteBalanceSunny,
 } from '@mdi/js';
@@ -38,6 +40,8 @@ const LAYER_ICON_PATHS: Readonly<Record<LayerIcon, string>> = {
   heart: mdiHeart,
   pin: mdiMapMarker,
   plug: mdiEvStation,
+  carrot: mdiCarrot,
+  store: mdiStorefrontOutline,
 };
 
 /** Path data for a layer's icon; an unknown name (an older layer) falls back to a pin. */

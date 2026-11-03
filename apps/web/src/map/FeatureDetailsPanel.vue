@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { canDeleteFeature, canEditFeature, type Feature, type Layer } from '@ecomap/shared';
-import { mdiClose, mdiDelete, mdiNavigationVariant, mdiPencil } from '@mdi/js';
+import {
+  canDeleteFeature,
+  canEditFeature,
+  canSuggestEdit,
+  editIsSuggestion,
+  type Feature,
+  type Layer,
+} from '@ecomap/shared';
+import { mdiClose, mdiCursorMove, mdiDelete, mdiNavigationVariant, mdiPencil } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
 import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
@@ -8,6 +15,7 @@ import { useAuth } from '../auth/auth.js';
 import LinkifiedText from '../components/LinkifiedText.vue';
 import UserAvatar from '../components/UserAvatar.vue';
 import FeatureGallery from './FeatureGallery.vue';
+import OpeningHoursView from './OpeningHoursView.vue';
 import { googleMapsDirectionsUrl, navigationTarget } from './navigation.js';
 import { useLanguage } from '../i18n/index.js';
 
@@ -20,6 +28,7 @@ const props = defineProps<{ feature: Feature | null; layer: Layer | undefined }>
 const emit = defineEmits<{
   close: [];
   edit: [feature: Feature];
+  move: [feature: Feature];
   delete: [feature: Feature];
   moderate: [feature: Feature, status: 'published' | 'rejected'];
 }>();
@@ -32,6 +41,16 @@ const { xs, width: viewportWidth } = useDisplay();
 const actor = computed(() => (auth.user ? { id: auth.user.id, role: auth.user.role } : null));
 const mayEdit = computed(() =>
   props.feature ? canEditFeature(actor.value, props.feature) : false,
+);
+/**
+ * Members who cannot edit a place directly can suggest a change to it; so do
+ * authors whose own place needs review again. The button says which it is.
+ */
+const mayChange = computed(() =>
+  props.feature ? mayEdit.value || canSuggestEdit(actor.value, props.feature) : false,
+);
+const changeIsSuggestion = computed(() =>
+  props.feature && props.layer ? editIsSuggestion(actor.value, props.layer, props.feature) : false,
 );
 const mayDelete = computed(() =>
   props.feature ? canDeleteFeature(actor.value, props.feature) : false,
@@ -55,7 +74,14 @@ const filledFields = computed(() => {
   return layer.fields.flatMap((field) => {
     const value = feature.properties[field.key];
     if (value === undefined || value === null || value === '') return [];
-    return [{ key: field.key, label: field.label, text: formatPropertyValue(value, field.type) }];
+    return [
+      {
+        key: field.key,
+        label: field.label,
+        type: field.type,
+        text: formatPropertyValue(value, field.type),
+      },
+    ];
   });
 });
 
@@ -140,7 +166,10 @@ function formatPropertyValue(
         <dl class="property-list">
           <div v-for="field in filledFields" :key="field.key">
             <dt class="text-body-small text-medium-emphasis">{{ field.label }}</dt>
-            <dd><LinkifiedText :text="field.text" tag="span" /></dd>
+            <dd>
+              <OpeningHoursView v-if="field.type === 'openingHours'" :text="field.text" />
+              <LinkifiedText v-else :text="field.text" tag="span" />
+            </dd>
           </div>
         </dl>
       </template>
@@ -181,14 +210,22 @@ function formatPropertyValue(
         </v-btn>
       </div>
 
-      <div v-if="mayEdit || mayDelete" class="d-flex ga-2">
+      <div v-if="mayChange || mayDelete" class="d-flex flex-wrap ga-2">
         <v-btn
-          v-if="mayEdit"
+          v-if="mayChange"
           variant="text"
           :prepend-icon="mdiPencil"
           @click="emit('edit', props.feature)"
         >
-          {{ t('app.edit') }}
+          {{ changeIsSuggestion ? t('suggestion.button') : t('app.edit') }}
+        </v-btn>
+        <v-btn
+          v-if="mayChange && props.feature.geometry.type === 'Point'"
+          variant="text"
+          :prepend-icon="mdiCursorMove"
+          @click="emit('move', props.feature)"
+        >
+          {{ t('feature.move') }}
         </v-btn>
         <v-btn
           v-if="mayDelete"

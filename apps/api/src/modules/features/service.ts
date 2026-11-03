@@ -2,6 +2,7 @@ import {
   FEATURE_IMAGE_MAX_COUNT,
   canDeleteFeature,
   canEditFeature,
+  editIsSuggestion,
   hasPermission,
   layerPropertiesSchema,
   sniffImageContentType,
@@ -24,7 +25,13 @@ import {
   insertFeatureImage,
   updateFeatureImageAlt,
 } from './images.repository.js';
-import { deleteFeature, findFeatureById, insertFeature, updateFeature } from './repository.js';
+import {
+  deleteFeature,
+  findFeatureById,
+  insertFeature,
+  updateFeature,
+  type UpdateFeatureFields,
+} from './repository.js';
 
 /**
  * Business rules for contributions. Kept out of the router so the checks read as
@@ -66,12 +73,43 @@ export async function editFeature(
   input: UpdateFeatureInput,
 ): Promise<Feature> {
   const existing = await requireFeature(db, featureId);
+  const viewer = { id: actor.userId, role: actor.role };
+  const layer = await requireLayer(db, existing.layerId);
 
-  if (!canEditFeature({ id: actor.userId, role: actor.role }, existing)) {
+  /* The live place stays as it is: this change goes through a suggestion. */
+  if (editIsSuggestion(viewer, layer, existing)) {
+    throw ApiError.conflict('This change needs a moderator’s approval - suggest it instead');
+  }
+  if (!canEditFeature(viewer, existing)) {
     throw ApiError.forbidden('You can only edit contributions you added');
   }
 
-  const layer = await requireLayer(db, existing.layerId);
+  const changes = await checkEdit(db, existing, input, layer);
+  const status = statusAfterEdit(layer, existing, actor);
+
+  const updated = await updateFeature(
+    db,
+    featureId,
+    { ...changes, ...(status !== undefined ? { status } : {}) },
+    actor.userId,
+  );
+
+  if (!updated) throw ApiError.notFound('That contribution');
+  return updated;
+}
+
+/**
+ * Checks a change against the place's layer - geometry it accepts, inside the
+ * community area, fields that fit - and returns just the parts that change.
+ * Shared by direct edits and suggestions, so both follow the same rules.
+ */
+export async function checkEdit(
+  db: Sql,
+  feature: Feature,
+  input: UpdateFeatureInput,
+  knownLayer?: Layer,
+): Promise<Omit<UpdateFeatureFields, 'status'>> {
+  const layer = knownLayer ?? (await requireLayer(db, feature.layerId));
 
   if (input.geometry) {
     assertGeometryAllowed(layer, input.geometry.type);
@@ -81,23 +119,12 @@ export async function editFeature(
   const properties =
     input.properties === undefined ? undefined : validateProperties(layer, input.properties);
 
-  const status = statusAfterEdit(layer, existing, actor);
-
-  const updated = await updateFeature(
-    db,
-    featureId,
-    {
-      ...(input.name !== undefined ? { name: input.name } : {}),
-      ...(input.description !== undefined ? { description: input.description } : {}),
-      ...(input.geometry !== undefined ? { geometry: input.geometry } : {}),
-      ...(properties !== undefined ? { properties } : {}),
-      ...(status !== undefined ? { status } : {}),
-    },
-    actor.userId,
-  );
-
-  if (!updated) throw ApiError.notFound('That contribution');
-  return updated;
+  return {
+    ...(input.name !== undefined ? { name: input.name } : {}),
+    ...(input.description !== undefined ? { description: input.description } : {}),
+    ...(input.geometry !== undefined ? { geometry: input.geometry } : {}),
+    ...(properties !== undefined ? { properties } : {}),
+  };
 }
 
 export async function removeFeature(db: Sql, actor: AuthContext, featureId: string): Promise<void> {

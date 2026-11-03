@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidOpeningHours } from './openingHours.js';
 import { GEOMETRY_KINDS, geometryKindSchema } from './geometry.js';
 
 /**
@@ -25,6 +26,8 @@ export const LAYER_ICONS = [
   'heart',
   'pin',
   'plug',
+  'carrot',
+  'store',
 ] as const;
 export type LayerIcon = (typeof LAYER_ICONS)[number];
 
@@ -53,6 +56,8 @@ export const FIELD_TYPES = [
   'url',
   'date',
   'select',
+  /** OpenStreetMap opening_hours text, edited as a weekly timetable. */
+  'openingHours',
 ] as const;
 export type FieldType = (typeof FIELD_TYPES)[number];
 
@@ -102,21 +107,35 @@ export const layerSchema = z.object({
 });
 export type Layer = z.infer<typeof layerSchema>;
 
+/** The editable properties, without defaults - shared by create and update. */
+const editableLayerSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  description: z.string().trim().max(2000),
+  color: hexColorSchema,
+  icon: z.string().trim().min(1).max(40),
+  allowedGeometries: z.array(geometryKindSchema).min(1),
+  fields: z.array(layerFieldSchema).max(30),
+  sortOrder: z.number().int().min(0).max(9999),
+  isPublished: z.boolean(),
+  requiresModeration: z.boolean(),
+  visibleByDefault: z.boolean(),
+});
+
+const props = editableLayerSchema.shape;
+
 export const createLayerInputSchema = z.object({
   slug: slugSchema,
-  name: z.string().trim().min(2).max(80),
-  description: z.string().trim().max(2000).default(''),
-  color: hexColorSchema.default('#2f855a'),
-  icon: z.string().trim().min(1).max(40).default('leaf'),
-  allowedGeometries: z
-    .array(geometryKindSchema)
-    .min(1)
-    .default([...GEOMETRY_KINDS]),
-  fields: z.array(layerFieldSchema).max(30).default([]),
-  sortOrder: z.number().int().min(0).max(9999).default(0),
-  isPublished: z.boolean().default(true),
-  requiresModeration: z.boolean().default(false),
-  visibleByDefault: z.boolean().default(true),
+  name: props.name,
+  description: props.description.default(''),
+  color: props.color.default('#2f855a'),
+  icon: props.icon.default('leaf'),
+  allowedGeometries: props.allowedGeometries.default([...GEOMETRY_KINDS]),
+  fields: props.fields.default([]),
+  sortOrder: props.sortOrder.default(0),
+  isPublished: props.isPublished.default(true),
+  /** On by default: what regular members add or change waits for a moderator. */
+  requiresModeration: props.requiresModeration.default(true),
+  visibleByDefault: props.visibleByDefault.default(true),
 });
 export type CreateLayerInput = z.infer<typeof createLayerInputSchema>;
 
@@ -126,8 +145,12 @@ export type CreateLayerInput = z.infer<typeof createLayerInputSchema>;
  */
 export type CreateLayerInputDraft = z.input<typeof createLayerInputSchema>;
 
-/** Everything except the slug is editable; the slug is part of shareable URLs. */
-export const updateLayerInputSchema = createLayerInputSchema.omit({ slug: true }).partial();
+/**
+ * Everything except the slug is editable; the slug is part of shareable URLs.
+ * Built from the default-free shape, so a field left out stays as it is -
+ * a partial of the create schema would quietly reset it to its default.
+ */
+export const updateLayerInputSchema = editableLayerSchema.partial();
 export type UpdateLayerInput = z.infer<typeof updateLayerInputSchema>;
 
 export const propertyValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
@@ -191,6 +214,10 @@ function fieldValueSchema(field: LayerField): z.ZodType<PropertyValue> {
       return z.string().max(500).pipe(z.url());
     case 'date':
       return z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use the format YYYY-MM-DD');
+    case 'openingHours':
+      return z.string().max(500).refine(isValidOpeningHours, {
+        message: 'Use opening hours such as "Mo-Fr 10:00-17:00; Sa 10:00-13:00"',
+      });
     case 'select':
       return z.string().refine((value) => field.options.includes(value), {
         message: `Choose one of: ${field.options.join(', ')}`,

@@ -6,6 +6,7 @@ import {
   featureQuerySchema,
   hasPermission,
   moderateFeatureInputSchema,
+  suggestFeatureInputSchema,
   toFeatureCollection,
   updateFeatureImageInputSchema,
   updateFeatureInputSchema,
@@ -20,6 +21,7 @@ import { writeRateLimiter } from '../../http/rate-limit.js';
 import { findLayerIdsBySlugs } from '../layers/repository.js';
 import { findFeatureImage } from './images.repository.js';
 import { findFeatureById, listFeatures } from './repository.js';
+import { suggestEdit } from '../suggestions/service.js';
 import * as service from './service.js';
 
 const idParamSchema = z.object({ id: z.uuid() });
@@ -141,6 +143,14 @@ export function createFeaturesRouter(db: Sql): Router {
     const { id } = parseOrThrow(idParamSchema, req.params);
     const input = parseOrThrow(updateFeatureInputSchema, req.body);
     res.json(await service.editFeature(db, auth, id, input));
+  });
+
+  /* A member's suggested change; the place stays as it is until a moderator approves. */
+  router.post('/:id/suggestions', writeRateLimiter, requireAuth, async (req, res) => {
+    const auth = assertPermission(req, 'feature:suggest');
+    const { id } = parseOrThrow(idParamSchema, req.params);
+    const input = parseOrThrow(suggestFeatureInputSchema, req.body);
+    res.status(201).json(await suggestEdit(db, auth, id, input));
   });
 
   router.delete('/:id', writeRateLimiter, requireAuth, async (req, res) => {

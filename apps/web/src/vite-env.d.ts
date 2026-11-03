@@ -8,6 +8,8 @@
 interface ImportMetaEnv {
   /** Absolute API origin. Empty in development, where Vite proxies `/api`. */
   readonly VITE_API_URL?: string;
+  /** "true" offers the Danish/English switch; off while the map is Danish only. */
+  readonly VITE_LANGUAGE_SWITCH?: string;
 }
 
 interface ImportMeta {

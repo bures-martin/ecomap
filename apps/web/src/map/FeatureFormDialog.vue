@@ -2,7 +2,9 @@
 import type { Feature, Geometry, Layer, PropertyBag } from '@ecomap/shared';
 import { useTranslation } from 'i18next-vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { useCommunitySettings } from '../api/queries.js';
 import { fieldIssues, useApiErrorMessage } from '../composables/useApiErrorMessage.js';
+import { useLanguage } from '../i18n/index.js';
 import type { FeatureFormValues } from './featureForm.js';
 import LayerFieldInput from './LayerFieldInput.vue';
 import PhotoPicker from './PhotoPicker.vue';
@@ -24,11 +26,28 @@ const props = defineProps<{
   existing: Feature | null;
   submitting: boolean;
   error: unknown;
+  /**
+   * The change goes in as a suggestion for a moderator to approve: the place
+   * stays as it is meanwhile, and photos are not part of it.
+   */
+  suggesting?: boolean;
 }>();
 const emit = defineEmits<{ submit: [values: FeatureFormValues]; cancel: [] }>();
 
 const { t } = useTranslation();
 const errorMessage = useApiErrorMessage();
+const settingsQuery = useCommunitySettings();
+const language = useLanguage();
+
+/**
+ * A nudge towards the map's own language, for someone using the app in another
+ * one: what people type is shown to everybody as written.
+ */
+const languageHint = computed(() => {
+  const mapLanguage = settingsQuery.data.value?.defaultLocale;
+  if (!mapLanguage || mapLanguage === language.value) return '';
+  return t('feature.writeInLanguage', { language: t(`languages.${mapLanguage}`) });
+});
 
 const values = ref<FeatureFormValues>(emptyValues());
 
@@ -97,13 +116,28 @@ function emptyValues(): FeatureFormValues {
         <v-card-title>
           {{
             props.existing
-              ? t('feature.editTitle', { name: props.existing.name })
+              ? props.suggesting
+                ? t('suggestion.title', { name: props.existing.name })
+                : t('feature.editTitle', { name: props.existing.name })
               : t('feature.addTitle', { layer: props.layer.name })
           }}
         </v-card-title>
 
         <v-card-text class="d-flex flex-column ga-4">
           <v-alert v-if="hasError" type="error">{{ errorMessage(props.error) }}</v-alert>
+
+          <v-alert
+            v-if="props.existing && props.geometry"
+            type="success"
+            variant="tonal"
+            density="compact"
+          >
+            {{ t('feature.movedNote') }}
+          </v-alert>
+
+          <v-alert v-if="props.suggesting" type="info" variant="tonal" density="compact">
+            {{ t('suggestion.explain') }}
+          </v-alert>
 
           <v-alert
             v-if="props.layer.description && !props.existing"
@@ -113,6 +147,10 @@ function emptyValues(): FeatureFormValues {
           >
             {{ props.layer.description }}
           </v-alert>
+
+          <p v-if="languageHint" class="text-body-small text-medium-emphasis">
+            {{ languageHint }}
+          </p>
 
           <v-text-field
             v-model="values.name"
@@ -142,7 +180,11 @@ function emptyValues(): FeatureFormValues {
           />
 
           <v-divider />
-          <PhotoPicker v-model="values.photos" :existing="props.existing" />
+          <PhotoPicker
+            v-if="!props.suggesting"
+            v-model="values.photos"
+            :existing="props.existing"
+          />
 
           <v-checkbox
             v-if="!props.existing"
@@ -163,7 +205,13 @@ function emptyValues(): FeatureFormValues {
             :loading="props.submitting"
             :disabled="!canSubmit"
           >
-            {{ props.existing ? t('feature.submitEdit') : t('feature.submit') }}
+            {{
+              props.suggesting
+                ? t('suggestion.submit')
+                : props.existing
+                  ? t('feature.submitEdit')
+                  : t('feature.submit')
+            }}
           </v-btn>
         </v-card-actions>
       </form>

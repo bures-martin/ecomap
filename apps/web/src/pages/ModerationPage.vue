@@ -6,6 +6,7 @@ import QueryBoundary from '../components/QueryBoundary.vue';
 import FeatureGallery from '../map/FeatureGallery.vue';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
+import SuggestionsQueue from './SuggestionsQueue.vue';
 
 /** The review queue for layers that hold contributions before publishing. */
 const { t } = useTranslation();
@@ -77,6 +78,8 @@ const decide = (id: string, status: 'published' | 'rejected'): void => {
         </div>
       </template>
     </QueryBoundary>
+
+    <SuggestionsQueue class="mt-10" />
   </v-container>
 </template>
 
