@@ -161,9 +161,7 @@
       "date": "Dato",
       "select": "Valg",
       "openingHours": "Åbningstider"
-    },
-    "visibleByDefault": "Vis, når kortet åbner",
-    "visibleByDefaultHelp": "Fra holder kortet roligt i starten: laget er stadig ét tryk væk, og en søgning tager det altid med."
+    }
   },
   "settingsAdmin": {
     "title": "Indstillinger for fællesskabet",

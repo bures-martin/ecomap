@@ -86,13 +86,26 @@ export const STARTER_LAYERS: readonly CreateLayerInput[] = [
     allowedGeometries: ['Point'],
     sortOrder: 27,
     requiresModeration: true,
-    /* Practical rather than inspiring: one tap away instead of on the first view. */
-    visibleByDefault: false,
     fields: [
       { key: 'operator', label: 'Operatør', type: 'text' },
       { key: 'chargePoints', label: 'Antal ladepunkter', type: 'number' },
       { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' },
       { key: 'payment', label: 'Betaling', type: 'select', options: ['Gratis', 'Betaling'] },
+    ],
+  }),
+  createLayerInputSchema.parse({
+    slug: 'drinking-water',
+    name: 'Drikkevand',
+    description:
+      'Vandposter og drikkefontæner med gratis drikkevand - fyld din flaske i stedet for at købe en ny.',
+    color: '#0b7fab',
+    icon: 'droplet',
+    allowedGeometries: ['Point'],
+    sortOrder: 28,
+    requiresModeration: true,
+    fields: [
+      { key: 'bottle', label: 'Kan fylde en flaske', type: 'boolean' },
+      { key: 'wheelchair', label: 'Tilgængelig for kørestol', type: 'boolean' },
     ],
   }),
   createLayerInputSchema.parse({

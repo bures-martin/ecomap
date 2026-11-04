@@ -96,11 +96,6 @@ export const layerSchema = z.object({
   isPublished: z.boolean(),
   /** Whether contributors may add features, or only moderators and above. */
   requiresModeration: z.boolean(),
-  /**
-   * Whether the layer is switched on when somebody opens the map. Off means
-   * one tap away - its chip, the layer list or a search - rather than hidden.
-   */
-  visibleByDefault: z.boolean(),
   featureCount: z.number().int().nonnegative(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
@@ -118,7 +113,6 @@ const editableLayerSchema = z.object({
   sortOrder: z.number().int().min(0).max(9999),
   isPublished: z.boolean(),
   requiresModeration: z.boolean(),
-  visibleByDefault: z.boolean(),
 });
 
 const props = editableLayerSchema.shape;
@@ -135,7 +129,6 @@ export const createLayerInputSchema = z.object({
   isPublished: props.isPublished.default(true),
   /** On by default: what regular members add or change waits for a moderator. */
   requiresModeration: props.requiresModeration.default(true),
-  visibleByDefault: props.visibleByDefault.default(true),
 });
 export type CreateLayerInput = z.infer<typeof createLayerInputSchema>;
 

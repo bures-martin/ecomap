@@ -161,9 +161,7 @@
       "date": "Date",
       "select": "Choice",
       "openingHours": "Opening hours"
-    },
-    "visibleByDefault": "Show when the map opens",
-    "visibleByDefaultHelp": "Off keeps the map calm at first: the layer is still one tap away, and a search always includes it."
+    }
   },
   "settingsAdmin": {
     "title": "Community settings",

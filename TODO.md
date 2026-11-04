@@ -1,7 +1,7 @@
 <!--
   Snapshot of the project note kept in Obsidian (Map/Project.md), copied on
-  2026-11-03. The Obsidian note is the working copy; refresh this file from it
-  when the plan changes.
+  2026-11-04. The Obsidian note is the working copy; refresh this file from it
+  when the plan changes. Only open work is listed - finished items are removed.
 -->
 
 # EcoMap - TODO and plan
@@ -33,23 +33,22 @@ Effort: S = hours, M = days, L = weeks.
  
 ### Content and data
 
-- [ ] Review data, put pictures if possible etc... Check if all valid add more to layers if there are more
-  - Done (Nov 2026): 37 more real places from OpenStreetMap - "Lokal mad og drikke" now has 42 (farm shops, Svaneke Bryghus, Bornholms Ismejeri, Wild Distillery, chocolate, liquorice, cider, snaps, honey, Torvehal), "Genbrug og reparation" 14 (3 more second-hand shops). "Økologisk" is set only where the producer's own website says so (Svaneke Bryghus, Bornholms Ismejeri, Wild Distillery) or OSM tags it (Hammersly).
+- [ ] Photos and more places
+  - Check whether there are more real places to add to the layers.
   - Photos: do not copy photos from businesses' websites (copyright). Ask owners to add their own, or take your own; members can add photos when they add a place.
 - [ ] Manual check
   - Suggested solution: walk through each layer on the map with satellite view; use "Flyt på kortet" on any pin that is off, and check opening hours against the producer's website. A few hours. S
 - [ ] How to make sure data will be updated
 	- [ ] Review also all data if the navigation is spot on
 		- Navigation aims at the stored coordinates, so fixing a pin fixes navigation too.
-	- [x] **"How to make the points pretty accurate?"** - done (Nov 2026): "Flyt på kortet" (move on the map) on every point - click the right spot, satellite view in the background-map switcher helps; members' moves go to review as a suggestion. Still open: Google place ID (see LATER).
 - [ ] **Danish municipality / open data**
   - Problem: you want municipality data (Bornholms Regionskommune), ideally live or updated.
   - Findings (Nov 2026): no Bornholm datasets found on opendata.dk. The real source is **GeoFA** (GeoDanmark's shared outdoor-facility database, also behind udinaturen.dk): free SQL/WFS API, no key, GeoDanmark data under CC BY 4.0 (confirm GeoFA's own terms). Bornholm has ~465 facility points, 202 from the municipality: picnic tables 60, viewpoints 31, heritage sites 16, beaches 12, toilets 10, shelters 9, fire pits 8, museums 7, and one each of bike pump/service post and drinking-water tap.
-  - Suggested solution: most of it is outdoor recreation (udinaturen.dk shows it already), so do not import it all. Useful pieces later: bike service posts into "Cykling", drinking-water taps, and beaches/viewpoints for a possible "Naturoplevelser" layer. Ask the municipality (or BOFA) for what GeoFA lacks: recycling and reuse points, municipal EV chargers, district-heating and energy projects. M
+  - Suggested solution: most of it is outdoor recreation (udinaturen.dk shows it already), so do not import it all. Useful pieces later: bike service posts into "Cykling", and beaches/viewpoints for a possible "Naturoplevelser" layer. Ask the municipality (or BOFA) for what GeoFA lacks: recycling and reuse points, municipal EV chargers, district-heating and energy projects. M
 - [ ] **OpenStreetMap layers pulled live or periodically**
-  - Problem: practical data (EV chargers, recycling points, bike infrastructure) goes stale; you want it kept fresh while the community adds local knowledge.
+  - Problem: practical data (EV chargers, recycling points, bike infrastructure, drinking water) goes stale; you want it kept fresh while the community adds local knowledge.
   - Suggested solution: a nightly job querying the Overpass API for Bornholm, upserting into the matching layers with an `osm_id` field and an "imported" badge, never overwriting community edits. Respect ODbL attribution. L
-  - Notes from the Nov 2026 import: the public Overpass servers are often "at capacity" - the job needs retries, a light query, and a fallback server (overpass.kumi.systems worked when overpass-api.de did not). Every demo place already carries its `osmId` in the seed data, which is the key a sync would match on.
+  - Notes: the public Overpass servers are often "at capacity" - the job needs retries, a light query, and a fallback server (overpass.kumi.systems worked when overpass-api.de did not). Every demo place already carries its `osmId` in the seed data, which is the key a sync would match on.
 
 ### Portfolio and sustainability
 
@@ -88,15 +87,11 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 - [ ] **Accessibility follow-ups**
   - Overlapping pins: where pins sit on top of each other, the visible part can be smaller than 24x24 px (WCAG 2.5.8). Option: group a little more eagerly, or spread pins that share a spot.
   - A list view of the places on screen (name, layer, distance) as an alternative to the map - the usual best practice for maps, and handy on phones. M
-  - Routes and areas are now keyboard-reachable, but there are none in the data yet - check once the first one is added.
+  - Check routes and areas with the keyboard once the first one is added (there are none in the data yet).
   - Test with a real screen reader (NVDA on Windows, VoiceOver on iPhone). S
 - **Some more complex import**
-- [ ] **Remove or reuse the "Vis når kortet åbner" (visible by default) layer setting**
-  - Since Nov 2026 the map opens on every layer, so this admin setting no longer does anything. Either remove it (DB column, shared schema, admin form), or reuse it as "which topic chips show first". S
-- **Mobile use**
-  - Done (Nov 2026): installable PWA (manifest, icons, service worker) and a "Vis min placering" button - see DONE.
-  - Still open: test "Add to Home Screen" on a real Android phone and iPhone once it is on HTTPS (a service worker only runs on HTTPS or localhost).
-  - **"Share people to meet other people, meetups?"** - decided (Nov 2026): no people profiles on the map (privacy risk); meetups go in the "Arrangementer og frivilligt arbejde" layer.
+- [ ] **Test the installable app on real phones**
+  - "Add to Home Screen" on an Android phone and an iPhone, once the map is on HTTPS (a service worker only runs on HTTPS or localhost). S
 - **Eco stories and guides**
   - Problem: you want more than pins: guides on how to live sustainably, info about climate anxiety, and nature heroes.
   - Suggested solution: a "Story" type with text plus photos linked to one or more places, written by members and moderated; optional map tour later. Start with 3-5 hand-written stories by you. M-L
@@ -117,10 +112,6 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 - [ ] **Language switch (Danish/English)**
   - Why later: prepared but hidden. Layer names and place texts are Danish only.
   - Suggested solution: turn it on with `VITE_LANGUAGE_SWITCH=true` and put `<LanguageMenu />` back in `AppShell.vue`. If English content is needed, add second-language fields or a DeepL "translate" button. S-M
-- [ ] **Free drinking-water taps (refill your bottle)**
-  - Why later: only worth it if there are enough on Bornholm.
-  - Counted (Nov 2026, Overpass): 28 OSM nodes tagged `amenity=drinking_water` on Bornholm and Christiansø (a few are pairs at the same spot, three marked `fee=no`), plus about 10 campsites/toilets/springs tagged `drinking_water=yes` (e.g. Koldekilde, Lejrplads Egeløkke). Clusters around Rønne, Hasle, Allinge and the Almindingen area. Enough for a small layer.
-  - Suggested solution: a "Drikkevand" layer (droplet icon) imported once from OSM with `osmId` on each point, so the later OSM sync can keep it fresh. S
 - [ ] **Topic ideas parked**
   - Water conservation / rainwater
   - Climate initiatives
@@ -128,21 +119,3 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
   - Environmental alert spots (heavy to moderate; better as clean-up events)
   - Car sharing (almost none on Bornholm)
   - Cultural / historical sites and lost animals/things (off-topic)
-
----
-
-## DONE (Nov 2026)
-- Background maps: free, keyless maps with a switcher in the bottom-left corner (Esri streets, light, dark, satellite; OpenStreetMap; OpenTopoMap; CyclOSM); each visitor's pick is remembered.
-- Topic chips: as many as fit the screen, the rest in a "Flere" menu; same chips on the Om page, linking to the map.
-- Opening hours: timetable with "Åbent nu / Lukket", seasons and public holidays; editor with time pickers, split hours, 24/7.
-- Clickable links in descriptions and fields; flags and translated language names (switcher hidden for now).
-- Clusters: one click opens a group of up to 20 places, fast zoom; grouping stops at street level.
-- Danish only: app, layers, fields and demo texts in Danish; "Om" page with motivation, waste sorting (BOFA links) and Danish sustainability links; About text supports headings, lists and links.
-- Review on all layers; any member can suggest changes to any place, moderators see a before/after view and approve or reject.
-- "Flyt på kortet" to move a point exactly.
-- Layers: "Lokal mad og drikke" (42 places), "Genbrug og reparation" with a type field (14); Dyreliv, Naturstier, Arrangementer and Grønne butikker hidden until they have content.
-- Layer filter works like on shops and map sites: nothing ticked shows every layer, ticking narrows to those layers; "Ryd filtre" (green, next to "Lag") appears only when something is ticked, searched or set, and goes back to showing everything. (Replaces the earlier "unticking the last layer leaves the map empty".)
-- Layer icons in the layer's colour (instead of a coloured dot) in the side-panel layer list, the "add a place" layer picker and the admin layer table.
-- Installable app (PWA): manifest, home-screen icons (incl. maskable and Apple touch icon) and a service worker - pages network-first with an offline fallback, hashed assets cached, API and map tiles never cached.
-- "Vis min placering" button under the zoom buttons: one-off location, blue dot with an accuracy circle, friendly message when access is refused.
-- Accessibility pass (WCAG 2.2 AA, a11yproject checklist): no automated issues left on any page in light or dark mode. Colours: the community colours and status colours are shaded automatically to at least 4.5:1, with black or white text chosen per colour, so no admin colour choice can break contrast; field labels darker. Keyboard: map buttons and topics come before the pins in tab order; Leaflet buttons in Danish and work with Space; routes and areas focusable; opening a place moves focus to its name, Escape closes and returns focus to the pin; adding or moving a place works without a mouse (crosshair in the middle, "Sæt punkt i midten" or Enter on the map); focus returns to the add button after dialogs. Also: hidden page heading on the map, labelled table columns, reduced-motion respected on the map, 100 missing Danish texts translated (with a test that keeps both languages complete).

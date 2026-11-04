@@ -193,16 +193,6 @@ const onOpenChange = (value: boolean): void => {
               "
             />
           </div>
-          <v-checkbox
-            :model-value="draft.visibleByDefault"
-            :label="t('layerAdmin.visibleByDefault')"
-            :hint="t('layerAdmin.visibleByDefaultHelp')"
-            persistent-hint
-            :disabled="!draft.isPublished"
-            @update:model-value="
-              (checked: boolean | null) => (draft.visibleByDefault = checked === true)
-            "
-          />
 
           <v-divider />
 
