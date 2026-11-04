@@ -36,12 +36,22 @@ function accessible(scheme: Scheme, colors: Record<string, string>): Record<stri
   return result;
 }
 
+/**
+ * The community colours in two roles. As a fill (buttons, avatars) they are
+ * shaded until white text reads on them, in both schemes - a green button with
+ * white text. As text on the page (links, text and outlined buttons) they use
+ * `link`: on the dark scheme that is a lighter shade, because no single green
+ * can carry white text and also stand out on a near-black page.
+ */
 function brandColors(
   scheme: Scheme,
   primaryColor: string,
   accentColor: string,
 ): Record<string, string> {
-  return accessible(scheme, { primary: primaryColor, secondary: accentColor });
+  return {
+    ...accessible('light', { primary: primaryColor, secondary: accentColor }),
+    link: withContrast(primaryColor, SURFACE[scheme]),
+  };
 }
 
 /**

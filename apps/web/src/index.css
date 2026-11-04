@@ -329,3 +329,13 @@ body,
 .topic-chip--active svg {
   color: #ffffff;
 }
+
+/*
+ * Green as text on the dark scheme (text and outlined buttons, links): the
+ * lighter `link` shade. `primary` itself stays dark enough for white text on
+ * filled buttons - see plugins/vuetify.ts.
+ */
+.v-theme--dark.text-primary,
+.v-theme--dark .text-primary {
+  color: rgb(var(--v-theme-link)) !important;
+}

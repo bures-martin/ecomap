@@ -62,7 +62,11 @@ export function withContrast(color: string, background: string, minimum = TEXT_C
   return toward;
 }
 
-/** Black or white, whichever is easier to read on `background`. */
+/**
+ * The text colour for `background`: white whenever it is readable - the usual
+ * look of a coloured button - and black only on colours too light for white.
+ */
 export function readableOn(background: string): string {
+  if (contrastRatio(WHITE, background) >= TEXT_CONTRAST) return WHITE;
   return contrastRatio(BLACK, background) > contrastRatio(WHITE, background) ? BLACK : WHITE;
 }

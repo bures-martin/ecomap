@@ -33,6 +33,6 @@ const parts = computed(() => linkify(props.text));
 }
 
 .linkified a {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-link));
 }
 </style>

@@ -49,28 +49,27 @@ const onOpenChange = (value: boolean): void => {
   <v-dialog :model-value="props.open" max-width="444" @update:model-value="onOpenChange">
     <v-card :title="t('map.addContribution')">
       <v-card-text class="d-flex flex-column ga-4">
-        <v-select
-          v-model="layerId"
+        <!--
+          Radio buttons rather than a drop-down: every layer is in view at once,
+          and the keyboard works the way it does everywhere - Tab into the group,
+          the arrow keys to pick, Tab on to "where is it".
+        -->
+        <v-radio-group
+          :model-value="layerId"
           :label="t('draw.chooseLayer')"
-          :items="props.layers"
-          item-title="name"
-          item-value="id"
           hide-details
+          density="compact"
+          @update:model-value="(id: string | null) => (layerId = id ?? '')"
         >
-          <template #selection="{ item }">
-            <span class="d-flex align-center ga-2">
-              <LayerIcon :icon="item.icon" :color="item.color" />
-              <span>{{ item.name }}</span>
-            </span>
-          </template>
-          <template #item="{ props: itemProps, item }">
-            <v-list-item v-bind="itemProps">
-              <template #prepend>
-                <LayerIcon :icon="item.icon" :color="item.color" class="mr-3" />
-              </template>
-            </v-list-item>
-          </template>
-        </v-select>
+          <v-radio v-for="choice in props.layers" :key="choice.id" :value="choice.id">
+            <template #label>
+              <span class="d-flex align-center ga-2">
+                <LayerIcon :icon="choice.icon" :color="choice.color" />
+                <span>{{ choice.name }}</span>
+              </span>
+            </template>
+          </v-radio>
+        </v-radio-group>
 
         <p v-if="layer?.description" class="text-body-medium text-medium-emphasis">
           {{ layer.description }}

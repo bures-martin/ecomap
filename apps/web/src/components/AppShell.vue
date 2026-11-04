@@ -183,7 +183,7 @@ const signOut = async (): Promise<void> => {
   padding: 8px 16px;
   border-radius: 4px;
   background: rgb(var(--v-theme-surface));
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-link));
 }
 
 .skip-link:focus {

@@ -35,4 +35,9 @@ describe('readableOn', () => {
     expect(readableOn('#1c4532')).toBe('#ffffff');
     expect(readableOn('#f6e05e')).toBe('#000000');
   });
+
+  it('keeps white on a mid green that both could read on', () => {
+    /* 4.54:1 with white, 4.62:1 with black: white, as buttons usually are. */
+    expect(readableOn('#2f855a')).toBe('#ffffff');
+  });
 });
