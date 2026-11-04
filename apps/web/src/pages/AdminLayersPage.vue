@@ -9,6 +9,7 @@ import ConfirmDialog from '../components/ConfirmDialog.vue';
 import QueryBoundary from '../components/QueryBoundary.vue';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
+import LayerIcon from '../map/LayerIcon.vue';
 
 /**
  * Layer administration - the CMS half of the application.
@@ -77,11 +78,7 @@ const confirmDelete = (): void => {
               <tr v-for="layer in layers" :key="layer.id">
                 <td>
                   <span class="d-flex align-center ga-2">
-                    <span
-                      class="color-dot"
-                      :style="{ background: layer.color }"
-                      aria-hidden="true"
-                    />
+                    <LayerIcon :icon="layer.icon" :color="layer.color" />
                     <span>{{ layer.name }}</span>
                     <v-chip v-if="!layer.isPublished" size="small">hidden</v-chip>
                     <v-chip v-if="layer.requiresModeration" size="small">reviewed</v-chip>

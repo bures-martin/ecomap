@@ -51,12 +51,6 @@ Effort: S = hours, M = days, L = weeks.
   - Suggested solution: a nightly job querying the Overpass API for Bornholm, upserting into the matching layers with an `osm_id` field and an "imported" badge, never overwriting community edits. Respect ODbL attribution. L
   - Notes from the Nov 2026 import: the public Overpass servers are often "at capacity" - the job needs retries, a light query, and a fallback server (overpass.kumi.systems worked when overpass-api.de did not). Every demo place already carries its `osmId` in the seed data, which is the key a sync would match on.
 
-### UI
-
-- [ ] **Layer icons in the layer list and menus, not just a coloured dot**
-  - Problem: the topic chips over the map show each layer's icon, but the layer list in the side panel (and the topic picker when adding a place) only shows a coloured circle.
-  - Suggested solution: show the same icon in the layer's colour next to each checkbox and in the "add a place" layer picker, reusing the chips' icon code (layerIcons.ts). S
-
 ### Portfolio and sustainability
 
 - [ ] **Live Bornholm map as showcase, plus separate demo instance**
@@ -140,3 +134,4 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 - "Flyt på kortet" to move a point exactly.
 - Layers: "Lokal mad og drikke" (42 places), "Genbrug og reparation" with a type field (14); Dyreliv, Naturstier, Arrangementer and Grønne butikker hidden until they have content.
 - Filter fix: unticking the last layer leaves the map empty.
+- Layer icons in the layer's colour (instead of a coloured dot) in the side-panel layer list, the "add a place" layer picker and the admin layer table.

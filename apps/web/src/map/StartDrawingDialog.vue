@@ -3,6 +3,7 @@ import type { GeometryKind, Layer } from '@ecomap/shared';
 import { mdiMapMarker, mdiTimelineOutline, mdiVectorPolygon } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
 import { computed, ref, useId, watch } from 'vue';
+import LayerIcon from './LayerIcon.vue';
 
 const KIND_ICON: Readonly<Record<GeometryKind, string>> = {
   Point: mdiMapMarker,
@@ -56,14 +57,16 @@ const onOpenChange = (value: boolean): void => {
           item-value="id"
           hide-details
         >
+          <template #selection="{ item }">
+            <span class="d-flex align-center ga-2">
+              <LayerIcon :icon="item.icon" :color="item.color" />
+              <span>{{ item.name }}</span>
+            </span>
+          </template>
           <template #item="{ props: itemProps, item }">
             <v-list-item v-bind="itemProps">
               <template #prepend>
-                <span
-                  class="color-dot mr-3"
-                  :style="{ background: item.color }"
-                  aria-hidden="true"
-                />
+                <LayerIcon :icon="item.icon" :color="item.color" class="mr-3" />
               </template>
             </v-list-item>
           </template>

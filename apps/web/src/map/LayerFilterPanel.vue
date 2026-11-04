@@ -5,6 +5,7 @@ import { useTranslation } from 'i18next-vue';
 import { computed, useId } from 'vue';
 import { useAuth } from '../auth/auth.js';
 import { EMPTY_FILTERS, hasActiveFilters, layersAfterToggle, type MapFilters } from './filters.js';
+import LayerIcon from './LayerIcon.vue';
 
 /**
  * Everything that narrows what the map shows. Each control writes straight into
@@ -121,7 +122,7 @@ const clearFilters = (): void => {
       >
         <template #label>
           <span class="d-flex align-center ga-2">
-            <span class="color-dot" :style="{ background: layer.color }" aria-hidden="true" />
+            <LayerIcon :icon="layer.icon" :color="layer.color" />
             <span>{{ layer.name }}</span>
             <v-chip
               size="x-small"
