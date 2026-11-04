@@ -588,18 +588,16 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
       <v-btn
         v-if="isDesktop && !drawing"
         class="panel-toggle"
-        :class="{ 'panel-toggle--closed': panelHidden }"
         variant="flat"
         color="surface"
         size="small"
-        :prepend-icon="panelHidden ? mdiChevronRight : mdiChevronLeft"
+        :aria-label="panelHidden ? t('map.showPanel') : t('map.hidePanel')"
+        :title="panelHidden ? t('map.showPanel') : t('map.hidePanel')"
         :aria-expanded="!panelHidden"
         :aria-controls="sidebarId"
         @click="togglePanel"
       >
-        <span :class="{ 'd-sr-only': !panelHidden }">{{
-          panelHidden ? t('map.showPanel') : t('map.hidePanel')
-        }}</span>
+        <v-icon :icon="panelHidden ? mdiChevronRight : mdiChevronLeft" />
       </v-btn>
 
       <h1 class="d-sr-only">{{ t('map.pageHeading', { name: settings?.name ?? 'EcoMap' }) }}</h1>
@@ -780,12 +778,21 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   border-left: 0;
   min-width: 0;
-  padding: 0 6px;
+  padding: 0 1px;
   height: 48px !important;
+  transition: padding 0.15s ease;
 }
 
-.panel-toggle--closed {
-  padding: 0 12px 0 6px;
+/* It grows out of the edge under the pointer or keyboard focus. */
+.panel-toggle:hover,
+.panel-toggle:focus-visible {
+  padding: 0 1px 0 7px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-toggle {
+    transition: none;
+  }
 }
 
 .map-area {
