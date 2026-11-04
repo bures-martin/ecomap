@@ -812,4 +812,9 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
   align-items: flex-end;
   gap: 8px;
 }
+
+/* An edge, so the white button in the light scheme stands clear of pale water and land. */
+.add-button {
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+}
 </style>
