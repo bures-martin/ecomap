@@ -1,5 +1,5 @@
 /*
- * Demo places on Bornholm, taken from OpenStreetMap.
+ * The places on the Bornholm map, taken from OpenStreetMap.
  *
  * © OpenStreetMap contributors, available under the Open Database Licence
  * (ODbL): https://www.openstreetmap.org/copyright. Every value comes from an
@@ -11,19 +11,9 @@
  * descriptions are in Danish, the language of the Bornholm showcase, and the
  * choice values match the Danish options of the starter layers.
  */
-import type { PropertyBag } from '@ecomap/shared';
+import type { CommunityPlace } from '../types.js';
 
-export interface DemoPlace {
-  osmId: string;
-  layerSlug: string;
-  name: string;
-  description: string;
-  /** [longitude, latitude] */
-  coordinates: [number, number];
-  properties: PropertyBag;
-}
-
-export const BORNHOLM_DEMO_PLACES: readonly DemoPlace[] = [
+export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
   {
     osmId: 'node/3404446585',
     layerSlug: 'recycling-and-repair',

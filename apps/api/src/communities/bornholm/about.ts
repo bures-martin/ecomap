@@ -1,7 +1,7 @@
 /**
- * The About text of the Bornholm showcase, in Danish. Community content, not
- * app text: the demo seed writes it only when the About text is still empty,
- * and an admin edits it under Settings from then on. Every link was checked
+ * The About text of the Bornholm map, in Danish. Community content, not app
+ * text: the seed writes it only while the About text is still empty, and an
+ * admin edits it under Settings from then on. Every link was checked
  * on 2026-11-03.
  */
 export const BORNHOLM_ABOUT = `## Om kortet

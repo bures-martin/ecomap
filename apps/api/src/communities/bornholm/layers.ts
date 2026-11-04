@@ -1,17 +1,12 @@
 import { createLayerInputSchema, type CreateLayerInput } from '@ecomap/shared';
 
 /**
- * The layers a new community starts with: the "green" topics from the project's
- * notes. They are configuration, not content - an admin renames, recolours,
- * removes or adds to them in the layer editor - and they hold no places. The
- * demo seed (`seed-demo.ts`) is what fills them with example data.
- *
- * Written in Danish, for the first community on Bornholm; the app's own
- * buttons and menus are translated separately, so a community elsewhere just
- * renames these. Every layer is reviewed: what regular members add or change
- * waits for a moderator.
+ * The Bornholm map's layers, in Danish. Configuration, not code: the seed
+ * creates them, and an admin renames, recolours, removes or adds to them in
+ * the layer editor from then on. Every layer is reviewed: what regular
+ * members add or change waits for a moderator.
  */
-export const STARTER_LAYERS: readonly CreateLayerInput[] = [
+export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
   createLayerInputSchema.parse({
     slug: 'community-gardens',
     name: 'Fællesskabshaver',

@@ -74,7 +74,11 @@ export const updateCommunitySettingsInputSchema = z
   .partial();
 export type UpdateCommunitySettingsInput = z.infer<typeof updateCommunitySettingsInputSchema>;
 
-/** Used before the API responds and as the seed row - Bornholm, Denmark. */
+/**
+ * The built-in settings: used before the API responds, and what a fresh
+ * database starts with. Deliberately neutral - a community's own name, view
+ * and texts come from its folder in apps/api/src/communities via the seed.
+ */
 export const DEFAULT_COMMUNITY_SETTINGS = {
   name: 'EcoMap Community',
   tagline: 'Find and share the green things happening around you.',
@@ -84,7 +88,7 @@ export const DEFAULT_COMMUNITY_SETTINGS = {
   accentColor: '#b7791f',
   defaultLocale: 'en',
   basemap: 'streets',
-  initialView: { lat: 55.1, lng: 14.9, zoom: 10 },
+  initialView: { lat: 51, lng: 10, zoom: 4 },
   contributionArea: null,
   allowPublicRegistration: true,
 } as const satisfies Omit<CommunitySettings, 'updatedAt'>;

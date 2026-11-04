@@ -1,13 +1,73 @@
 # EcoMap Community
 
-A community map of the green things happening around you — gardens, repair cafés, trails,
-wildlife sightings, renewable energy projects and whatever else your community wants to map.
+**A community map of the green things happening around you** — farm shops and roadside stalls,
+repair cafés and second-hand shops, cycling, drinking water, nature areas and renewable energy.
+People who live there add the places; moderators keep it trustworthy.
 
-Nothing about those categories is hard-coded. An admin creates **layers**, decides which
-geometries each accepts (a place, a route, an area) and which extra questions contributors are
-asked, and the legend, the filters and the contribution form all follow from that.
+It is **generic by design**: one codebase that any town, island, municipality or NGO can run as
+its own map. The first community is the island of **Bornholm** in Denmark.
+
+![The Bornholm map: topic chips over the island, layers in the side panel](docs/screenshots/map.png)
+
+| A place, with opening hours, fields and directions        | Dark mode, filtered to drinking water             |
+| --------------------------------------------------------- | ------------------------------------------------- |
+| ![Details of Svaneke Bryghus](docs/screenshots/place.png) | ![Drinking-water taps](docs/screenshots/dark.png) |
 
 ---
+
+## What it does
+
+- **Layers instead of hard-coded categories.** An admin creates each topic: name, icon, colour,
+  whether people add a place, a route or an area, and which extra questions they answer (opening
+  hours, "organic?", a website…). The legend, filters and forms all follow from that.
+- **Built by the community, kept honest by moderators.** Members add places and suggest changes to
+  any place; moderators approve with a before/after view. Nothing reaches the public map unreviewed.
+- **A map people can actually use.** Grouped pins, topic chips, search across places and layers,
+  "open now" from real opening hours, directions via Google Maps, photos, free background maps
+  (streets, satellite, topo, cycling) and "show my location".
+- **Installable on a phone** as an app (PWA), with an offline fallback.
+- **Accessible.** Checked against WCAG 2.2 AA in light and dark mode: everything works from the
+  keyboard (including adding a place without a mouse), colours are shaded automatically so no
+  colour choice breaks contrast, and reduced motion is respected.
+- **Accounts done properly.** Invitation links, roles, blocking, two-factor authentication,
+  profile pictures, and a privacy page each community fills in.
+- **Shareable views.** Every filter lives in the URL, so a filtered map is a link.
+
+## Generic by design: one codebase, any community
+
+Nothing in the code is tied to a place. Everything that makes a map "Bornholm" lives in that
+deployment's **database**, and an admin changes it in the app: name, colours, texts, start view,
+the region where people may add places, layers, and who may join.
+
+A community starts from a folder in [`apps/api/src/communities`](apps/api/src/communities), which
+the seed writes into the database:
+
+```
+apps/api/src/communities/
+  bornholm/        The Bornholm map: 12 Danish layers, 127 places from OpenStreetMap,
+    index.ts       its settings (language, start view) and its About text
+    layers.ts
+    places.ts
+    about.ts
+  neutral/         A blank start for anywhere: 5 English layers, no places
+  index.ts         The list of communities the seed knows
+```
+
+```bash
+COMMUNITY=bornholm npm run db:seed   # or set COMMUNITY in .env
+```
+
+The seed is safe to run again: it only adds what is missing, and never overwrites a layer or a
+setting an admin has changed.
+
+**Starting a map for another place:**
+
+1. Copy `communities/neutral` to `communities/<your-place>` and edit the layers, settings and
+   (optionally) places — or keep it neutral and set everything up in the app.
+2. Add it to `COMMUNITIES` in `communities/index.ts`.
+3. Deploy the same code with its own database and `COMMUNITY=<your-place>`.
+
+Each community is its own deployment with its own database and admins; the code stays shared.
 
 ## Quick start
 
@@ -15,161 +75,129 @@ You need **Node 22+** and **Docker** (for PostgreSQL + PostGIS).
 
 ```bash
 npm install            # installs every workspace and builds @ecomap/shared
-cp .env.example .env   # then change JWT_SECRET
-npm run setup          # starts the database, migrates it, creates the admin and starter layers
-npm run db:seed:demo   # optional: real example places on Bornholm, from OpenStreetMap
+cp .env.example .env   # change JWT_SECRET; set COMMUNITY=bornholm for the Bornholm map
+npm run setup          # starts the database, migrates it, seeds the community
 npm run dev            # API on :4000, web app on :5173
 ```
 
-Open <http://localhost:5173>. The seed creates a superadmin account — the credentials are the
-`SEED_ADMIN_*` values in `.env` (`admin@ecomap.local` / `ChangeMe123!` by default).
+Open <http://localhost:5173>. The seed creates a superadmin account from the `SEED_ADMIN_*` values
+in `.env` (`admin@ecomap.local` / `ChangeMe123!` by default).
 **Change them before this ever leaves your machine.**
 
-**Background maps.** Free, keyless tile services (Esri streets, light, dark and satellite, OpenStreetMap,
-OpenTopoMap, CyclOSM). An admin picks the default in Settings; everyone can switch in the map's bottom-left corner.
-For a busy public site, check each provider's usage policy or move to a paid or self-hosted service.
+## Tech stack
 
-**One codebase, one community per deployment.** Nothing in the code is tied to a place: a
-community's name, colours, start view, area and layers are settings an admin edits in the app,
-stored in that deployment's database. A real instance starts with an empty map; the demo places
-are opt-in and only meant for trying the app out. They come from OpenStreetMap (© OpenStreetMap
-contributors, ODbL) - see `apps/api/src/db/demo/bornholm.ts`.
-
-## Layout
+| Part     | Built with                                                                 |
+| -------- | -------------------------------------------------------------------------- |
+| Web app  | Vue 3.5, Vuetify 4, Leaflet, TanStack Query, i18next (Danish and English)  |
+| API      | Express 5, PostgreSQL 17 + PostGIS, plain SQL migrations                   |
+| Shared   | Zod schemas, domain types and permission rules used by both sides          |
+| Language | TypeScript 7 (native compiler), `strict` plus the stricter extras          |
+| Quality  | Vitest, Testing Library, end-to-end API tests against real PostGIS, ESLint |
 
 ```
 apps/
-  api/        Express 5 REST API, PostgreSQL + PostGIS
+  api/        Express 5 REST API, PostgreSQL + PostGIS, the communities and the seed
   web/        Vue 3.5 + Vuetify 4 + Leaflet
 packages/
   shared/     Zod schemas, domain types and the permission rules, used by both
 ```
 
-`packages/shared` is the reason the two halves cannot drift apart: the same schema validates the
-contribution form in the browser and the request body on the server, and the same
-`canEditFeature()` decides whether the edit button renders and whether the API allows the edit.
+`packages/shared` is why the two halves cannot drift apart: the same schema validates the form in
+the browser and the request on the server, and the same `canEditFeature()` decides whether the
+edit button shows and whether the API allows the edit.
 
 ## Commands
 
 All run from the repository root.
 
-| Command                     | What it does                                                     |
-| --------------------------- | ---------------------------------------------------------------- |
-| `npm run dev`               | Shared package watcher, API and web app together                 |
-| `npm run build`             | Production build of all three                                    |
-| `npm run verify`            | Format check, lint, typecheck and every test — run before commit |
-| `npm test`                  | Tests only                                                       |
-| `npm run db:up` / `db:down` | Start / stop the PostGIS container                               |
-| `npm run db:migrate`        | Apply pending SQL migrations                                     |
-| `npm run db:seed`           | Superadmin account and starter layers; no places                 |
-| `npm run db:seed:demo`      | Adds 64 real eco places on Bornholm from OpenStreetMap           |
-| `npm run db:reset`          | Throw the database away and rebuild it from scratch              |
+| Command                     | What it does                                                      |
+| --------------------------- | ----------------------------------------------------------------- |
+| `npm run dev`               | Shared package watcher, API and web app together                  |
+| `npm run build`             | Production build of all three                                     |
+| `npm run verify`            | Format check, lint, typecheck and every test — run before commit  |
+| `npm test`                  | Tests only                                                        |
+| `npm run db:up` / `db:down` | Start / stop the PostGIS container                                |
+| `npm run db:migrate`        | Apply pending SQL migrations                                      |
+| `npm run db:seed`           | Admin account, then the `COMMUNITY`'s settings, layers and places |
+| `npm run db:reset`          | Throw the database away and rebuild it from scratch               |
 
-## The data model
+## How it works
 
-- **Layer** — a category. Slug, name, description, colour, which of Point / LineString / Polygon
-  it accepts, whether contributions need review, and a list of custom field definitions.
-- **Feature** — one thing on the map. Belongs to a layer, has a geometry stored as PostGIS
-  `geometry(Geometry, 4326)`, free-text name and description, plus a `properties` object validated
-  against its layer's fields.
-- **Community settings** — one row: name, tagline, colours, default language, background map,
-  where the map opens, and optionally a bounding box contributions must fall inside. This is what
-  lets the same codebase run for a different community without a fork.
-- **User** — email, password (scrypt), role, optional TOTP secret.
+### Data model
 
-## Roles and permissions
+- **Layer** — a topic. Slug, name, icon, colour, which of Point / LineString / Polygon it accepts,
+  whether contributions need review, and its own field definitions.
+- **Feature** — one thing on the map. A PostGIS `geometry(Geometry, 4326)`, name, description,
+  photos, and `properties` validated against its layer's fields.
+- **Suggestion** — a proposed change to a feature, waiting for a moderator.
+- **Community settings** — one row: name, tagline, About and privacy texts, colours, language,
+  background map, start view, and the area contributions must fall inside.
+- **User** — email, password (scrypt), role, optional TOTP secret, optional picture.
+
+### Roles and permissions
 
 Route handlers never check a role; they check a **permission**, and roles are bundles of
-permissions defined in `packages/shared/src/permissions.ts`.
+permissions defined once in `packages/shared/src/permissions.ts`, for both the API and the UI.
 
-| Role          | Can                                                               |
-| ------------- | ----------------------------------------------------------------- |
-| `viewer`      | Read the public map                                               |
-| `contributor` | Add features; edit and delete their own                           |
-| `moderator`   | Edit and delete anything, approve or reject pending contributions |
-| `admin`       | Manage layers, community settings and accounts                    |
-| `superadmin`  | Assign roles                                                      |
+| Role          | Can                                                              |
+| ------------- | ---------------------------------------------------------------- |
+| `viewer`      | Look at the map                                                  |
+| `contributor` | Add places and suggest changes; everything waits for review      |
+| `moderator`   | Publish directly, edit anything, approve or reject contributions |
+| `admin`       | Manage layers, settings and people (block, temporary passwords)  |
+| `superadmin`  | Assign roles                                                     |
 
-Adding a capability means adding a permission to that file and granting it to the right roles —
-in one place, for both the API and the UI.
+### Authentication
 
-## Authentication
+- Passwords are hashed with **scrypt** from Node's standard library; the cost parameters live in
+  the stored hash, so they can be raised later without invalidating passwords.
+- Sign-in returns a short-lived **access token** (JWT) kept _in memory_ and sent as
+  `Authorization: Bearer`, so authenticated endpoints are immune to CSRF by construction.
+- A **refresh token** lives in an httpOnly, `SameSite=Strict` cookie scoped to `/api/auth`; the
+  database keeps only its SHA-256 hash, and every refresh rotates it.
+- **Two-factor authentication** is TOTP (RFC 6238) on `node:crypto`, tested against the RFC's
+  reference vectors.
 
-- Passwords are hashed with **scrypt** from Node's standard library (no native module to build).
-  The cost parameters live inside the stored hash, so they can be raised later without
-  invalidating existing passwords.
-- Sign-in returns a short-lived **access token** (JWT, HS256) that the browser keeps _in memory_
-  and sends as `Authorization: Bearer`. Because it never travels in a cookie, every authenticated
-  endpoint is structurally immune to CSRF.
-- A long-lived **refresh token** lives in an httpOnly, `SameSite=Strict` cookie scoped to
-  `/api/auth`, and the database stores only its SHA-256 hash. Refreshing rotates it, so a stolen
-  token is usable at most once.
-- **Two-factor authentication** is TOTP (RFC 6238), implemented on `node:crypto` and tested
-  against the reference vectors published in the RFC.
+### Tests
 
-## Filters live in the URL
+| Package           | Tests | Covers                                                            |
+| ----------------- | ----- | ----------------------------------------------------------------- |
+| `packages/shared` | 101   | Schemas, permission rules, geometry helpers                       |
+| `apps/api`        | 127   | Unit tests plus end-to-end tests over HTTP against a real PostGIS |
+| `apps/web`        | 122   | API client, URL filters, drawing, forms, contrast, translations   |
 
-`/?layers=community-gardens,nature-trails&q=bee&status=pending` is the whole filter state. A
-filtered map is a link you can send to a neighbour, and the back button undoes a filter change.
-
-## Accessibility
-
-A skip link, semantic landmarks and headings, visible focus rings on every interactive element
-(including Leaflet's own zoom buttons), `aria-live` on the result count and the drawing toolbar,
-labelled form fields with errors wired to their inputs, a `prefers-reduced-motion` rule, and
-Vuetify deriving the text colour on every coloured surface from its contrast, so buttons stay
-readable no matter which colours a community chooses.
-
-## TypeScript
-
-Every package compiles with `strict` plus the stricter extras in `tsconfig.base.json`
-(`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `erasableSyntaxOnly`, ...).
-
-- `packages/shared` and `apps/api` are type-checked and built by **TypeScript 7**, the native
-  compiler. It is installed as `typescript7` and each package's scripts call it by path.
-- `typescript` itself is aliased to `@typescript/typescript6`: TypeScript 7 ships no JavaScript
-  compiler API, and typescript-eslint and vue-tsc still need one. Drop the alias once they support
-  TypeScript 7.
-- `apps/web` is checked by **vue-tsc**, which type-checks templates too: unknown components and
-  directives, mistyped `v-model` bindings and missing CSS-module classes are errors.
-
-## Tests
-
-| Package           | Count | Covers                                                         |
-| ----------------- | ----- | -------------------------------------------------------------- |
-| `packages/shared` | 54    | Schemas, permission rules, geometry helpers                    |
-| `apps/api`        | 77    | 29 unit + 48 end-to-end over HTTP against a real PostGIS       |
-| `apps/web`        | 65    | API client, URL filters, drawing state machine, form rendering |
-
-The API integration tests run against the database named by `TEST_DATABASE_URL`, creating it on
-demand and truncating between cases. Without that variable they skip themselves, so `npm test`
-still passes on a machine with no Docker.
+The API's end-to-end tests use the database named by `TEST_DATABASE_URL`, creating it on demand
+and truncating between cases. Without that variable they skip themselves, so `npm test` still
+passes on a machine without Docker.
 
 ## Deployment notes
 
 - `npm run build` produces `apps/api/dist` (run with `npm start`) and `apps/web/dist` (static
   files for any web server or CDN).
 - Serve both from one origin, or set `CORS_ORIGINS` to the web app's origin. The refresh cookie is
-  `Secure` whenever `NODE_ENV=production`, so the site must be on HTTPS.
-- The API runs its own migrations at start-up.
-- PostgreSQL, PostGIS, OpenStreetMap tiles and everything else here are open source and can be
+  `Secure` when `NODE_ENV=production`, so the site must be on HTTPS.
+- The API runs its own migrations at start-up; run `npm run db:seed` once with the right
+  `COMMUNITY`.
+- Background maps are free, keyless tile services. For a busy public site, check each provider's
+  usage policy or move to a paid or self-hosted service.
+- PostgreSQL, PostGIS, OpenStreetMap and everything else here are open source and can be
   self-hosted inside the EU.
 
-## Migration from the first version
+## Data and credits
 
-The first iteration was a React `frontend/` and an Express `backend/`. The React frontend has been
-removed; `apps/web` covers everything it did, and it remains in git history. `backend/` is still in
-the repository but is no longer part of the workspace build and is excluded from lint. Everything
-it did is covered by `apps/api`; delete it once you are happy the new version has replaced it.
+The Bornholm places come from [OpenStreetMap](https://www.openstreetmap.org/copyright)
+(© OpenStreetMap contributors, ODbL). Each place keeps its OSM id, so it can be traced back to its
+source. Map tiles © their providers, credited in the map's corner.
 
 ## Deliberately left for later
 
-- The `bbox` query parameter exists on `GET /api/features` and is backed by a GiST index, but the
-  web app loads all matching features in one request. Wire the viewport to it when a community
-  outgrows that.
-- The About and privacy texts support only a small Markdown subset (headings, lists, bold,
-  links), rendered as elements and never as HTML — admin-authored HTML would be a stored XSS
-  waiting for the first compromised account.
+- The `bbox` query parameter exists on `GET /api/features` (backed by a GiST index), but the web
+  app loads all matching features at once. Wire the viewport to it when a community outgrows that.
+- The About and privacy texts support only a small Markdown subset (headings, lists, bold, links),
+  rendered as elements and never as HTML — admin-written HTML would be a stored XSS waiting for
+  the first compromised account.
 - No email yet. Invitations are links an admin copies and sends, and someone who forgets their
-  password gets a temporary one from an admin on the people page; reset by email comes later.
-- No self-service account deletion: the privacy notice tells people to ask an admin.
+  password gets a temporary one from an admin; reset by email comes later.
+- No self-service account deletion: the privacy page tells people to ask an admin.
+- `backend/` is the first version's Express server. It is no longer built or linted, and
+  `apps/api` covers everything it did; delete it once you are happy to.

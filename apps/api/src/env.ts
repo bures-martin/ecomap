@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { config as loadDotenv } from 'dotenv';
 import { z } from 'zod';
+import { COMMUNITY_SLUGS } from './communities/index.js';
 
 /**
  * The API reads its configuration once, here, and fails loudly at boot if
@@ -34,6 +35,8 @@ const envSchema = z.object({
   SEED_ADMIN_EMAIL: z.string().default('admin@ecomap.local'),
   SEED_ADMIN_PASSWORD: z.string().default('ChangeMe123!'),
   SEED_ADMIN_NAME: z.string().default('EcoMap Admin'),
+  /** Which community `npm run db:seed` writes into the database - see src/communities. */
+  COMMUNITY: z.enum(COMMUNITY_SLUGS).default('neutral'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 
