@@ -1,5 +1,6 @@
 import {
   createLayerInputSchema,
+  isAtLeast,
   type CreateLayerInputDraft,
   type Layer,
   type Role,
@@ -28,7 +29,7 @@ let userCounter = 0;
 export async function createTestUser(
   db: Sql,
   role: Role = 'contributor',
-  overrides: { email?: string; password?: string } = {},
+  overrides: { email?: string; password?: string; twoFactor?: boolean } = {},
 ): Promise<TestUser> {
   userCounter += 1;
   const email = overrides.email ?? `user${userCounter}@example.test`;
@@ -39,6 +40,11 @@ export async function createTestUser(
     passwordHash: await hashPassword(overrides.password ?? TEST_PASSWORD),
     role,
   });
+
+  /* Admin powers need two-factor sign-in; test admins have it unless a test says otherwise. */
+  if (overrides.twoFactor ?? isAtLeast(role, 'admin')) {
+    await db`update users set totp_secret = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ', totp_enabled = true where id = ${row.id}`;
+  }
 
   const accessToken = await signAccessToken({ userId: row.id, role: row.role });
 

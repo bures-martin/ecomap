@@ -1,8 +1,9 @@
-import { hasPermission, type Permission } from '@ecomap/shared';
+import type { Permission } from '@ecomap/shared';
 import type { RequestHandler } from 'express';
 import type { Sql } from '../db/client.js';
 import { ApiError } from '../http/api-error.js';
-import { isUserActive } from '../modules/users/repository.js';
+import { findAccessState } from '../modules/users/repository.js';
+import { permissionError } from './context.js';
 import { verifyAccessToken } from './tokens.js';
 
 /**
@@ -27,8 +28,9 @@ export function createAuthenticate(db: Sql): RequestHandler {
     }
 
     const claims = await verifyAccessToken(header.slice('bearer '.length).trim());
-    if (claims && (await isUserActive(db, claims.userId))) {
-      req.auth = claims;
+    const state = claims ? await findAccessState(db, claims.userId) : null;
+    if (claims && state) {
+      req.auth = { ...claims, totpEnabled: state.totpEnabled };
     }
     next();
   };
@@ -48,10 +50,6 @@ export function requirePermission(permission: Permission): RequestHandler {
       next(ApiError.unauthorized());
       return;
     }
-    if (!hasPermission(req.auth.role, permission)) {
-      next(ApiError.forbidden());
-      return;
-    }
-    next();
+    next(permissionError(req.auth, permission) ?? undefined);
   };
 }

@@ -315,7 +315,8 @@
     "offline": "Could not reach the server.",
     "payload_too_large": "That file is too large.",
     "email_unverified": "Confirm your e-mail before signing in.",
-    "fieldInvalid": "Check this field."
+    "fieldInvalid": "Check this field.",
+    "totp_setup_required": "Turn on two-factor sign-in under Your account first."
   },
   "avatar": {
     "title": "Profile picture",
@@ -538,5 +539,10 @@
     "done": "Your account is deleted. Thank you for taking part.",
     "wrongPassword": "That password is not correct.",
     "lastSuperadmin": "You are the only superadmin. Make someone else superadmin first (People), so the map is not left without one."
+  },
+  "twoFactorRequired": {
+    "banner": "As an administrator, turn on two-factor sign-in before using the admin pages (settings, layers, people).",
+    "action": "Turn it on",
+    "accountHint": "As an administrator you need two-factor sign-in turned on to use the admin pages."
   }
 }

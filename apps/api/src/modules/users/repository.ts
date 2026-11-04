@@ -212,11 +212,20 @@ export async function deleteUserAvatar(db: Sql, userId: string): Promise<UserRow
  * One primary-key lookup per authenticated request, so blocking takes effect
  * immediately instead of when the token expires.
  */
-export async function isUserActive(db: Sql, userId: string): Promise<boolean> {
-  const [row] = await db<{ disabled: boolean }[]>`
-    select disabled_at is not null as disabled from users where id = ${userId}
+/**
+ * What each request needs to know beyond the access token: whether the account
+ * may still sign in (null when it is gone or blocked), and whether two-factor
+ * sign-in is on - admin powers depend on it.
+ */
+export async function findAccessState(
+  db: Sql,
+  userId: string,
+): Promise<{ totpEnabled: boolean } | null> {
+  const [row] = await db<{ totpEnabled: boolean }[]>`
+    select totp_enabled as "totpEnabled" from users
+    where id = ${userId} and disabled_at is null
   `;
-  return row !== undefined && !row.disabled;
+  return row ?? null;
 }
 
 export async function setUserDisabled(

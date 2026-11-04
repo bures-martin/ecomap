@@ -78,6 +78,20 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = {
   superadmin: SUPERADMIN_PERMISSIONS,
 };
 
+/**
+ * The admin powers - everything an admin or superadmin can do beyond
+ * moderating: settings, layers, people, roles, invitations. They need
+ * two-factor sign-in turned on; moderating does not.
+ */
+export const TWO_FACTOR_PERMISSIONS: readonly Permission[] = SUPERADMIN_PERMISSIONS.filter(
+  (permission) => !MODERATOR_PERMISSIONS.includes(permission),
+);
+
+/** Whether this role must have two-factor sign-in on to use this permission. */
+export function needsTwoFactor(role: Role | null | undefined, permission: Permission): boolean {
+  return isAtLeast(role, 'admin') && TWO_FACTOR_PERMISSIONS.includes(permission);
+}
+
 export function permissionsForRole(role: Role): readonly Permission[] {
   return ROLE_PERMISSIONS[role];
 }

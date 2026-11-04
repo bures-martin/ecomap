@@ -13,6 +13,8 @@ export const API_ERROR_CODES = [
   'forbidden',
   /** Signed up but has not clicked the link in the confirmation e-mail yet. */
   'email_unverified',
+  /** An admin power used by an admin who has not turned on two-factor sign-in. */
+  'totp_setup_required',
   'not_found',
   'conflict',
   'rate_limited',
@@ -45,6 +47,7 @@ export const HTTP_STATUS_BY_ERROR_CODE: Readonly<Record<ApiErrorCode, number>> =
   invalid_credentials: 401,
   forbidden: 403,
   email_unverified: 403,
+  totp_setup_required: 403,
   not_found: 404,
   conflict: 409,
   rate_limited: 429,

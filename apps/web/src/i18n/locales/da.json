@@ -315,7 +315,8 @@
     "offline": "Kunne ikke få forbindelse til serveren.",
     "payload_too_large": "Filen er for stor.",
     "email_unverified": "Bekræft din e-mail, før du logger ind.",
-    "fieldInvalid": "Tjek dette felt."
+    "fieldInvalid": "Tjek dette felt.",
+    "totp_setup_required": "Slå totrinsbekræftelse til under Din konto først."
   },
   "avatar": {
     "title": "Profilbillede",
@@ -538,5 +539,10 @@
     "done": "Din konto er slettet. Tak, fordi du var med.",
     "wrongPassword": "Adgangskoden er ikke rigtig.",
     "lastSuperadmin": "Du er den eneste superadmin. Gør en anden til superadmin først (Brugere), så kortet ikke står uden."
+  },
+  "twoFactorRequired": {
+    "banner": "Som administrator skal du slå totrinsbekræftelse til, før du kan bruge administrationen (indstillinger, lag, brugere).",
+    "action": "Slå det til",
+    "accountHint": "Som administrator skal du have totrinsbekræftelse slået til for at bruge administrationen."
   }
 }

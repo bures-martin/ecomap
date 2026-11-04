@@ -1,5 +1,7 @@
 import {
   hasPermission,
+  isAtLeast,
+  needsTwoFactor,
   type AcceptInvitationInput,
   type AuthSession,
   type CurrentUser,
@@ -42,6 +44,8 @@ export interface Auth {
   /** Takes a fresh copy of the user that an API call already returned. */
   setUser: (user: CurrentUser) => void;
   can: (permission: Permission) => boolean;
+  /** An admin whose admin powers are locked until two-factor sign-in is on. */
+  needsTwoFactorSetup: () => boolean;
 }
 
 const AUTH_KEY: InjectionKey<Auth> = Symbol('auth');
@@ -153,7 +157,11 @@ export function createAuth(
       /* Only ever the signed-in account: never let a stale response swap users. */
       if (user.value?.id === next.id) user.value = next;
     },
-    can: (permission) => hasPermission(user.value?.role, permission),
+    /* The same rule as the API: admin powers wait for two-factor sign-in. */
+    can: (permission) =>
+      hasPermission(user.value?.role, permission) &&
+      !(needsTwoFactor(user.value?.role, permission) && !user.value?.totpEnabled),
+    needsTwoFactorSetup: () => isAtLeast(user.value?.role, 'admin') && !user.value?.totpEnabled,
   };
 
   return {

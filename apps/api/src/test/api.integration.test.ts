@@ -1318,6 +1318,36 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
   });
 
+  describe('two-factor sign-in for admins', () => {
+    it('keeps admin powers locked until two-factor is on', async () => {
+      const admin = await createTestUser(db, 'admin', { twoFactor: false });
+
+      const refused = await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({ tagline: 'New tagline' })
+        .expect(403);
+      expect(refused.body.error.code).toBe('totp_setup_required');
+      await request(app).get('/api/users').set(admin.authHeader).expect(403);
+
+      /* Turning it on counts straight away - no new sign-in needed. */
+      await setUserTotpSecret(db, admin.id, 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ');
+      await enableUserTotp(db, admin.id);
+      await request(app)
+        .patch('/api/settings')
+        .set(admin.authHeader)
+        .send({ tagline: 'New tagline' })
+        .expect(200);
+    });
+
+    it('still lets such an admin moderate, and moderators need nothing extra', async () => {
+      const admin = await createTestUser(db, 'admin', { twoFactor: false });
+      const moderator = await createTestUser(db, 'moderator');
+      await request(app).get('/api/suggestions').set(admin.authHeader).expect(200);
+      await request(app).get('/api/suggestions').set(moderator.authHeader).expect(200);
+    });
+  });
+
   describe('deleting your own account', () => {
     async function memberWithPlace() {
       const member = await createTestUser(db, 'contributor');

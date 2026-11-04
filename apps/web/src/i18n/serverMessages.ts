@@ -19,6 +19,8 @@ const EXACT: Readonly<Record<string, string>> = {
     'Koden passede ikke - tjek din godkendelsesapp.',
   'Start the two-factor setup first': 'Start opsætningen af totrinsbekræftelse først.',
   'Two-factor authentication is already on': 'Totrinsbekræftelse er allerede slået til.',
+  'Turn on two-factor sign-in under Your account before using the admin pages':
+    'Slå totrinsbekræftelse til under Din konto, før du bruger administrationen.',
   'Your current password is not correct': 'Din nuværende adgangskode er ikke rigtig.',
   'Your password is not correct': 'Adgangskoden er ikke rigtig.',
   'Your session has expired - please sign in again': 'Du er blevet logget ud - log ind igen.',

@@ -47,6 +47,12 @@ export class ApiError extends Error {
     return new ApiError('forbidden', message);
   }
 
+  static totpSetupRequired(
+    message = 'Turn on two-factor sign-in under Your account before using the admin pages',
+  ): ApiError {
+    return new ApiError('totp_setup_required', message);
+  }
+
   static emailUnverified(message: string): ApiError {
     return new ApiError('email_unverified', message);
   }

@@ -24,6 +24,9 @@ watchEffect(() => {
 
     <div class="d-flex flex-column ga-6">
       <ProfileCard :user="auth.user" />
+      <v-alert v-if="auth.needsTwoFactorSetup()" type="warning" variant="tonal">
+        {{ t('twoFactorRequired.accountHint') }}
+      </v-alert>
       <TwoFactorSection :user="auth.user" />
       <ChangePasswordSection />
       <DeleteAccountSection />

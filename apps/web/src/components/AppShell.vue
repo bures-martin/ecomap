@@ -144,12 +144,33 @@ const signOut = async (): Promise<void> => {
     </v-navigation-drawer>
 
     <main id="main-content" tabindex="-1" class="app-main">
+      <!-- Admins without two-factor sign-in: their admin pages wait for it. -->
+      <v-alert
+        v-if="auth.needsTwoFactorSetup() && route.path !== '/account'"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        rounded="0"
+        class="two-factor-banner"
+      >
+        <span>{{ t('twoFactorRequired.banner') }}</span>
+        <template #append>
+          <v-btn size="small" variant="flat" color="warning" to="/account">
+            {{ t('twoFactorRequired.action') }}
+          </v-btn>
+        </template>
+      </v-alert>
       <slot />
     </main>
   </div>
 </template>
 
 <style scoped>
+/* Its own height only: the page below it takes the rest. */
+.two-factor-banner {
+  flex: 0 0 auto;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;
