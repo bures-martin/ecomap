@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTranslation } from 'i18next-vue';
+import { TranslationComponent, useTranslation } from 'i18next-vue';
 import { computed, useId } from 'vue';
 import { useCommunitySettings, useLayers } from '../api/queries.js';
 import SimpleMarkdown from '../components/SimpleMarkdown.vue';
@@ -84,11 +84,36 @@ const contributeHeadingId = useId();
 
         <v-divider class="my-6" />
 
+        <!--
+          OpenStreetMap's licence (ODbL) asks for a visible credit that links to
+          its copyright page; this is that credit, with the why and the how-to-fix.
+        -->
         <h2 class="text-title-large mb-3">{{ t('about.openDataHeading') }}</h2>
-        <p>{{ t('about.openDataBody') }}</p>
+        <div class="open-data d-flex flex-column ga-3">
+          <p>
+            <TranslationComponent :translation="t('about.openDataPlaces')">
+              <template #osm>
+                <a href="https://www.openstreetmap.org" target="_blank" rel="noopener"
+                  >OpenStreetMap</a
+                >
+              </template>
+              <template #licence>
+                <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener"
+                  >Open Database License (ODbL)</a
+                >
+              </template>
+            </TranslationComponent>
+          </p>
+          <p>{{ t('about.openDataFix') }}</p>
+          <p>{{ t('about.openDataTiles') }}</p>
+        </div>
 
-        <p class="text-body-small text-medium-emphasis mt-4">{{ t('map.attribution') }}</p>
-        <p class="text-body-small mt-2">
+        <p class="open-data text-body-small text-medium-emphasis mt-4">
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">{{
+            t('map.attribution')
+          }}</a>
+        </p>
+        <p class="open-data text-body-small mt-2">
           <RouterLink to="/privacy">{{ t('privacy.title') }}</RouterLink>
         </p>
       </v-card>
@@ -111,5 +136,14 @@ const contributeHeadingId = useId();
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* Links in the app's own link colour, readable in light and dark mode. */
+.open-data a {
+  color: rgb(var(--v-theme-link));
+}
+
+.open-data p {
+  margin: 0;
 }
 </style>

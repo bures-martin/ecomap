@@ -292,14 +292,16 @@
     "contributeHeading": "How to add something",
     "contributeBody": "Create an account, choose a topic, then click the map to place what you want to add. Everything is checked by a moderator before it appears, and you can suggest changes to places that are already on the map.",
     "openDataHeading": "Open data, open map",
-    "openDataBody": "The example places come from OpenStreetMap, and the code is open source, so another community can run its own copy.",
     "whyHeading": "Small choices make a difference",
     "whyBody": "You do not have to change the world on your own. Most of the difference is made by everyday choices, close to home - and they are easier when you know where to go.",
     "whyLocal": "Buy local: farm shops and roadside stalls cut transport and keep the money on the island.",
     "whyRepair": "Repair, swap and buy second-hand before you buy new.",
     "whyMove": "Walk, cycle or take the bus when you can - and charge the car where the wind blows.",
     "whyShare": "Share what you know: a good place on the map helps the next person choose green.",
-    "whyClose": "This map is made by the people who live here. Every place someone adds makes the green choice a little easier for everybody else."
+    "whyClose": "This map is made by the people who live here. Every place someone adds makes the green choice a little easier for everybody else.",
+    "openDataPlaces": "The places on the map come from {osm} - a free map of the world made by volunteers. Data is © OpenStreetMap contributors and freely available under the {licence}.",
+    "openDataFix": "Is a place wrong or closed? Suggest a change here on the map - or fix it directly in OpenStreetMap, so everyone who uses it benefits. We check the places against OpenStreetMap a few times a year.",
+    "openDataTiles": "The background maps come from Esri, OpenStreetMap, OpenTopoMap and CyclOSM - the source is shown in the map's bottom corner."
   },
   "errors": {
     "bad_request": "That request could not be handled.",

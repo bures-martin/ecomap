@@ -292,14 +292,16 @@
     "contributeHeading": "Sådan tilføjer du noget",
     "contributeBody": "Opret en konto, vælg et emne, og klik på kortet, hvor det skal ligge. Alt bliver tjekket af en moderator, før det vises, og du kan foreslå ændringer til steder, der allerede er på kortet.",
     "openDataHeading": "Åbne data, åbent kort",
-    "openDataBody": "Eksempelstederne kommer fra OpenStreetMap, og koden er open source, så andre fællesskaber kan køre deres egen udgave.",
     "whyHeading": "Små valg gør en forskel",
     "whyBody": "Du behøver ikke at redde verden alene. Den største forskel gøres af hverdagens valg, tæt på hvor du bor - og de er lettere, når du ved, hvor du skal gå hen.",
     "whyLocal": "Køb lokalt: gårdbutikker og vejboder sparer transport og holder pengene på øen.",
     "whyRepair": "Reparér, byt og køb brugt, før du køber nyt.",
     "whyMove": "Gå, cykl eller tag bussen, når du kan - og lad bilen op, hvor vinden blæser.",
     "whyShare": "Del det, du ved: et godt sted på kortet hjælper den næste til at vælge grønt.",
-    "whyClose": "Kortet bliver lavet af dem, der bor her. Hvert sted, nogen tilføjer, gør det grønne valg en smule lettere for alle andre."
+    "whyClose": "Kortet bliver lavet af dem, der bor her. Hvert sted, nogen tilføjer, gør det grønne valg en smule lettere for alle andre.",
+    "openDataPlaces": "Stederne på kortet kommer fra {osm} - et frit verdenskort, som frivillige laver sammen. Data er © OpenStreetMap-bidragydere og frit tilgængelige under {licence}.",
+    "openDataFix": "Er et sted forkert eller lukket? Foreslå en ændring her på kortet - eller ret det direkte i OpenStreetMap, så alle, der bruger det, får glæde af det. Vi tjekker stederne mod OpenStreetMap et par gange om året.",
+    "openDataTiles": "Baggrundskortene kommer fra Esri, OpenStreetMap, OpenTopoMap og CyclOSM - kilden står i kortets nederste hjørne."
   },
   "errors": {
     "bad_request": "Forespørgslen kunne ikke behandles.",

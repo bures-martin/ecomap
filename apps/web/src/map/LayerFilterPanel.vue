@@ -188,9 +188,11 @@ const clearFilters = (): void => {
       </div>
     </template>
 
-    <v-divider />
-
-    <p class="text-body-medium text-medium-emphasis" aria-live="polite">
+    <!--
+      Not shown (the "Steder" tab carries the count), but read out to screen
+      readers whenever a filter changes the result - a status message.
+    -->
+    <p class="d-sr-only" aria-live="polite">
       {{ t('map.showingCount', { shown: props.shown, total: props.total }) }}
     </p>
   </div>
