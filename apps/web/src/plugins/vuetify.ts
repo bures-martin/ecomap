@@ -5,6 +5,14 @@ import 'vuetify/styles';
 import { readStoredColorScheme } from '../composables/useColorScheme.js';
 import { readableOn, withContrast } from './contrast.js';
 
+/**
+ * The map's main action ("Tilføj til kortet"): dark ink, not the brand green,
+ * which melts into green land and looks like the cluster circles - and not any
+ * bright hue, which would look like one of the layers' pins. The same in both
+ * schemes, because the button sits on the map, and the map stays light.
+ */
+const CALL_TO_ACTION = { cta: '#1a202c', 'on-cta': '#ffffff' } as const;
+
 /** The surface each scheme's text and coloured buttons sit on. */
 const SURFACE = { light: '#ffffff', dark: '#1c2023' } as const;
 type Scheme = keyof typeof SURFACE;
@@ -82,6 +90,7 @@ export function createEcoMapVuetify(): ReturnType<typeof createVuetify> {
             header: '#f3f6f2',
             /* Softer than pure black: a deep green-grey for the title and links. */
             'on-header': '#1e2b23',
+            ...CALL_TO_ACTION,
           },
           /* Vuetify's 0.6 leaves field labels and hints at 4.3:1 on white. */
           variables: { 'medium-emphasis-opacity': 0.7 },
@@ -96,6 +105,7 @@ export function createEcoMapVuetify(): ReturnType<typeof createVuetify> {
             /* The header: a soft charcoal, a step lighter than the page. */
             header: '#20262a',
             'on-header': '#e6ebe7',
+            ...CALL_TO_ACTION,
           },
         },
       },

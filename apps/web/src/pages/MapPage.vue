@@ -11,10 +11,10 @@ import {
   type Position,
   type SuggestFeatureInput,
 } from '@ecomap/shared';
-import { mdiFilterVariant, mdiPlus } from '@mdi/js';
+import { mdiChevronLeft, mdiChevronRight, mdiFilterVariant, mdiPlus } from '@mdi/js';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useTranslation } from 'i18next-vue';
-import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import {
@@ -93,6 +93,30 @@ const featuresQuery = useFeatures(
 );
 
 const sidebarOpen = ref(false);
+
+/*
+ * On a wide screen the side panel can slide away to give the map the full
+ * width. The choice is remembered in this browser only - a convenience, so it
+ * may be unavailable (private window, blocked storage) without harm.
+ */
+const PANEL_STORAGE_KEY = 'ecomap.sidePanelHidden';
+const readPanelHidden = (): boolean => {
+  try {
+    return localStorage.getItem(PANEL_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+const panelHidden = ref(readPanelHidden());
+const sidebarId = useId();
+const togglePanel = (): void => {
+  panelHidden.value = !panelHidden.value;
+  try {
+    localStorage.setItem(PANEL_STORAGE_KEY, String(panelHidden.value));
+  } catch {
+    /* Not remembered; it still works for this visit. */
+  }
+};
 const startDialogOpen = ref(false);
 const formOpen = ref(false);
 const pendingGeometry = shallowRef<Geometry | null>(null);
@@ -503,24 +527,29 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
   <div class="map-page">
     <aside
       v-if="isDesktop"
+      :id="sidebarId"
       :aria-label="t('placeList.panel')"
       class="map-sidebar"
-      :style="{ width: `${SIDEBAR_WIDTH}px` }"
+      :class="{ 'map-sidebar--hidden': panelHidden }"
+      :style="{ width: panelHidden ? '0px' : `${SIDEBAR_WIDTH}px` }"
     >
-      <MapSidePanel
-        v-model:search-draft="searchDraft"
-        :layers="layers"
-        :filters="filters"
-        :shown="features.length"
-        :total="featuresQuery.data.value?.total ?? 0"
-        :matches="searchMatches"
-        :places="listed.places"
-        :places-total="listed.total"
-        :layers-by-slug="layersBySlug"
-        :from-person="userPosition !== null"
-        @update:filters="applyFilters"
-        @select="selectFromList"
-      />
+      <!-- A fixed width inside, so the content slides rather than squeezes. -->
+      <div class="map-sidebar-inner" :style="{ width: `${SIDEBAR_WIDTH}px` }">
+        <MapSidePanel
+          v-model:search-draft="searchDraft"
+          :layers="layers"
+          :filters="filters"
+          :shown="features.length"
+          :total="featuresQuery.data.value?.total ?? 0"
+          :matches="searchMatches"
+          :places="listed.places"
+          :places-total="listed.total"
+          :layers-by-slug="layersBySlug"
+          :from-person="userPosition !== null"
+          @update:filters="applyFilters"
+          @select="selectFromList"
+        />
+      </div>
     </aside>
     <!-- Every filter change rewrites the query; that must not close the drawer. -->
     <v-navigation-drawer
@@ -554,6 +583,24 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         class="map-progress"
         :aria-label="t('app.loading')"
       />
+
+      <!-- A tab on the panel's edge: hides it, or brings it back. -->
+      <v-btn
+        v-if="isDesktop && !drawing"
+        class="panel-toggle"
+        :class="{ 'panel-toggle--closed': panelHidden }"
+        variant="flat"
+        color="surface"
+        size="small"
+        :prepend-icon="panelHidden ? mdiChevronRight : mdiChevronLeft"
+        :aria-expanded="!panelHidden"
+        :aria-controls="sidebarId"
+        @click="togglePanel"
+      >
+        <span :class="{ 'd-sr-only': !panelHidden }">{{
+          panelHidden ? t('map.showPanel') : t('map.hidePanel')
+        }}</span>
+      </v-btn>
 
       <h1 class="d-sr-only">{{ t('map.pageHeading', { name: settings?.name ?? 'EcoMap' }) }}</h1>
 
@@ -592,7 +639,8 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
           :icon="mdiPlus"
           class="add-button"
           size="x-large"
-          color="primary"
+          color="cta"
+          elevation="6"
           :aria-label="t('map.addContribution')"
           :disabled="isDrawing || contributableLayers.length === 0"
           @click="startDialogOpen = true"
@@ -602,8 +650,10 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
           <template #activator="{ props: activator }">
             <v-btn
               v-bind="activator"
-              color="primary"
+              color="cta"
               variant="flat"
+              elevation="6"
+              size="large"
               :prepend-icon="mdiPlus"
               class="add-button"
               to="/sign-in"
@@ -696,6 +746,46 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
   border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   background: rgb(var(--v-theme-surface));
   overflow: hidden;
+  transition: width 0.2s ease;
+}
+
+.map-sidebar-inner {
+  height: 100%;
+}
+
+/* Hidden also from the keyboard and screen readers, once it has slid away. */
+.map-sidebar--hidden {
+  visibility: hidden;
+  border-right-width: 0;
+  transition:
+    width 0.2s ease,
+    visibility 0s 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-sidebar,
+  .map-sidebar--hidden {
+    transition: none;
+  }
+}
+
+/* Clear of Leaflet's zoom buttons (top left) and the topic chips (top). */
+.panel-toggle {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  border-radius: 0 8px 8px 0;
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-left: 0;
+  min-width: 0;
+  padding: 0 6px;
+  height: 48px !important;
+}
+
+.panel-toggle--closed {
+  padding: 0 12px 0 6px;
 }
 
 .map-area {

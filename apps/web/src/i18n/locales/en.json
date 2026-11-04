@@ -67,7 +67,9 @@
     "moreTopics": "More ({{count}})",
     "pageHeading": "{{name}} map",
     "backgroundMap": "Background map",
-    "leafletCredit": "A JavaScript library for interactive maps"
+    "leafletCredit": "A JavaScript library for interactive maps",
+    "showPanel": "Show panel",
+    "hidePanel": "Hide the panel"
   },
   "draw": {
     "chooseLayer": "Which layer?",

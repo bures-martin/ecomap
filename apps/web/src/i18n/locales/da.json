@@ -67,7 +67,9 @@
     "moreTopics": "Flere ({{count}})",
     "pageHeading": "{{name}} - kort",
     "backgroundMap": "Baggrundskort",
-    "leafletCredit": "Et JavaScript-bibliotek til interaktive kort"
+    "leafletCredit": "Et JavaScript-bibliotek til interaktive kort",
+    "showPanel": "Vis panel",
+    "hidePanel": "Skjul panelet"
   },
   "draw": {
     "chooseLayer": "Hvilket lag?",

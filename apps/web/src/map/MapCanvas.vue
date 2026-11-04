@@ -65,6 +65,8 @@ const toast = useToast();
 const container = useTemplateRef<HTMLDivElement>('container');
 
 let map: L.Map | null = null;
+/* Leaflet only measures its box on start; this re-measures whenever it changes size. */
+let resizeObserver: ResizeObserver | null = null;
 /* Someone who asked the system for less motion gets jumps instead of glides. */
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let basemaps: BasemapSwitcher | null = null;
@@ -93,6 +95,9 @@ const WORLD: L.LatLngExpression[] = [
 
 onMounted(() => {
   if (!container.value) return;
+
+  resizeObserver = new ResizeObserver(() => map?.invalidateSize({ pan: true, animate: false }));
+  resizeObserver.observe(container.value);
 
   map = L.map(container.value, {
     center: props.center,
@@ -189,6 +194,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
   i18next.off('languageChanged', relabelBasemaps);
   locate?.remove();
   locate = null;
