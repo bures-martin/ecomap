@@ -27,7 +27,7 @@ Summarise for the user, not the raw list:
   each, say what changed and suggest what to do. A rename like "Pastariget" → "Pastariget butik"
   is usually cosmetic; "gone" or a `disused:` tag means the place has likely closed.
 - **Possibly new places**: group the real candidates per layer and leave out ones that do not fit
-  the layer (a pizza deli is not "Lokal mad og drikke"). Ask which to add - do not add them all.
+  the layer (a pizza deli is not "Fra gården"). Ask which to add - do not add them all.
 
 Open the OSM link (and the place's own website for opening hours or "økologisk") before changing
 anything. Never copy photos from businesses' websites.

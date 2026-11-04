@@ -13,15 +13,25 @@ export const BORNHOLM_OSM: OsmSource = {
   /* south, west, north, east - the island and Ertholmene. */
   bbox: [54.95, 14.6, 55.35, 15.25],
   searches: {
-    'local-food': [
+    'from-the-farm': [
       'nwr["shop"="farm"]',
-      'nwr["craft"~"^(brewery|distillery|winery|cider|confectionery|smokehouse|beekeeper|cheese)$"]',
-      'nwr["shop"~"^(chocolate|confectionery|cheese|honey|deli|seafood)$"]',
-      'nwr["amenity"="smokehouse"]',
-      /* Most of the island's smokehouses are tagged as restaurants; their name gives them away. */
-      'nwr["name"~"[Rr]øgeri"][!"highway"]',
+      'nwr["craft"~"^(beekeeper|cheese)$"]',
+      'nwr["shop"~"^(cheese|honey|deli)$"]',
       'nwr["amenity"="vending_machine"]["vending"~"eggs|honey|vegetables|potatoes|fruit|meat"]',
       'nwr["amenity"="marketplace"]',
+    ],
+    'fish-and-smokehouses': [
+      'nwr["craft"="smokehouse"]',
+      'nwr["amenity"="smokehouse"]',
+      'nwr["shop"="seafood"]',
+      /* Most of the island's smokehouses are tagged as restaurants; their name gives them away. */
+      'nwr["name"~"[Rr]øgeri"][!"highway"]',
+    ],
+    'local-drinks': ['nwr["craft"~"^(brewery|distillery|winery|cider)$"]'],
+    'sweets-and-ice-cream': [
+      'nwr["craft"="confectionery"]',
+      'nwr["shop"~"^(chocolate|confectionery)$"]',
+      'nwr["amenity"="ice_cream"]',
     ],
     'recycling-and-repair': [
       'nwr["amenity"="recycling"]["recycling_type"="centre"]',

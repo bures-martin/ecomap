@@ -28,6 +28,10 @@ export const LAYER_ICONS = [
   'plug',
   'carrot',
   'store',
+  'barn',
+  'fish',
+  'mug',
+  'candy',
 ] as const;
 export type LayerIcon = (typeof LAYER_ICONS)[number];
 

@@ -3,11 +3,15 @@ import {
   mdiAccountGroup,
   mdiAlert,
   mdiBank,
+  mdiBarn,
   mdiBasket,
   mdiBike,
   mdiBookOpenVariant,
+  mdiCandy,
   mdiCarrot,
   mdiEvStation,
+  mdiFish,
+  mdiGlassMugVariant,
   mdiHeart,
   mdiLeaf,
   mdiMapMarker,
@@ -42,6 +46,10 @@ const LAYER_ICON_PATHS: Readonly<Record<LayerIcon, string>> = {
   plug: mdiEvStation,
   carrot: mdiCarrot,
   store: mdiStorefrontOutline,
+  barn: mdiBarn,
+  fish: mdiFish,
+  mug: mdiGlassMugVariant,
+  candy: mdiCandy,
 };
 
 /** Path data for a layer's icon; an unknown name (an older layer) falls back to a pin. */

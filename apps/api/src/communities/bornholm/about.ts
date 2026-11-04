@@ -6,7 +6,7 @@
  */
 export const BORNHOLM_ABOUT = `## Om kortet
 
-Et fælles kort over det grønne Bornholm: gårdbutikker og vejboder, genbrug og reparation, cykling, opladning, natur og vedvarende energi. Kortet er lavet af og for dem, der bor på øen - og alle, der besøger den.
+Et fælles kort over det grønne Bornholm: gårdbutikker og vejboder, røgerier, bryggerier og lokale søde sager, genbrug og reparation, cykling, opladning, natur og vedvarende energi. Kortet er lavet af og for dem, der bor på øen - og alle, der besøger den.
 
 Kender du et sted, der mangler? Opret en konto og tilføj det. Er noget forkert, så foreslå en ændring - så retter vi det sammen.
 

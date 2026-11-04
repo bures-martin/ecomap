@@ -14,7 +14,8 @@ folder in [`apps/api/src/communities`](../apps/api/src/communities).
 | **Privacy text**                  | Written from what the app and `deploy/` actually do                                                                                    | [`communities/bornholm/privacy.ts`](../apps/api/src/communities/bornholm/privacy.ts) |
 | **Background maps**               | Esri, OpenStreetMap, OpenTopoMap, CyclOSM tiles, loaded live                                                                           | [`apps/web/src/map/basemaps.ts`](../apps/web/src/map/basemaps.ts)                    |
 
-Places per layer: local food 61 · drinking water 26 · cycling 15 · recycling and repair 14 ·
+Places per layer: from the farm 27 · fish and smokehouses 12 · sweets and ice cream 12 ·
+drinks 10 · drinking water 26 · cycling 15 · recycling and repair 14 ·
 renewable energy 10 · EV charging 8 · nature areas 6 · community gardens 5 · green shops 1 (hidden layer).
 
 ### How the places were made

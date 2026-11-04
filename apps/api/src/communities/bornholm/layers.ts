@@ -1,5 +1,26 @@
 import { createLayerInputSchema, type CreateLayerInput } from '@ecomap/shared';
 
+/** The fields every local-food layer shares; only the kinds differ. */
+const localFoodFields = (kinds: string[]) => [
+  { key: 'kind', label: 'Hvad er det?', type: 'select' as const, options: kinds },
+  { key: 'sells', label: 'Hvad sælger de?', type: 'text' as const },
+  { key: 'organic', label: 'Økologisk', type: 'boolean' as const },
+  {
+    key: 'season',
+    label: 'Sæson',
+    type: 'text' as const,
+    helpText: 'Fx "maj-september" eller "hele året"',
+  },
+  {
+    key: 'payment',
+    label: 'Betaling',
+    type: 'select' as const,
+    options: ['MobilePay', 'Kontanter', 'Kort', 'Flere muligheder'],
+  },
+  { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' as const },
+  { key: 'website', label: 'Hjemmeside', type: 'url' as const },
+];
+
 /**
  * The Bornholm map's layers, in Danish. Configuration, not code: the seed
  * creates them, and an admin renames, recolours, removes or adds to them in
@@ -178,39 +199,55 @@ export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
     ],
   }),
   createLayerInputSchema.parse({
-    slug: 'local-food',
-    name: 'Lokal mad og drikke',
+    slug: 'from-the-farm',
+    name: 'Fra gården',
     description:
-      'Gårdbutikker, vejboder og lokale producenter - fra æg og honning til øl, is og chokolade.',
-    color: '#805ad5',
-    icon: 'carrot',
+      'Gårdbutikker, vejboder og lokale producenter - grøntsager, æg, kød, mejerivarer, honning og mel.',
+    color: '#9c4221',
+    icon: 'barn',
     allowedGeometries: ['Point'],
     sortOrder: 15,
     requiresModeration: true,
-    fields: [
-      {
-        key: 'kind',
-        label: 'Hvad er det?',
-        type: 'select',
-        options: ['Gårdbutik', 'Vejbod', 'Producent', 'Marked og madhal'],
-      },
-      { key: 'sells', label: 'Hvad sælger de?', type: 'text' },
-      { key: 'organic', label: 'Økologisk', type: 'boolean' },
-      {
-        key: 'season',
-        label: 'Sæson',
-        type: 'text',
-        helpText: 'Fx "maj-september" eller "hele året"',
-      },
-      {
-        key: 'payment',
-        label: 'Betaling',
-        type: 'select',
-        options: ['MobilePay', 'Kontanter', 'Kort', 'Flere muligheder'],
-      },
-      { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' },
-      { key: 'website', label: 'Hjemmeside', type: 'url' },
-    ],
+    fields: localFoodFields([
+      'Gårdbutik',
+      'Vejbod',
+      'Andelslandbrug',
+      'Producent',
+      'Marked og madhal',
+    ]),
+  }),
+  createLayerInputSchema.parse({
+    slug: 'fish-and-smokehouses',
+    name: 'Fisk og røgerier',
+    description: 'Røgerier og fiskebutikker, der selv ryger, sylter eller dåser fisken.',
+    color: '#4a5568',
+    icon: 'fish',
+    allowedGeometries: ['Point'],
+    sortOrder: 16,
+    requiresModeration: true,
+    fields: localFoodFields(['Røgeri', 'Fiskebutik', 'Producent']),
+  }),
+  createLayerInputSchema.parse({
+    slug: 'local-drinks',
+    name: 'Øl, vin og spiritus',
+    description: 'Bryggerier, cidererier, vingårde og destillerier på øen.',
+    color: '#9b2c2c',
+    icon: 'mug',
+    allowedGeometries: ['Point'],
+    sortOrder: 17,
+    requiresModeration: true,
+    fields: localFoodFields(['Bryggeri', 'Cideri', 'Vingård', 'Destilleri']),
+  }),
+  createLayerInputSchema.parse({
+    slug: 'sweets-and-ice-cream',
+    name: 'Søde sager og is',
+    description: 'Chokolade, lakrids, bolcher, karameller og is, lavet på øen.',
+    color: '#805ad5',
+    icon: 'candy',
+    allowedGeometries: ['Point'],
+    sortOrder: 18,
+    requiresModeration: true,
+    fields: localFoodFields(['Chokolade', 'Lakrids', 'Bolcher og karamel', 'Is']),
   }),
   createLayerInputSchema.parse({
     slug: 'green-shops',
