@@ -59,6 +59,8 @@ export async function seed(db: Sql, community: Community): Promise<SeedResult> {
     const removed = await db`
       delete from features
       where created_by = ${admin.id} and name in ${db(community.retiredPlaceNames)}
+        -- A place someone has given photos is real to them: never removed by a seed.
+        and not exists (select 1 from feature_images where feature_id = features.id)
       returning id
     `;
     if (removed.length > 0) logger.info({ count: removed.length }, 'Removed retired places');

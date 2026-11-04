@@ -1719,6 +1719,43 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       await request(app).get(String(added.body.images[0].url)).expect(404);
     });
 
+    /* Fixing a pin's position must never cost the place its photos. */
+    it('keeps the photos when the pin is moved, directly or by an approved suggestion', async () => {
+      const author = await createTestUser(db, 'contributor');
+      const { id } = await contribution(author);
+      await upload(author, id, 'Front').expect(201);
+      await upload(author, id, 'Inside').expect(201);
+
+      const moved = await request(app)
+        .patch(`/api/features/${id}`)
+        .set(author.authHeader)
+        .send({ geometry: { type: 'Point', coordinates: [14.91, 55.11] } })
+        .expect(200);
+      expect(moved.body.geometry.coordinates).toEqual([14.91, 55.11]);
+      expect(moved.body.images.map((image: { alt: string }) => image.alt)).toEqual([
+        'Front',
+        'Inside',
+      ]);
+
+      const neighbour = await createTestUser(db, 'contributor');
+      const moderator = await createTestUser(db, 'moderator');
+      const suggestion = await request(app)
+        .post(`/api/features/${id}/suggestions`)
+        .set(neighbour.authHeader)
+        .send({ geometry: { type: 'Point', coordinates: [14.92, 55.12] } })
+        .expect(201);
+      const decided = await request(app)
+        .post(`/api/suggestions/${String(suggestion.body.id)}/decide`)
+        .set(moderator.authHeader)
+        .send({ decision: 'approve' })
+        .expect(200);
+      expect(decided.body.feature.geometry.coordinates).toEqual([14.92, 55.12]);
+      expect(decided.body.feature.images).toHaveLength(2);
+
+      const served = await request(app).get(String(moved.body.images[0].url)).expect(200);
+      expect(served.headers['content-type']).toBe('image/jpeg');
+    });
+
     it('deletes the photos together with their contribution', async () => {
       const author = await createTestUser(db, 'contributor');
       const { id } = await contribution(author);
