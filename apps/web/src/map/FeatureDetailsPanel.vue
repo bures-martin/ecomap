@@ -15,6 +15,7 @@ import { useAuth } from '../auth/auth.js';
 import LinkifiedText from '../components/LinkifiedText.vue';
 import UserAvatar from '../components/UserAvatar.vue';
 import FeatureGallery from './FeatureGallery.vue';
+import LayerIcon from './LayerIcon.vue';
 import OpeningHoursView from './OpeningHoursView.vue';
 import { googleMapsDirectionsUrl, navigationTarget } from './navigation.js';
 import { useLanguage } from '../i18n/index.js';
@@ -117,6 +118,8 @@ function formatPropertyValue(
           <h2 class="text-headline-small">{{ props.feature.name }}</h2>
           <div class="d-flex flex-wrap ga-2 mt-2">
             <v-chip v-if="props.layer" size="small" variant="flat" :color="props.layer.color">
+              <!-- On the layer's colour, so the icon takes the chip's text colour. -->
+              <LayerIcon :icon="props.layer.icon" color="currentColor" :size="16" class="mr-1" />
               {{ props.layer.name }}
             </v-chip>
             <v-chip
