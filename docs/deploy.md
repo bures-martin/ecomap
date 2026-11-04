@@ -20,6 +20,11 @@ internet ──▶ web (Caddy: HTTPS, the app, /api ──▶) ──▶ api (No
    server's IP address. Caddy needs this to get the HTTPS certificate.
 3. Open ports **80** and **443** in the server's firewall.
 
+**No domain yet?** For a demo you can skip step 2: use the server's IP address with dashes plus
+`.sslip.io` as `DOMAIN` (server `51.75.12.34` → `51-75-12-34.sslip.io`). That name already points
+at the server, and Caddy still gets a real HTTPS certificate for it. Switch `DOMAIN` to the real
+name later and restart - nothing else changes.
+
 ## 2. Configure
 
 ```bash
