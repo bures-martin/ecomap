@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "EcoMap Community web app - Vue, Vuetify and Leaflet.",
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",

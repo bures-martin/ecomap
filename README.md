@@ -189,6 +189,13 @@ The Bornholm places come from [OpenStreetMap](https://www.openstreetmap.org/copy
 (© OpenStreetMap contributors, ODbL). Each place keeps its OSM id, so it can be traced back to its
 source. Map tiles © their providers, credited in the map's corner.
 
+## Licence
+
+[GNU Affero General Public License v3.0 or later](LICENSE) © 2026 Martin Bures.
+
+Any community may run, change and share EcoMap. If you run a modified version as a website, you
+must offer its source code to the people using it - so improvements stay open for everyone.
+
 ## Deliberately left for later
 
 - The `bbox` query parameter exists on `GET /api/features` (backed by a GiST index), but the web

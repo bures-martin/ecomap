@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Domain schemas, types and permission rules shared by the EcoMap API and web app.",
+  "license": "AGPL-3.0-or-later",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

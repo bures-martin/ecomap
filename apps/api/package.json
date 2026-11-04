@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "EcoMap Community REST API - Express 5, PostgreSQL + PostGIS.",
+  "license": "AGPL-3.0-or-later",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
