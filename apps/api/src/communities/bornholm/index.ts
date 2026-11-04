@@ -2,6 +2,7 @@ import type { Community } from '../types.js';
 import { BORNHOLM_ABOUT } from './about.js';
 import { BORNHOLM_LAYERS } from './layers.js';
 import { BORNHOLM_PLACES } from './places.js';
+import { BORNHOLM_PRIVACY } from './privacy.js';
 
 /**
  * The green map of Bornholm, Denmark - the first community. Its layers, places
@@ -13,6 +14,7 @@ export const BORNHOLM: Community = {
     defaultLocale: 'da',
     initialView: { lat: 55.1, lng: 14.9, zoom: 10 },
     aboutMarkdown: BORNHOLM_ABOUT,
+    privacyMarkdown: BORNHOLM_PRIVACY,
   },
   layers: BORNHOLM_LAYERS,
   places: BORNHOLM_PLACES,

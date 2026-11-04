@@ -20,6 +20,7 @@ Her står, hvilke oplysninger ${communityName} gemmer om dig, hvorfor, og hvad d
 - Din browser husker nogle få valg på din egen enhed: lyst eller mørkt udseende, sprog, baggrundskort, og om du har set velkomsten. De bliver ikke sendt til os.
 - Kortbaggrunden hentes fra Esri, OpenStreetMap, OpenTopoMap eller CyclOSM, alt efter hvilket kort du vælger. De ser din IP-adresse, når kortet hentes.
 - Trykker du på "Navigér", åbnes Google Maps, og så gælder Googles privatlivspolitik.
+- Trykker du på "Vis min placering", bruges din position kun i din egen browser til at vise dig på kortet. Den bliver ikke sendt til os.
 - Serveren skriver en teknisk log med blandt andet IP-adresse, så vi kan opdage fejl og misbrug. Loggen gemmes i [UDFYLD: fx 30 dage].
 
 ## Når du har en konto
@@ -35,7 +36,7 @@ Vi bruger oplysningerne til at drive kortet: så du kan logge ind, så det kan s
 
 ## Hvem kan se dem
 
-Kun kortets administratorer. Oplysningerne ligger hos [UDFYLD: hostingudbyder og land, fx i EU] og bliver hverken solgt eller delt med andre.
+Kun kortets administratorer. Oplysningerne ligger hos [UDFYLD: hostingudbyder og land, fx i EU] og bliver hverken solgt eller delt med andre. Vi tager en sikkerhedskopi hver nat og gemmer den i [UDFYLD: fx 14 dage]; sletter vi din konto, forsvinder den også fra sikkerhedskopierne inden for den tid.
 
 ## Dine rettigheder
 
