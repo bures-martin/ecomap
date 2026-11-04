@@ -1179,6 +1179,60 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
   });
 
+  describe('exporting the map', () => {
+    it('gives an admin everything, pending places and hidden layers included', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const member = await createTestUser(db, 'contributor');
+      const reviewed = await createTestLayer(db, { slug: 'reviewed', requiresModeration: true });
+      const hidden = await createTestLayer(db, { slug: 'hidden-one', isPublished: false });
+
+      await request(app)
+        .post('/api/features')
+        .set(member.authHeader)
+        .send({
+          layerId: reviewed.id,
+          name: 'Waiting, for review',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(201);
+      await request(app)
+        .post('/api/features')
+        .set(admin.authHeader)
+        .send({
+          layerId: hidden.id,
+          name: 'On a hidden layer',
+          geometry: { type: 'Point', coordinates: [15, 55.2] },
+        })
+        .expect(201);
+
+      const geojson = await request(app).get('/api/export').set(admin.authHeader).expect(200);
+      expect(geojson.headers['content-disposition']).toContain('.geojson');
+      expect(geojson.headers['cache-control']).toBe('no-store');
+      const body = JSON.parse(geojson.text) as {
+        features: { properties: { name: string; status: string } }[];
+      };
+      expect(body.features.map((f) => [f.properties.name, f.properties.status])).toEqual(
+        expect.arrayContaining([
+          ['Waiting, for review', 'pending'],
+          ['On a hidden layer', 'published'],
+        ]),
+      );
+
+      const csv = await request(app)
+        .get('/api/export?format=csv')
+        .set(admin.authHeader)
+        .expect(200);
+      expect(csv.headers['content-type']).toContain('text/csv');
+      expect(csv.text).toContain('"Waiting, for review"');
+    });
+
+    it('is for admins only', async () => {
+      const moderator = await createTestUser(db, 'moderator');
+      await request(app).get('/api/export').expect(401);
+      await request(app).get('/api/export').set(moderator.authHeader).expect(403);
+    });
+  });
+
   describe('temporary passwords', () => {
     function reset(actor: { authHeader: { Authorization: string } }, targetId: string) {
       return request(app).post(`/api/users/${targetId}/temporary-password`).set(actor.authHeader);

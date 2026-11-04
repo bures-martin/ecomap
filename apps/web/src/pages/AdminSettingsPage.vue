@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useTranslation } from 'i18next-vue';
+import ExportCard from '../admin/ExportCard.vue';
 import SettingsForm from '../admin/SettingsForm.vue';
 import { useCommunitySettings } from '../api/queries.js';
 import QueryBoundary from '../components/QueryBoundary.vue';
@@ -19,5 +20,7 @@ const settingsQuery = useCommunitySettings();
         <SettingsForm :settings="settings" />
       </template>
     </QueryBoundary>
+
+    <ExportCard class="mt-6" />
   </v-container>
 </template>

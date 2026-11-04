@@ -481,5 +481,11 @@
     "title": "Privacy policy",
     "unfinished": "Parts of the privacy policy are not filled in yet (marked UDFYLD). Fix them under",
     "beforeRegister": "How we look after your details:"
+  },
+  "exportData": {
+    "title": "Export the map's content",
+    "intro": "Download every place, route and area as a file - including those waiting for review and those on hidden layers. GeoJSON opens in map tools such as QGIS; CSV opens in Excel or Google Sheets. Photos are included as links.",
+    "geojson": "Download GeoJSON",
+    "csv": "Download CSV"
   }
 }

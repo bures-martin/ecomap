@@ -481,5 +481,11 @@
     "title": "Privatlivspolitik",
     "unfinished": "Nogle dele af privatlivspolitikken er ikke udfyldt endnu (markeret med UDFYLD). Ret dem under",
     "beforeRegister": "Sådan passer vi på dine oplysninger:"
+  },
+  "exportData": {
+    "title": "Eksportér kortets indhold",
+    "intro": "Hent alle steder, ruter og områder som en fil - også dem, der venter på godkendelse, og dem på skjulte lag. GeoJSON åbnes i korttools som QGIS; CSV åbnes i Excel eller Google Sheets. Billeder er med som links.",
+    "geojson": "Hent GeoJSON",
+    "csv": "Hent CSV"
   }
 }
