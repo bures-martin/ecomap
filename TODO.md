@@ -85,6 +85,11 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 
 ## LATER
 
+- [ ] **Accessibility follow-ups**
+  - Overlapping pins: where pins sit on top of each other, the visible part can be smaller than 24x24 px (WCAG 2.5.8). Option: group a little more eagerly, or spread pins that share a spot.
+  - A list view of the places on screen (name, layer, distance) as an alternative to the map - the usual best practice for maps, and handy on phones. M
+  - Routes and areas are now keyboard-reachable, but there are none in the data yet - check once the first one is added.
+  - Test with a real screen reader (NVDA on Windows, VoiceOver on iPhone). S
 - **Some more complex import**
 - [ ] **Remove or reuse the "Vis når kortet åbner" (visible by default) layer setting**
   - Since Nov 2026 the map opens on every layer, so this admin setting no longer does anything. Either remove it (DB column, shared schema, admin form), or reuse it as "which topic chips show first". S
@@ -140,3 +145,4 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 - Layer icons in the layer's colour (instead of a coloured dot) in the side-panel layer list, the "add a place" layer picker and the admin layer table.
 - Installable app (PWA): manifest, home-screen icons (incl. maskable and Apple touch icon) and a service worker - pages network-first with an offline fallback, hashed assets cached, API and map tiles never cached.
 - "Vis min placering" button under the zoom buttons: one-off location, blue dot with an accuracy circle, friendly message when access is refused.
+- Accessibility pass (WCAG 2.2 AA, a11yproject checklist): no automated issues left on any page in light or dark mode. Colours: the community colours and status colours are shaded automatically to at least 4.5:1, with black or white text chosen per colour, so no admin colour choice can break contrast; field labels darker. Keyboard: map buttons and topics come before the pins in tab order; Leaflet buttons in Danish and work with Space; routes and areas focusable; opening a place moves focus to its name, Escape closes and returns focus to the pin; adding or moving a place works without a mouse (crosshair in the middle, "Sæt punkt i midten" or Enter on the map); focus returns to the add button after dialogs. Also: hidden page heading on the map, labelled table columns, reduced-motion respected on the map, 100 missing Danish texts translated (with a test that keeps both languages complete).

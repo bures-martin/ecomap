@@ -71,7 +71,9 @@ const confirmDelete = (): void => {
                 <th>{{ t('layerAdmin.slug') }}</th>
                 <th>{{ t('layerAdmin.geometries') }}</th>
                 <th class="text-right">{{ t('map.layersHeading') }}</th>
-                <th class="text-right" />
+                <th class="text-right">
+                  <span class="d-sr-only">{{ t('app.actions') }}</span>
+                </th>
               </tr>
             </thead>
             <tbody>

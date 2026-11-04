@@ -9,7 +9,7 @@ import {
 } from '@ecomap/shared';
 import { mdiClose, mdiCursorMove, mdiDelete, mdiNavigationVariant, mdiPencil } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
-import { computed } from 'vue';
+import { computed, nextTick, useTemplateRef, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuth } from '../auth/auth.js';
 import LinkifiedText from '../components/LinkifiedText.vue';
@@ -68,6 +68,33 @@ const open = computed({
   },
 });
 
+/*
+ * Opening a place moves focus to its name, so a keyboard or screen-reader user
+ * lands in the details instead of being left behind on the map; Escape closes
+ * them (and the page hands focus back to the place).
+ */
+const heading = useTemplateRef<HTMLElement>('heading');
+watch(
+  () => props.feature?.id,
+  async (id, previous) => {
+    if (!id || id === previous) return;
+    await nextTick();
+    focusHeading(20);
+  },
+);
+
+/* The drawer slides in, and a browser will not focus what is not visible yet. */
+function focusHeading(attempts: number): void {
+  const element = heading.value;
+  if (!element) return;
+  element.focus();
+  if (document.activeElement !== element && attempts > 0) {
+    setTimeout(() => {
+      focusHeading(attempts - 1);
+    }, 50);
+  }
+}
+
 /** Only the layer's fields that this contribution actually filled in. */
 const filledFields = computed(() => {
   const { feature, layer } = props;
@@ -112,10 +139,16 @@ function formatPropertyValue(
     disable-route-watcher
     :width="xs ? viewportWidth : 380"
   >
-    <article v-if="props.feature" class="d-flex flex-column ga-4 pa-4">
+    <article
+      v-if="props.feature"
+      class="d-flex flex-column ga-4 pa-4"
+      @keydown.esc.stop="emit('close')"
+    >
       <div class="d-flex align-start ga-2">
         <div class="flex-grow-1">
-          <h2 class="text-headline-small">{{ props.feature.name }}</h2>
+          <h2 ref="heading" tabindex="-1" class="text-headline-small details-heading">
+            {{ props.feature.name }}
+          </h2>
           <div class="d-flex flex-wrap ga-2 mt-2">
             <v-chip v-if="props.layer" size="small" variant="flat" :color="props.layer.color">
               <!-- On the layer's colour, so the icon takes the chip's text colour. -->
@@ -245,6 +278,13 @@ function formatPropertyValue(
 </template>
 
 <style scoped>
+/* Focused by script, not by Tab: a quiet ring is enough to show where you are. */
+.details-heading:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 .property-list {
   display: grid;
   gap: 8px;

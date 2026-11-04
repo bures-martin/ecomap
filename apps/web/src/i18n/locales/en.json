@@ -12,7 +12,8 @@
     "somethingWentWrong": "Something went wrong",
     "notFoundTitle": "That page does not exist",
     "notFoundBody": "The link may be out of date. The map is still here.",
-    "backToMap": "Back to the map"
+    "backToMap": "Back to the map",
+    "actions": "Actions"
   },
   "nav": {
     "map": "Map",
@@ -63,7 +64,9 @@
     "topics": "Topics",
     "clusterLabel_one": "{{count}} place here - zoom in",
     "clusterLabel_other": "{{count}} places here - zoom in",
-    "moreTopics": "More ({{count}})"
+    "moreTopics": "More ({{count}})",
+    "pageHeading": "{{name}} map",
+    "backgroundMap": "Background map"
   },
   "draw": {
     "chooseLayer": "Which layer?",
@@ -82,7 +85,9 @@
     "outsideBounds": "That is outside the area this community covers.",
     "drawing": "Drawing on the map",
     "moveHint": "Click where the place really is - satellite view in the bottom-left corner helps.",
-    "useThisPosition": "Use this position"
+    "useThisPosition": "Use this position",
+    "placeAtCenter": "Place point in the middle",
+    "keyboardHint": "With the keyboard: move the map with the arrow keys, zoom with + and -, and press Enter on the map (or the button below) to place a point at the crosshair."
   },
   "feature": {
     "addTitle": "Add to {{layer}}",
@@ -460,6 +465,7 @@
     "fieldLocation": "Location",
     "moved": "Moved on the map",
     "empty": "(empty)",
-    "openPlace": "Show on the map"
+    "openPlace": "Show on the map",
+    "field": "Field"
   }
 }

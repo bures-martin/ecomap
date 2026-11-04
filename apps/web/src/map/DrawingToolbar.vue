@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { GeometryKind } from '@ecomap/shared';
-import { mdiCheck, mdiClose, mdiRestart, mdiUndo } from '@mdi/js';
+import { mdiCheck, mdiClose, mdiCrosshairs, mdiRestart, mdiUndo } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
-import { computed } from 'vue';
+import { computed, onMounted, useTemplateRef } from 'vue';
 import { MINIMUM_POSITIONS, type DrawingState } from './useDrawing.js';
 
 const HINT_KEY: Readonly<Record<GeometryKind, string>> = {
@@ -23,12 +23,28 @@ const props = defineProps<{
   /** Moving an existing place rather than drawing a new one. */
   moving?: boolean;
 }>();
-const emit = defineEmits<{ finish: []; undo: []; reset: []; cancel: [] }>();
+const emit = defineEmits<{
+  finish: [];
+  undo: [];
+  reset: [];
+  cancel: [];
+  /** Places a point under the crosshair in the middle of the map - the keyboard way. */
+  placeAtCenter: [];
+}>();
 
 const { t } = useTranslation();
 
 const count = computed(() => props.drawing.positions.length);
 const needed = computed(() => MINIMUM_POSITIONS[props.drawing.kind]);
+
+/*
+ * The bar takes focus when it appears, on the keyboard way of placing a point,
+ * so nobody is left on a dialog that has just closed.
+ */
+const placeButton = useTemplateRef<{ $el: HTMLElement }>('placeButton');
+onMounted(() => {
+  placeButton.value?.$el.focus();
+});
 </script>
 
 <template>
@@ -46,8 +62,19 @@ const needed = computed(() => MINIMUM_POSITIONS[props.drawing.kind]);
         {{ t('draw.needMorePoints', { count: needed }) }}
       </template>
     </p>
+    <p class="text-body-small text-medium-emphasis mb-2">{{ t('draw.keyboardHint') }}</p>
 
     <div class="d-flex flex-wrap ga-2">
+      <v-btn
+        ref="placeButton"
+        size="small"
+        variant="tonal"
+        color="primary"
+        :prepend-icon="mdiCrosshairs"
+        @click="emit('placeAtCenter')"
+      >
+        {{ t('draw.placeAtCenter') }}
+      </v-btn>
       <v-btn
         size="small"
         variant="flat"

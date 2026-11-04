@@ -220,6 +220,13 @@ body,
   outline-offset: 2px;
 }
 
+/* A route or area with keyboard focus: SVG ignores outlines, so it thickens instead. */
+.leaflet-container path.ecomap-shape:focus-visible {
+  outline: none;
+  stroke-width: 9px;
+  stroke-opacity: 1;
+}
+
 /* While drawing, the crosshair makes it obvious the map is waiting for a click. */
 .leaflet-container.ecomap-drawing {
   cursor: crosshair;

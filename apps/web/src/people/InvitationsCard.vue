@@ -62,7 +62,9 @@ const revoke = (invitation: Invitation): void => {
                 <th>{{ t('people.role') }}</th>
                 <th>{{ t('invite.status') }}</th>
                 <th>{{ t('invite.details') }}</th>
-                <th class="text-right" />
+                <th class="text-right">
+                  <span class="d-sr-only">{{ t('app.actions') }}</span>
+                </th>
               </tr>
             </thead>
             <tbody>

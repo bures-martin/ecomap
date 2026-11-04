@@ -7,6 +7,7 @@ import {
   type Layer,
   type Position,
 } from '@ecomap/shared';
+import { mdiCrosshairs } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
 import L from 'leaflet';
 import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
@@ -59,6 +60,8 @@ const toast = useToast();
 const container = useTemplateRef<HTMLDivElement>('container');
 
 let map: L.Map | null = null;
+/* Someone who asked the system for less motion gets jumps instead of glides. */
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let basemaps: BasemapSwitcher | null = null;
 let locate: LocateControl | null = null;
 /** Routes, areas and the selected place. */
@@ -90,7 +93,11 @@ onMounted(() => {
     center: props.center,
     zoom: props.zoom,
     scrollWheelZoom: true,
+    zoomAnimation: !reduceMotion,
+    fadeAnimation: !reduceMotion,
+    markerZoomAnimation: !reduceMotion,
   });
+  setUpKeyboard(container.value);
   const pane = map.createPane(AREA_PANE);
   pane.style.zIndex = '350';
   pane.style.pointerEvents = 'none';
@@ -129,6 +136,7 @@ onMounted(() => {
   locate = addLocateControl(map, t('map.locate'), (failure) => {
     toast.showError(t(failure === 'denied' ? 'map.locateDenied' : 'map.locateFailed'));
   });
+  labelControls();
 
   watch(
     () => [props.features, props.layersBySlug, props.selectedFeatureId] as const,
@@ -144,7 +152,7 @@ onMounted(() => {
   watch(
     () => [props.center[0], props.center[1], props.zoom] as const,
     ([lat, lng, zoom]) => {
-      map?.setView([lat, lng], zoom, { animate: true });
+      map?.setView([lat, lng], zoom, { animate: !reduceMotion });
     },
   );
 
@@ -158,9 +166,11 @@ onMounted(() => {
     (focus, previous) => {
       if (!map || !focus || focus.id === previous?.id) return;
       if (focus.zoom === null) {
-        map.panTo(focus.position, { animate: true });
+        map.panTo(focus.position, { animate: !reduceMotion });
       } else {
-        map.setView(focus.position, Math.max(map.getZoom(), focus.zoom), { animate: true });
+        map.setView(focus.position, Math.max(map.getZoom(), focus.zoom), {
+          animate: !reduceMotion,
+        });
       }
     },
     { immediate: true },
@@ -230,6 +240,58 @@ function rememberBasemap(basemap: Basemap): void {
 function relabelBasemaps(): void {
   basemaps?.relabel();
   locate?.setLabel(t('map.locate'));
+  labelControls();
+}
+
+/** Leaflet's own controls speak English; these give them the app's words. */
+function labelControls(): void {
+  const root = container.value;
+  if (!root) return;
+  const label = (selector: string, text: string): void => {
+    for (const element of root.querySelectorAll<HTMLElement>(selector)) {
+      element.title = text;
+      element.setAttribute('aria-label', text);
+    }
+  };
+  label('.leaflet-control-zoom-in', t('map.zoomIn'));
+  label('.leaflet-control-zoom-out', t('map.zoomOut'));
+  label('.leaflet-control-layers-toggle', t('map.backgroundMap'));
+  label('.leaflet-control-layers-list', t('map.backgroundMap'));
+}
+
+/** Where a keyboard-placed point goes: the crosshair in the middle of the map. */
+function centerPosition(): Position | null {
+  if (!map) return null;
+  const center = map.getCenter();
+  return [center.lng, center.lat];
+}
+defineExpose({ centerPosition, focusFeature });
+
+/**
+ * Makes the map work from the keyboard beyond Leaflet's own arrows and +/-:
+ *
+ * - The buttons (zoom, my location, background map) come before the places in
+ *   the tab order, instead of after every marker on the island.
+ * - Space presses a button as Enter does - they are links acting as buttons.
+ * - While drawing, Enter on the map itself puts a point at the crosshair.
+ */
+function setUpKeyboard(root: HTMLElement): void {
+  const controls = root.querySelector('.leaflet-control-container');
+  if (controls) root.prepend(controls);
+
+  root.addEventListener('keydown', (event) => {
+    const target = event.target as HTMLElement;
+    if (event.key === ' ' && target.matches('.leaflet-control a')) {
+      event.preventDefault();
+      target.click();
+      return;
+    }
+    if (event.key === 'Enter' && target === root && props.drawing) {
+      event.preventDefault();
+      const position = centerPosition();
+      if (position) emit('drawPosition', position);
+    }
+  });
 }
 
 /**
@@ -285,6 +347,7 @@ function drawPoints(): void {
     const feature = featuresById.get(group.properties.featureId);
     if (feature) pointLayer.addLayer(featureShape(feature, false));
   }
+  applyPendingFocus();
 }
 
 /**
@@ -370,7 +433,9 @@ function featureShape(feature: Feature, selected: boolean): L.Layer {
       });
       /* The pin is a focusable div, so it needs its own accessible name. */
       marker.on('add', () => {
-        marker.getElement()?.setAttribute('aria-label', feature.name);
+        const element = marker.getElement();
+        element?.setAttribute('aria-label', feature.name);
+        if (element) element.dataset['featureId'] = feature.id;
       });
       return marker;
     }
@@ -378,7 +443,7 @@ function featureShape(feature: Feature, selected: boolean): L.Layer {
       const line = L.polyline(feature.geometry.coordinates.map(toLatLng), pathOptions);
       line.bindTooltip(textContent(feature.name), { sticky: true });
       line.on('click', select);
-      return line;
+      return keyboardShape(line, feature, select);
     }
     case 'Polygon': {
       const polygon = L.polygon(
@@ -387,9 +452,66 @@ function featureShape(feature: Feature, selected: boolean): L.Layer {
       );
       polygon.bindTooltip(textContent(feature.name), { sticky: true });
       polygon.on('click', select);
-      return polygon;
+      return keyboardShape(polygon, feature, select);
     }
   }
+}
+
+/**
+ * Routes and areas are SVG paths, which Leaflet leaves out of the tab order -
+ * unlike pins. This makes each one a named button like a pin: Tab reaches it,
+ * Enter or Space opens it, and it is drawn thicker while it has focus.
+ */
+function keyboardShape<T extends L.Path>(shape: T, feature: Feature, select: () => void): T {
+  shape.on('add', () => {
+    const element = shape.getElement();
+    if (!(element instanceof SVGElement)) return;
+    element.setAttribute('tabindex', '0');
+    element.setAttribute('role', 'button');
+    element.setAttribute('aria-label', feature.name);
+    element.dataset['featureId'] = feature.id;
+    element.classList.add('ecomap-shape');
+    element.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        select();
+      }
+    });
+  });
+  return shape;
+}
+
+/**
+ * Gives focus back to a place once its details close. Closing changes the
+ * selection and the pins are redrawn - often more than once in quick
+ * succession (the new selection, the end of a pan) - and every redraw throws
+ * the focused pin away. So for a moment after closing, each redraw puts focus
+ * back on the place if it was lost, and leaves it alone if the person has
+ * already moved on.
+ */
+const REFOCUS_WINDOW_MS = 1500;
+let pendingFocus: { id: string; until: number } | null = null;
+function focusFeature(id: string): void {
+  pendingFocus = { id, until: performance.now() + REFOCUS_WINDOW_MS };
+}
+
+function applyPendingFocus(): void {
+  const root = container.value;
+  if (!pendingFocus || !root) return;
+  if (performance.now() > pendingFocus.until) {
+    pendingFocus = null;
+    return;
+  }
+  const active = document.activeElement;
+  /* Lost: on the page body, or still in the details that just closed. */
+  const lost = active === null || active === document.body || !root.contains(active);
+  if (!lost) return;
+  /* Folded into a group by now: the map itself, rather than the page body. */
+  const target =
+    root.querySelector<HTMLElement | SVGElement>(
+      `[data-feature-id="${CSS.escape(pendingFocus.id)}"]`,
+    ) ?? root;
+  target.focus();
 }
 
 /** Shows the shape as it is being drawn, in the layer's own colour. */
@@ -425,13 +547,47 @@ function drawDrawing(drawing: DrawingState | null): void {
 </script>
 
 <template>
-  <!-- Leaflet exposes the map to assistive tech as a labelled region. -->
-  <div ref="container" class="map-canvas" role="region" :aria-label="t('map.title')" />
+  <div class="map-canvas-wrap">
+    <!-- Leaflet exposes the map to assistive tech as a labelled region. -->
+    <div ref="container" class="map-canvas" role="region" :aria-label="t('map.title')" />
+    <!--
+      While drawing: the spot "place in the middle" and Enter put a point on, so
+      someone moving the map with the arrow keys can see where it will land.
+    -->
+    <svg
+      v-if="props.drawing"
+      class="map-crosshair"
+      viewBox="0 0 24 24"
+      width="40"
+      height="40"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path :d="mdiCrosshairs" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" />
+      <path :d="mdiCrosshairs" fill="#1e2b23" />
+    </svg>
+  </div>
 </template>
 
 <style scoped>
+.map-canvas-wrap {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
 .map-canvas {
   height: 100%;
   width: 100%;
+}
+
+/* Above the places, below Leaflet's buttons; never catches a click. */
+.map-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 650;
+  pointer-events: none;
 }
 </style>

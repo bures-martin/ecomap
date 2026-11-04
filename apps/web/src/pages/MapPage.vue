@@ -14,7 +14,7 @@ import {
 import { mdiFilterVariant, mdiPlus } from '@mdi/js';
 import { useQueryClient } from '@tanstack/vue-query';
 import { useTranslation } from 'i18next-vue';
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import {
@@ -153,6 +153,18 @@ watch(debouncedSearch, (q) => {
   if (q !== filters.value.q) applyFilters({ ...filters.value, q });
 });
 
+const mapCanvas = useTemplateRef<{
+  centerPosition: () => Position | null;
+  focusFeature: (id: string) => void;
+}>('mapCanvas');
+
+/** Closing the details hands focus back to the place on the map it came from. */
+const closeDetails = (): void => {
+  const id = selectedFeatureId.value;
+  if (id) mapCanvas.value?.focusFeature(id);
+  selectFeature(null);
+};
+
 const selectFeature = (feature: Feature | null): void => {
   replaceSearchParams((params) => {
     const next = new URLSearchParams(params);
@@ -221,6 +233,12 @@ const startDrawing = (layer: Layer, kind: GeometryKind): void => {
   startDrawingState(layer, kind);
 };
 
+/** Keyboard placing: a point where the crosshair in the middle of the map is. */
+const placeAtCenter = (): void => {
+  const position = mapCanvas.value?.centerPosition();
+  if (position) placePosition(position);
+};
+
 /** Refuses a click outside the community's area straight away, not at the end. */
 const placePosition = (position: Position): void => {
   const area = settings.value?.contributionArea;
@@ -251,7 +269,19 @@ const closeForm = (): void => {
   pendingGeometry.value = null;
   editing.value = null;
   cancelDrawing();
+  focusAddButton();
 };
+
+/**
+ * Dialogs and the drawing bar opened from code have no button to hand focus
+ * back to, so after adding (or giving up) it goes to the add button - never
+ * lost on the page body. Opening the new place moves it on from there.
+ */
+function focusAddButton(): void {
+  void nextTick(() => {
+    document.querySelector<HTMLElement>('.map-actions .add-button')?.focus();
+  });
+}
 
 /**
  * Photos are uploaded once the contribution is saved (a new one has no id
@@ -404,6 +434,12 @@ const startMoving = (feature: Feature): void => {
 const cancelDrawingOrMove = (): void => {
   if (!formOpen.value) editing.value = null;
   cancelDrawing();
+  focusAddButton();
+};
+
+const cancelStart = (): void => {
+  startDialogOpen.value = false;
+  focusAddButton();
 };
 
 const startEditing = (feature: Feature): void => {
@@ -475,20 +511,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :aria-label="t('app.loading')"
       />
 
-      <MapCanvas
-        :basemap="settings?.basemap ?? DEFAULT_COMMUNITY_SETTINGS.basemap"
-        :center="mapCenter"
-        :zoom="mapZoom"
-        :focus="mapFocus"
-        :features="features"
-        :layers-by-slug="layersBySlug"
-        :selected-feature-id="selectedFeatureId"
-        :drawing="drawing"
-        :contribution-area="settings?.contributionArea ?? null"
-        :area-color="settings?.primaryColor ?? DEFAULT_COMMUNITY_SETTINGS.primaryColor"
-        @select-feature="selectFeature"
-        @draw-position="placePosition"
-      />
+      <h1 class="d-sr-only">{{ t('map.pageHeading', { name: settings?.name ?? 'EcoMap' }) }}</h1>
 
       <DrawingToolbar
         v-if="drawing"
@@ -499,6 +522,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         @undo="undo"
         @reset="reset"
         @cancel="cancelDrawingOrMove"
+        @place-at-center="placeAtCenter"
       />
       <TopicChips v-else :layers="layers" :filters="filters" @update:filters="applyFilters" />
 
@@ -522,19 +546,22 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         <v-btn
           v-if="auth.user"
           :icon="mdiPlus"
+          class="add-button"
           size="x-large"
           color="primary"
           :aria-label="t('map.addContribution')"
           :disabled="isDrawing || contributableLayers.length === 0"
           @click="startDialogOpen = true"
         />
-        <v-tooltip v-else :text="t('map.addContributionHint')" location="top">
+        <!-- Eager: the hint exists before it is shown, so the button can point at its text. -->
+        <v-tooltip v-else :text="t('map.addContributionHint')" location="top" eager>
           <template #activator="{ props: activator }">
             <v-btn
               v-bind="activator"
               color="primary"
               variant="flat"
               :prepend-icon="mdiPlus"
+              class="add-button"
               to="/sign-in"
             >
               {{ t('map.addContribution') }}
@@ -542,13 +569,33 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
           </template>
         </v-tooltip>
       </div>
+
+      <!--
+        After the controls above in the page order, though drawn beneath them:
+        keyboard users reach the topics and buttons before every place on the map.
+      -->
+      <MapCanvas
+        ref="mapCanvas"
+        :basemap="settings?.basemap ?? DEFAULT_COMMUNITY_SETTINGS.basemap"
+        :center="mapCenter"
+        :zoom="mapZoom"
+        :focus="mapFocus"
+        :features="features"
+        :layers-by-slug="layersBySlug"
+        :selected-feature-id="selectedFeatureId"
+        :drawing="drawing"
+        :contribution-area="settings?.contributionArea ?? null"
+        :area-color="settings?.primaryColor ?? DEFAULT_COMMUNITY_SETTINGS.primaryColor"
+        @select-feature="selectFeature"
+        @draw-position="placePosition"
+      />
     </div>
 
     <StartDrawingDialog
       :open="startDialogOpen"
       :layers="contributableLayers"
       @start="startDrawing"
-      @cancel="startDialogOpen = false"
+      @cancel="cancelStart"
     />
 
     <FeatureFormDialog
@@ -571,7 +618,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
     <FeatureDetailsPanel
       :feature="selectedFeature"
       :layer="selectedLayer"
-      @close="selectFeature(null)"
+      @close="closeDetails"
       @edit="startEditing"
       @move="startMoving"
       @delete="(feature) => (deleting = feature)"

@@ -141,7 +141,9 @@ const proposedBy = (suggestion: FeatureSuggestion): string => {
           <table class="change-table">
             <thead>
               <tr>
-                <th scope="col" />
+                <th scope="col">
+                  <span class="d-sr-only">{{ t('suggestion.field') }}</span>
+                </th>
                 <th scope="col">{{ t('suggestion.before') }}</th>
                 <th scope="col">{{ t('suggestion.after') }}</th>
               </tr>
