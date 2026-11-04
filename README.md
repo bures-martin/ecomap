@@ -167,7 +167,9 @@ it did is covered by `apps/api`; delete it once you are happy the new version ha
 - The `bbox` query parameter exists on `GET /api/features` and is backed by a GiST index, but the
   web app loads all matching features in one request. Wire the viewport to it when a community
   outgrows that.
-- The About text is rendered as plain text rather than parsed as Markdown — rendering
-  admin-authored HTML would be a stored XSS waiting for the first compromised account.
-- Danish is partially translated and falls back to English key by key.
-- No email yet, so no password reset and no invitations.
+- The About and privacy texts support only a small Markdown subset (headings, lists, bold,
+  links), rendered as elements and never as HTML — admin-authored HTML would be a stored XSS
+  waiting for the first compromised account.
+- No email yet. Invitations are links an admin copies and sends, and someone who forgets their
+  password gets a temporary one from an admin on the people page; reset by email comes later.
+- No self-service account deletion: the privacy notice tells people to ask an admin.

@@ -5,6 +5,7 @@ export interface SettingsDraft {
   name: string;
   tagline: string;
   aboutMarkdown: string;
+  privacyMarkdown: string;
   primaryColor: string;
   accentColor: string;
   defaultLocale: CommunitySettings['defaultLocale'];
@@ -22,6 +23,7 @@ export function toSettingsDraft(settings: CommunitySettings): SettingsDraft {
     name: settings.name,
     tagline: settings.tagline,
     aboutMarkdown: settings.aboutMarkdown,
+    privacyMarkdown: settings.privacyMarkdown,
     primaryColor: settings.primaryColor,
     accentColor: settings.accentColor,
     defaultLocale: settings.defaultLocale,

@@ -200,7 +200,10 @@
       "cornerHint": "Træk for at flytte, dobbeltklik for at fjerne",
       "midpointHint": "Træk for at tilføje et hjørne her",
       "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
-    }
+    },
+    "privacy": "Privatlivspolitik",
+    "privacyHelp": "Vises på siden Privatlivspolitik. Tom betyder, at skabelonen vises. Samme formatering som Om-teksten.",
+    "privacyUseTemplate": "Start fra skabelonen"
   },
   "moderation": {
     "title": "Venter på godkendelse",
@@ -473,5 +476,10 @@
     "empty": "(tom)",
     "openPlace": "Vis på kortet",
     "field": "Felt"
+  },
+  "privacy": {
+    "title": "Privatlivspolitik",
+    "unfinished": "Nogle dele af privatlivspolitikken er ikke udfyldt endnu (markeret med UDFYLD). Ret dem under",
+    "beforeRegister": "Sådan passer vi på dine oplysninger:"
   }
 }

@@ -88,6 +88,9 @@ const contributeHeadingId = useId();
         <p>{{ t('about.openDataBody') }}</p>
 
         <p class="text-body-small text-medium-emphasis mt-4">{{ t('map.attribution') }}</p>
+        <p class="text-body-small mt-2">
+          <RouterLink to="/privacy">{{ t('privacy.title') }}</RouterLink>
+        </p>
       </v-card>
     </div>
   </v-container>

@@ -200,7 +200,10 @@
       "cornerHint": "Drag to move, double-click to remove",
       "midpointHint": "Drag to add a corner here",
       "crosses": "The outline crosses itself. Move a corner so the edges do not cross, or the area cannot be saved."
-    }
+    },
+    "privacy": "Privacy policy",
+    "privacyHelp": "Shown on the Privacy policy page. Empty means the template is shown. Same formatting as the About text.",
+    "privacyUseTemplate": "Start from the template"
   },
   "moderation": {
     "title": "Waiting for review",
@@ -473,5 +476,10 @@
     "empty": "(empty)",
     "openPlace": "Show on the map",
     "field": "Field"
+  },
+  "privacy": {
+    "title": "Privacy policy",
+    "unfinished": "Parts of the privacy policy are not filled in yet (marked UDFYLD). Fix them under",
+    "beforeRegister": "How we look after your details:"
   }
 }

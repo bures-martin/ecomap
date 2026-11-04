@@ -13,6 +13,7 @@ interface SettingsRow {
   name: string;
   tagline: string;
   aboutMarkdown: string;
+  privacyMarkdown: string;
   primaryColor: string;
   accentColor: string;
   defaultLocale: string;
@@ -30,6 +31,7 @@ function settingsColumns(db: Queryable) {
     name,
     tagline,
     about_markdown            as "aboutMarkdown",
+    privacy_markdown          as "privacyMarkdown",
     primary_color             as "primaryColor",
     accent_color              as "accentColor",
     default_locale            as "defaultLocale",
@@ -95,6 +97,9 @@ export async function updateCommunitySettings(
   if (input.name !== undefined) assignments['name'] = input.name;
   if (input.tagline !== undefined) assignments['tagline'] = input.tagline;
   if (input.aboutMarkdown !== undefined) assignments['about_markdown'] = input.aboutMarkdown;
+  if (input.privacyMarkdown !== undefined) {
+    assignments['privacy_markdown'] = input.privacyMarkdown;
+  }
   if (input.primaryColor !== undefined) assignments['primary_color'] = input.primaryColor;
   if (input.accentColor !== undefined) assignments['accent_color'] = input.accentColor;
   if (input.defaultLocale !== undefined) assignments['default_locale'] = input.defaultLocale;
@@ -134,6 +139,7 @@ function toCommunitySettings(row: SettingsRow): CommunitySettings {
     name: row.name,
     tagline: row.tagline,
     aboutMarkdown: row.aboutMarkdown,
+    privacyMarkdown: row.privacyMarkdown,
     primaryColor: row.primaryColor,
     accentColor: row.accentColor,
     defaultLocale: row.defaultLocale,

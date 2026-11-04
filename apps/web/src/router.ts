@@ -27,6 +27,7 @@ declare module 'vue-router' {
 export const routes: RouteRecordRaw[] = [
   { path: '/', component: MapPage },
   { path: '/about', component: AboutPage },
+  { path: '/privacy', component: () => import('./pages/PrivacyPage.vue') },
   { path: '/sign-in', component: LoginPage },
   { path: '/register', component: RegisterPage },
   { path: '/join', component: () => import('./pages/JoinPage.vue') },

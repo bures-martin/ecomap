@@ -11,6 +11,7 @@ import { useUpdateSettings } from '../api/queries.js';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
 import AreaEditor from './AreaEditor.vue';
+import { privacyTemplate } from '../pages/privacyTemplate.js';
 import { toSettingsDraft } from './settingsDraft.js';
 
 const props = defineProps<{ settings: CommunitySettings }>();
@@ -40,6 +41,7 @@ const submit = (): void => {
     name: current.name,
     tagline: current.tagline,
     aboutMarkdown: current.aboutMarkdown,
+    privacyMarkdown: current.privacyMarkdown,
     primaryColor: current.primaryColor,
     accentColor: current.accentColor,
     defaultLocale: current.defaultLocale,
@@ -84,6 +86,23 @@ const submit = (): void => {
         rows="4"
         auto-grow
       />
+      <v-textarea
+        v-model="draft.privacyMarkdown"
+        :label="t('settingsAdmin.privacy')"
+        :hint="t('settingsAdmin.privacyHelp')"
+        persistent-hint
+        rows="4"
+        auto-grow
+      />
+      <div v-if="!draft.privacyMarkdown.trim()">
+        <v-btn
+          variant="tonal"
+          color="primary"
+          @click="draft.privacyMarkdown = privacyTemplate(draft.name)"
+        >
+          {{ t('settingsAdmin.privacyUseTemplate') }}
+        </v-btn>
+      </div>
     </v-card>
 
     <v-card class="pa-6 d-flex flex-column ga-4">

@@ -93,6 +93,11 @@ const submit = async (): Promise<void> => {
           required
         />
 
+        <p class="text-body-small text-medium-emphasis">
+          {{ t('privacy.beforeRegister') }}
+          <RouterLink to="/privacy">{{ t('privacy.title') }}</RouterLink>
+        </p>
+
         <v-btn type="submit" color="primary" variant="flat" size="large" :loading="submitting">
           {{ t('auth.register') }}
         </v-btn>
