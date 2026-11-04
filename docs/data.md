@@ -5,16 +5,16 @@ folder in [`apps/api/src/communities`](../apps/api/src/communities).
 
 ## Where everything comes from
 
-| What                              | Source                                                                                                             | Where in the code                                                                    |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| **Places** (127)                  | [OpenStreetMap](https://www.openstreetmap.org), via the Overpass API, taken 2026-11-03 (drinking water 2026-11-04) | [`communities/bornholm/places.ts`](../apps/api/src/communities/bornholm/places.ts)   |
-| Which OSM tags feed each layer    | Written down per layer                                                                                             | [`communities/bornholm/osm.ts`](../apps/api/src/communities/bornholm/osm.ts)         |
-| **Layers** (names, icons, fields) | Written for the project, in Danish                                                                                 | [`communities/bornholm/layers.ts`](../apps/api/src/communities/bornholm/layers.ts)   |
-| **About text** ("Om")             | Written for the project; every link checked 2026-11-03                                                             | [`communities/bornholm/about.ts`](../apps/api/src/communities/bornholm/about.ts)     |
-| **Privacy text**                  | Written from what the app and `deploy/` actually do                                                                | [`communities/bornholm/privacy.ts`](../apps/api/src/communities/bornholm/privacy.ts) |
-| **Background maps**               | Esri, OpenStreetMap, OpenTopoMap, CyclOSM tiles, loaded live                                                       | [`apps/web/src/map/basemaps.ts`](../apps/web/src/map/basemaps.ts)                    |
+| What                              | Source                                                                                                                                 | Where in the code                                                                    |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Places** (146)                  | [OpenStreetMap](https://www.openstreetmap.org), via the Overpass API, taken 2026-11-03 (drinking water and more local food 2026-11-04) | [`communities/bornholm/places.ts`](../apps/api/src/communities/bornholm/places.ts)   |
+| Which OSM tags feed each layer    | Written down per layer                                                                                                                 | [`communities/bornholm/osm.ts`](../apps/api/src/communities/bornholm/osm.ts)         |
+| **Layers** (names, icons, fields) | Written for the project, in Danish                                                                                                     | [`communities/bornholm/layers.ts`](../apps/api/src/communities/bornholm/layers.ts)   |
+| **About text** ("Om")             | Written for the project; every link checked 2026-11-03                                                                                 | [`communities/bornholm/about.ts`](../apps/api/src/communities/bornholm/about.ts)     |
+| **Privacy text**                  | Written from what the app and `deploy/` actually do                                                                                    | [`communities/bornholm/privacy.ts`](../apps/api/src/communities/bornholm/privacy.ts) |
+| **Background maps**               | Esri, OpenStreetMap, OpenTopoMap, CyclOSM tiles, loaded live                                                                           | [`apps/web/src/map/basemaps.ts`](../apps/web/src/map/basemaps.ts)                    |
 
-Places per layer: local food 42 · drinking water 26 · cycling 15 · recycling and repair 14 ·
+Places per layer: local food 61 · drinking water 26 · cycling 15 · recycling and repair 14 ·
 renewable energy 10 · EV charging 8 · nature areas 6 · community gardens 5 · green shops 1 (hidden layer).
 
 ### How the places were made

@@ -15,8 +15,12 @@ export const BORNHOLM_OSM: OsmSource = {
   searches: {
     'local-food': [
       'nwr["shop"="farm"]',
-      'nwr["craft"~"^(brewery|distillery|winery|cider|confectionery)$"]',
-      'nwr["shop"~"^(chocolate|confectionery|cheese|honey|deli)$"]',
+      'nwr["craft"~"^(brewery|distillery|winery|cider|confectionery|smokehouse|beekeeper|cheese)$"]',
+      'nwr["shop"~"^(chocolate|confectionery|cheese|honey|deli|seafood)$"]',
+      'nwr["amenity"="smokehouse"]',
+      /* Most of the island's smokehouses are tagged as restaurants; their name gives them away. */
+      'nwr["name"~"[Rr]øgeri"][!"highway"]',
+      'nwr["amenity"="vending_machine"]["vending"~"eggs|honey|vegetables|potatoes|fruit|meat"]',
       'nwr["amenity"="marketplace"]',
     ],
     'recycling-and-repair': [

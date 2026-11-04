@@ -6,7 +6,7 @@
  * OSM tag; places without a name are named by their kind and nearest town.
  * `osmId` points at the source object, e.g. https://www.openstreetmap.org/node/1330908050
  *
- * Generated 2026-11-03 from the Overpass API. Re-check before relying on
+ * Generated 2026-11-03 from the Overpass API (more local food 2026-11-04). Re-check before relying on
  * opening hours - the real world changes faster than a demo data set. The
  * descriptions are in Danish, the language of the Bornholm showcase, and the
  * choice values match the Danish options of the starter layers.
@@ -1062,6 +1062,239 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       kind: 'Marked og madhal',
       openingHours: 'Mo-Fr 10:00-17:00; Sa 10:00-15:00',
+    },
+  },
+  {
+    osmId: 'way/153047495',
+    layerSlug: 'local-food',
+    name: 'Arnager Røgeri',
+    description: 'Røgeri med fiskebutik i Arnager, der selv ryger fisken.',
+    coordinates: [14.77931, 55.05688],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      openingHours: 'Mo-We 12:00-17:00; Th-Su 12:00-20:00',
+      website: 'https://arnager-rogeri.dk/',
+    },
+  },
+  {
+    osmId: 'node/846322305',
+    layerSlug: 'local-food',
+    name: 'Årsdale Røgeri & Bistro',
+    description: 'Røgeri ved havnen i Årsdale med bornholmsk røget fisk.',
+    coordinates: [15.14364, 55.10758],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      season: 'Maj-oktober',
+      website: 'https://www.aarsdalerogeri.dk/',
+    },
+  },
+  {
+    osmId: 'way/378890217',
+    layerSlug: 'local-food',
+    name: 'Allinge Røgeri',
+    description: 'Røgeri i Allinge, der selv ryger fisken.',
+    coordinates: [14.79913, 55.28077],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      website: 'https://www.smokedfish.dk/allinge',
+    },
+  },
+  {
+    osmId: 'node/4309849648',
+    layerSlug: 'local-food',
+    name: 'Gudhjem Røgeri',
+    description: 'Røgeri ved havnen i Gudhjem med bornholmsk røget fisk.',
+    coordinates: [14.96932, 55.21381],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      website: 'https://www.smokedfish.dk/gudhjem',
+    },
+  },
+  {
+    osmId: 'way/102528465',
+    layerSlug: 'local-food',
+    name: 'Hasle Røgeri',
+    description: 'Et af øens gamle røgerier, ved havnen i Hasle.',
+    coordinates: [14.70331, 55.17977],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      season: 'April-oktober',
+      website: 'https://www.hasleroegeri.dk/',
+    },
+  },
+  {
+    osmId: 'way/375884054',
+    layerSlug: 'local-food',
+    name: 'Nexø Gamle Røgeri',
+    description: 'Gammelt røgeri ved havnen i Nexø.',
+    coordinates: [15.14101, 55.07203],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      openingHours: '11:00-16:00',
+    },
+  },
+  {
+    osmId: 'node/3802593304',
+    layerSlug: 'local-food',
+    name: 'Snogebæk Røgeri',
+    description: 'Røgeri ved havnen i Snogebæk.',
+    coordinates: [15.11859, 55.02675],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      season: 'Marts-oktober',
+      website: 'https://www.smokedfish.dk/',
+    },
+  },
+  {
+    osmId: 'way/33495182',
+    layerSlug: 'local-food',
+    name: 'Svaneke Røgeri',
+    description: 'Røgeri i Svaneke, der selv ryger fisken.',
+    coordinates: [15.14336, 55.13965],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk',
+      openingHours: 'Mo-Su 10:00-20:00',
+      website: 'https://www.roegerietsvaneke.dk/',
+    },
+  },
+  {
+    osmId: 'node/4723364146',
+    layerSlug: 'local-food',
+    name: 'Nordbornholms Røgeri Fiskebutik',
+    description: 'Fiskebutik ved Nordbornholms Røgeri i Sandvig.',
+    coordinates: [14.80542, 55.27585],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget og frisk fisk',
+      openingHours: 'PH,Mo-Su 09:00-18:00',
+      website: 'https://nbr.dk/',
+    },
+  },
+  {
+    osmId: 'node/9344894791',
+    layerSlug: 'local-food',
+    name: 'Den søde sild',
+    description: 'Fiskebutik ved Bakkarøgeriet i Sømarken.',
+    coordinates: [14.99021, 55.00078],
+    properties: {
+      kind: 'Producent',
+      sells: 'Røget fisk og sild',
+      website: 'https://bakkaroegeriet.dk/',
+    },
+  },
+  {
+    osmId: 'node/12897271395',
+    layerSlug: 'local-food',
+    name: 'Fangst Stationen',
+    description: 'Butik i Gudhjem fra Fangst, der dåser bornholmsk fisk og skaldyr.',
+    coordinates: [14.97017, 55.21354],
+    properties: {
+      kind: 'Producent',
+      sells: 'Fisk og skaldyr på dåse',
+      season: 'Juli-august',
+      website: 'https://fangst.com/',
+    },
+  },
+  {
+    osmId: 'node/13019864076',
+    layerSlug: 'local-food',
+    name: 'WagyuBornholm',
+    description: 'Wagyu-kød fra bornholmsk opdræt, solgt i Rønne.',
+    coordinates: [14.7054, 55.11175],
+    properties: {
+      kind: 'Producent',
+      sells: 'Oksekød',
+      website: 'https://wagyubornholm.dk/salg-af-koed/',
+    },
+  },
+  {
+    osmId: 'node/9347113624',
+    layerSlug: 'local-food',
+    name: 'Aronia food service',
+    description: 'Gård, der dyrker og sælger aroniabær.',
+    coordinates: [15.04671, 55.11342],
+    properties: {
+      kind: 'Gårdbutik',
+      sells: 'Aroniabær',
+    },
+  },
+  {
+    osmId: 'node/9995236606',
+    layerSlug: 'local-food',
+    name: 'Bornholmer Bi',
+    description: 'Honning fra bornholmske bier.',
+    coordinates: [14.91021, 55.10043],
+    properties: {
+      kind: 'Producent',
+      sells: 'Honning',
+      website: 'https://bornholmerbi.dk/',
+    },
+  },
+  {
+    osmId: 'node/9994215862',
+    layerSlug: 'local-food',
+    name: 'Honningsalg ved Vang',
+    description: 'Salg af lokal honning.',
+    coordinates: [14.74856, 55.21867],
+    properties: {
+      kind: 'Vejbod',
+      sells: 'Honning',
+    },
+  },
+  {
+    osmId: 'node/4192989724',
+    layerSlug: 'local-food',
+    name: 'Kobbevang',
+    description: 'Salg af frugt og grønt ved Østerlars.',
+    coordinates: [14.96551, 55.18274],
+    properties: {
+      kind: 'Vejbod',
+      sells: 'Frugt og grønt',
+      openingHours: 'Mo-Su 10:00-20:00',
+    },
+  },
+  {
+    osmId: 'node/4363146646',
+    layerSlug: 'local-food',
+    name: 'Bornholms Bolcheværksted',
+    description: 'Bolcheværksted i Allinge, hvor bolcherne koges på stedet.',
+    coordinates: [14.8006, 55.2791],
+    properties: {
+      kind: 'Producent',
+      sells: 'Bolcher',
+    },
+  },
+  {
+    osmId: 'way/369424453',
+    layerSlug: 'local-food',
+    name: 'Chrøøl',
+    description: 'Danmarks østligste bryggeri, på Christiansø. Øllet kan kun købes på øen.',
+    coordinates: [15.18994, 55.32032],
+    properties: {
+      kind: 'Producent',
+      sells: 'Øl',
+      website: 'https://bornholmskevarer.dk/brand/28-chrool',
+    },
+  },
+  {
+    osmId: 'node/10707472001',
+    layerSlug: 'local-food',
+    name: 'Mikrobageren i Listed',
+    description:
+      'Lille bageri i Listed. På hverdage står der friskt brød i en kasse uden for fra kl. 6.30.',
+    coordinates: [15.11526, 55.1429],
+    properties: {
+      kind: 'Producent',
+      sells: 'Brød',
+      openingHours: 'Tu-Th,Sa,Su 08:00-17:00; Fr 08:00-16:00; Mo off',
     },
   },
   {
