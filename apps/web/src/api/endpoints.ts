@@ -17,6 +17,7 @@ import {
   totpSetupSchema,
   type AcceptInvitationInput,
   type AuthSession,
+  type DeleteAccountInput,
   type CommunitySettings,
   type CreatedInvitation,
   type CreateInvitationInputDraft,
@@ -163,6 +164,8 @@ export const authApi = {
       skipRetry: true,
     }),
   logout: (): Promise<void> => apiRequest('/api/auth/logout', { method: 'POST' }),
+  deleteAccount: (input: DeleteAccountInput): Promise<void> =>
+    apiRequest('/api/auth/me', { method: 'DELETE', body: input }),
   me: (): Promise<CurrentUser> => apiRequest('/api/auth/me', { schema: currentUserSchema }),
   changePassword: (input: { currentPassword: string; newPassword: string }): Promise<void> =>
     apiRequest('/api/auth/me/password', { method: 'POST', body: input }),

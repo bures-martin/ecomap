@@ -1318,6 +1318,76 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
   });
 
+  describe('deleting your own account', () => {
+    async function memberWithPlace() {
+      const member = await createTestUser(db, 'contributor');
+      const layer = await createTestLayer(db);
+      const created = await request(app)
+        .post('/api/features')
+        .set(member.authHeader)
+        .send({
+          layerId: layer.id,
+          name: 'My place',
+          geometry: { type: 'Point', coordinates: [14.9, 55.1] },
+        })
+        .expect(201);
+      return { member, placeId: String(created.body.id) };
+    }
+
+    function deleteAccount(
+      user: { authHeader: { Authorization: string } },
+      body: { password: string; deleteContributions?: boolean },
+    ) {
+      return request(app).delete('/api/auth/me').set(user.authHeader).send(body);
+    }
+
+    it('needs the right password', async () => {
+      const { member } = await memberWithPlace();
+      await deleteAccount(member, { password: 'not-the-password-1' }).expect(401);
+      const [still] = await db`select 1 from users where id = ${member.id}`;
+      expect(still).toBeDefined();
+    });
+
+    it('removes the account and its sessions, and keeps places as a former member', async () => {
+      const { member, placeId } = await memberWithPlace();
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(200);
+      const cookie = refreshCookieFrom(login)!;
+
+      await deleteAccount(member, { password: TEST_PASSWORD }).expect(204);
+
+      await request(app).post('/api/auth/refresh').set('Cookie', cookie).expect(401);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(401);
+      const [place] = await db<{ createdBy: string | null }[]>`
+        select created_by as "createdBy" from features where id = ${placeId}
+      `;
+      expect(place).toEqual({ createdBy: null });
+    });
+
+    it('deletes the places too when asked', async () => {
+      const { member, placeId } = await memberWithPlace();
+      await deleteAccount(member, { password: TEST_PASSWORD, deleteContributions: true }).expect(
+        204,
+      );
+      const rows = await db`select 1 from features where id = ${placeId}`;
+      expect(rows).toHaveLength(0);
+    });
+
+    it('never leaves the map without a superadmin', async () => {
+      const only = await createTestUser(db, 'superadmin');
+      const response = await deleteAccount(only, { password: TEST_PASSWORD }).expect(409);
+      expect(String(response.body.error.message)).toContain('only superadmin');
+
+      await createTestUser(db, 'superadmin');
+      await deleteAccount(only, { password: TEST_PASSWORD }).expect(204);
+    });
+  });
+
   describe('exporting the map', () => {
     it('gives an admin everything, pending places and hidden layers included', async () => {
       const admin = await createTestUser(db, 'admin');

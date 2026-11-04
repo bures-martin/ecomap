@@ -3,6 +3,7 @@ import {
   AVATAR_MAX_BYTES,
   acceptInvitationInputSchema,
   changePasswordInputSchema,
+  deleteAccountInputSchema,
   emailInputSchema,
   invitationTokenInputSchema,
   loginInputSchema,
@@ -143,6 +144,15 @@ export function createAuthRouter(db: Sql): Router {
     const { userId } = requireAuthContext(req);
     const input = parseOrThrow(changePasswordInputSchema, req.body);
     await service.changePassword(db, userId, input);
+    clearRefreshCookie(res);
+    res.status(204).send();
+  });
+
+  /* The account is gone, so is the session: the refresh cookie is cleared too. */
+  router.delete('/me', requireAuth, authRateLimiter, async (req, res) => {
+    const { userId } = requireAuthContext(req);
+    const input = parseOrThrow(deleteAccountInputSchema, req.body);
+    await service.deleteAccount(db, userId, input);
     clearRefreshCookie(res);
     res.status(204).send();
   });

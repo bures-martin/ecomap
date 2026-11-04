@@ -519,5 +519,20 @@
     "saveNewPassword": "Gem ny adgangskode",
     "resetDone": "Din adgangskode er skiftet - log ind med den nye.",
     "askAgain": "Bed om et nyt link"
+  },
+  "deleteAccount": {
+    "title": "Slet din konto",
+    "intro": "Din konto, dit navn, din e-mail og dit profilbillede bliver slettet med det samme, og du bliver logget ud. Forslag, der endnu ikke er godkendt, forsvinder også. Det kan ikke fortrydes.",
+    "alsoPlaces": "Slet også de steder, jeg har tilføjet",
+    "alsoPlacesHelp": "Ellers bliver de på kortet uden dit navn - som \"tilføjet af et tidligere medlem\".",
+    "password": "Din adgangskode",
+    "passwordNeeded": "Skriv din adgangskode for at slette kontoen.",
+    "button": "Slet min konto",
+    "confirmTitle": "Slet din konto for altid?",
+    "confirmKeep": "Din konto bliver slettet. De steder, du har tilføjet, bliver på kortet uden dit navn.",
+    "confirmWithPlaces": "Din konto bliver slettet - og alle de steder og billeder, du har tilføjet, med den.",
+    "done": "Din konto er slettet. Tak, fordi du var med.",
+    "wrongPassword": "Adgangskoden er ikke rigtig.",
+    "lastSuperadmin": "Du er den eneste superadmin. Gør en anden til superadmin først (Brugere), så kortet ikke står uden."
   }
 }

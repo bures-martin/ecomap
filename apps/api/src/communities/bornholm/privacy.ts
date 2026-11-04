@@ -40,7 +40,7 @@ Din konto og dine oplysninger gemmes, så længe du har kontoen. Sletter vi den,
 
 ## Dine rettigheder
 
-Du kan få indsigt i dine oplysninger, få dem rettet og få dem slettet. Navn, adgangskode og profilbillede kan du selv ændre under Din konto. Vil du have din konto slettet, så skriv til [UDFYLD: e-mail]. Det, du har tilføjet til kortet, kan du selv slette, eller vi kan fjerne det sammen med kontoen.
+Du kan få indsigt i dine oplysninger, få dem rettet og få dem slettet. Navn, adgangskode og profilbillede kan du selv ændre under Din konto. Du kan selv slette din konto under Din konto → Slet din konto, og vælge, om de steder, du har tilføjet, skal slettes med eller blive på kortet uden dit navn. Har du spørgsmål om dine oplysninger, så skriv til [UDFYLD: e-mail].
 
 Du kan klage til Datatilsynet: https://www.datatilsynet.dk
 

@@ -75,6 +75,24 @@ export async function insertUser(
   return row;
 }
 
+/** Superadmins who can still sign in - the people who can hand out roles. */
+export async function countActiveSuperadmins(db: Queryable): Promise<number> {
+  const [row] = await db<{ count: string }[]>`
+    select count(*) as count from users where role = 'superadmin' and disabled_at is null
+  `;
+  return Number(row?.count ?? 0);
+}
+
+/**
+ * Removes an account. Sessions, e-mail links and the profile picture go with
+ * it (on delete cascade); places, photos, suggestions and invitations keep
+ * existing, with the link to the account cleared (on delete set null) - unless
+ * the caller deleted them first.
+ */
+export async function deleteUser(db: Queryable, userId: string): Promise<void> {
+  await db`delete from users where id = ${userId}`;
+}
+
 export async function markEmailVerified(db: Queryable, userId: string): Promise<void> {
   await db`
     update users set email_verified_at = coalesce(email_verified_at, now()) where id = ${userId}

@@ -3,6 +3,7 @@ import { useTranslation } from 'i18next-vue';
 import { watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import ChangePasswordSection from '../account/ChangePasswordSection.vue';
+import DeleteAccountSection from '../account/DeleteAccountSection.vue';
 import ProfileCard from '../account/ProfileCard.vue';
 import TwoFactorSection from '../account/TwoFactorSection.vue';
 import { useAuth } from '../auth/auth.js';
@@ -25,6 +26,7 @@ watchEffect(() => {
       <ProfileCard :user="auth.user" />
       <TwoFactorSection :user="auth.user" />
       <ChangePasswordSection />
+      <DeleteAccountSection />
     </div>
   </v-container>
 </template>

@@ -3,6 +3,7 @@ import {
   type AcceptInvitationInput,
   type AuthSession,
   type CurrentUser,
+  type DeleteAccountInput,
   type LoginInput,
   type Permission,
   type RegisterInput,
@@ -35,6 +36,8 @@ export interface Auth {
   /** Creates the account an invitation link was made for, and signs it in. */
   acceptInvitation: (input: AcceptInvitationInput) => Promise<void>;
   logout: () => Promise<void>;
+  /** Deletes the signed-in person's own account and signs out. */
+  deleteAccount: (input: DeleteAccountInput) => Promise<void>;
   reloadUser: () => Promise<void>;
   /** Takes a fresh copy of the user that an API call already returned. */
   setUser: (user: CurrentUser) => void;
@@ -133,6 +136,11 @@ export function createAuth(
         /* Drop everything cached: what a signed-out visitor may see is different. */
         queryClient.clear();
       }
+    },
+    deleteAccount: async (input) => {
+      await authApi.deleteAccount(input);
+      clearSession();
+      queryClient.clear();
     },
     reloadUser: async () => {
       try {

@@ -519,5 +519,20 @@
     "saveNewPassword": "Save new password",
     "resetDone": "Your password is changed - sign in with the new one.",
     "askAgain": "Ask for a new link"
+  },
+  "deleteAccount": {
+    "title": "Delete your account",
+    "intro": "Your account, name, e-mail and profile picture are deleted straight away, and you are signed out. Suggestions not yet reviewed go too. This cannot be undone.",
+    "alsoPlaces": "Also delete the places I added",
+    "alsoPlacesHelp": "Otherwise they stay on the map without your name - as \"added by a former member\".",
+    "password": "Your password",
+    "passwordNeeded": "Enter your password to delete the account.",
+    "button": "Delete my account",
+    "confirmTitle": "Delete your account for good?",
+    "confirmKeep": "Your account is deleted. The places you added stay on the map without your name.",
+    "confirmWithPlaces": "Your account is deleted - and every place and photo you added with it.",
+    "done": "Your account is deleted. Thank you for taking part.",
+    "wrongPassword": "That password is not correct.",
+    "lastSuperadmin": "You are the only superadmin. Make someone else superadmin first (People), so the map is not left without one."
   }
 }

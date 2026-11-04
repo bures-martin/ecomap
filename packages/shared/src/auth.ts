@@ -57,6 +57,17 @@ export const totpDisableInputSchema = z.object({
 });
 export type TotpDisableInput = z.infer<typeof totpDisableInputSchema>;
 
+/**
+ * Deleting one's own account. The password proves it is really them, not
+ * someone at an unlocked computer; `deleteContributions` decides whether the
+ * places they added go too, or stay on the map without their name.
+ */
+export const deleteAccountInputSchema = z.object({
+  password: z.string().min(1, 'Enter your password').max(PASSWORD_MAX_LENGTH),
+  deleteContributions: z.boolean().default(false),
+});
+export type DeleteAccountInput = z.infer<typeof deleteAccountInputSchema>;
+
 /* -------------------------------------------- links sent by e-mail ---- */
 
 /** "Send me the link again" and "I forgot my password": just an address. */

@@ -3,6 +3,7 @@ import {
   RESET_PASSWORD_PAGE_PATH,
   VERIFY_EMAIL_PAGE_PATH,
   type AuthSession,
+  type DeleteAccountInput,
   type LoginInput,
   type RegisterInput,
   type ResetPasswordInput,
@@ -26,6 +27,8 @@ import { logger } from '../../logger.js';
 import { sendMail } from '../../mail/mailer.js';
 import { resetPasswordMail, verifyEmailMail } from '../../mail/templates.js';
 import {
+  countActiveSuperadmins,
+  deleteUser,
   disableUserTotp,
   enableUserTotp,
   findUserByEmail,
@@ -256,6 +259,42 @@ export async function refresh(db: Sql, presentedToken: string): Promise<IssuedSe
 export async function logout(db: Sql, presentedToken: string | undefined): Promise<void> {
   if (!presentedToken) return;
   await revokeRefreshToken(db, hashRefreshToken(presentedToken));
+}
+
+/**
+ * Someone deleting their own account (the GDPR right to erasure, without
+ * having to ask an admin). Their unreviewed suggestions always go - they were
+ * only ever visible to moderators; their places go too if they asked for it,
+ * otherwise those stay on the map as "added by a former member".
+ *
+ * The last superadmin cannot leave: nobody could hand out roles any more.
+ */
+export async function deleteAccount(
+  db: Sql,
+  userId: string,
+  input: DeleteAccountInput,
+): Promise<void> {
+  const user = await requireUser(db, userId);
+
+  if (!(await verifyPassword(input.password, user.passwordHash))) {
+    throw ApiError.invalidCredentials('Your password is not correct');
+  }
+  if (user.role === 'superadmin' && (await countActiveSuperadmins(db)) <= 1) {
+    throw ApiError.conflict(
+      'You are the only superadmin. Make someone else superadmin first, so the map is not left without one.',
+    );
+  }
+
+  await db.begin(async (tx) => {
+    await tx`
+      delete from feature_suggestions where proposed_by = ${user.id} and status = 'pending'
+    `;
+    if (input.deleteContributions) {
+      /* Their photos and any suggestions about these places go with them (cascade). */
+      await tx`delete from features where created_by = ${user.id}`;
+    }
+    await deleteUser(tx, user.id);
+  });
 }
 
 export async function changePassword(
