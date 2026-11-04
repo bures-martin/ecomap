@@ -12,7 +12,8 @@
     "somethingWentWrong": "Noget gik galt",
     "notFoundTitle": "Siden findes ikke",
     "notFoundBody": "Linket er måske forældet. Kortet er her stadig.",
-    "backToMap": "Tilbage til kortet"
+    "backToMap": "Tilbage til kortet",
+    "actions": "Handlinger"
   },
   "nav": {
     "map": "Kort",
@@ -63,7 +64,9 @@
     "topics": "Emner",
     "clusterLabel_one": "{{count}} sted her - zoom ind",
     "clusterLabel_other": "{{count}} steder her - zoom ind",
-    "moreTopics": "Flere ({{count}})"
+    "moreTopics": "Flere ({{count}})",
+    "pageHeading": "{{name}} - kort",
+    "backgroundMap": "Baggrundskort"
   },
   "draw": {
     "chooseLayer": "Hvilket lag?",
@@ -82,7 +85,9 @@
     "outsideBounds": "Det ligger uden for det område, fællesskabet dækker.",
     "drawing": "Tegner på kortet",
     "moveHint": "Klik der, hvor stedet ligger - satellitkortet nederst til venstre hjælper.",
-    "useThisPosition": "Brug denne placering"
+    "useThisPosition": "Brug denne placering",
+    "placeAtCenter": "Sæt punkt i midten",
+    "keyboardHint": "Med tastaturet: flyt kortet med piletasterne, zoom med + og -, og tryk Enter på kortet (eller knappen herunder) for at sætte et punkt ved sigtekornet."
   },
   "feature": {
     "addTitle": "Tilføj til {{layer}}",
@@ -115,27 +120,187 @@
     "move": "Flyt på kortet",
     "movedNote": "Ny placering valgt på kortet. Gem for at beholde den."
   },
+  "layerAdmin": {
+    "title": "Lag",
+    "intro": "Lagene er det, kortet er bygget af. Lav ét for hver slags ting, fællesskabet vil vise på kortet.",
+    "newLayer": "Nyt lag",
+    "editLayer": "Redigér lag",
+    "name": "Navn",
+    "slug": "Adresse",
+    "slugHelp": "Bruges i links: /?layers=community-gardens",
+    "description": "Beskrivelse",
+    "descriptionHelp": "Vises for folk, før de tilføjer noget til laget.",
+    "color": "Farve",
+    "icon": "Ikon",
+    "geometries": "Hvad kan folk tilføje?",
+    "published": "Synligt på kortet",
+    "requiresModeration": "Godkend bidrag, før de vises",
+    "sortOrder": "Rækkefølge",
+    "fields": "Ekstra felter",
+    "fieldsIntro": "Spørg bidragydere om det, laget ellers har brug for.",
+    "addField": "Tilføj et felt",
+    "fieldKey": "Nøgle",
+    "fieldLabel": "Spørgsmål",
+    "fieldType": "Type",
+    "fieldRequired": "Påkrævet",
+    "fieldOptions": "Valgmuligheder",
+    "fieldOptionsHelp": "Én pr. linje",
+    "removeField": "Fjern feltet",
+    "featureCount_one": "{{count}} bidrag",
+    "featureCount_other": "{{count}} bidrag",
+    "deleteConfirmTitle": "Slet laget \"{{name}}\"?",
+    "deleteConfirmBody": "Det sletter også de {{count}} bidrag på laget. Det kan ikke fortrydes.",
+    "saved": "Laget er gemt",
+    "deleted": "Laget er slettet",
+    "fieldTypes": {
+      "text": "Kort tekst",
+      "longtext": "Lang tekst",
+      "number": "Tal",
+      "boolean": "Ja eller nej",
+      "url": "Link",
+      "date": "Dato",
+      "select": "Valg",
+      "openingHours": "Åbningstider"
+    },
+    "visibleByDefault": "Vis, når kortet åbner",
+    "visibleByDefaultHelp": "Fra holder kortet roligt i starten: laget er stadig ét tryk væk, og en søgning tager det altid med."
+  },
+  "settingsAdmin": {
+    "title": "Indstillinger for fællesskabet",
+    "intro": "Hvordan kortet præsenterer sig, hvor det åbner, og hvem der må bidrage.",
+    "name": "Fællesskabets navn",
+    "tagline": "Undertitel",
+    "about": "Om kortet",
+    "aboutHelp": "Vises på Om-siden. Brug ## til en overskrift, - til et punkt, **fed** og [tekst](https://…) til et link.",
+    "primaryColor": "Hovedfarve",
+    "accentColor": "Accentfarve",
+    "basemap": "Baggrundskort",
+    "basemapHelp": "Det kort, der vises fra start. Alle kan selv skifte baggrundskort nederst til venstre.",
+    "defaultLocale": "Standardsprog",
+    "initialView": "Hvor kortet åbner",
+    "initialLat": "Breddegrad",
+    "initialLng": "Længdegrad",
+    "initialZoom": "Zoom",
+    "useCurrentView": "Brug kortets nuværende position",
+    "allowPublicRegistration": "Alle må oprette en konto",
+    "saved": "Indstillingerne er gemt",
+    "area": {
+      "title": "Fællesskabets område",
+      "help": "Tegn det område, jeres fællesskab dækker. Man kan stadig panorere og zoome overalt på kortet, men kun tilføje ting inden for området. Lad det stå tomt for at tillade bidrag overalt.",
+      "draw": "Tegn området",
+      "redraw": "Tegn det igen",
+      "finish": "Afslut området",
+      "useVisible": "Brug det synlige kort",
+      "zoomTo": "Zoom til området",
+      "remove": "Fjern området",
+      "mapLabel": "Kort til at tegne fællesskabets område",
+      "none": "Intet område endnu: bidrag er tilladt overalt. Tegn et, eller zoom kortet ind på jeres område og brug det synlige kort.",
+      "drawingHint_one": "{{count}} hjørne sat. Klik på kortet for at sætte hjørner rundt om området, og afslut så.",
+      "drawingHint_other": "{{count}} hjørner sat. Klik på kortet for at sætte hjørner rundt om området, og afslut så (mindst 3).",
+      "editHint_one": "{{count}} hjørne.",
+      "editHint_other": "{{count}} hjørner. Træk i et hjørne for at flytte det, træk i et lille midtpunkt for at tilføje et hjørne, dobbeltklik på et hjørne for at fjerne det. Gem indstillingerne for at bruge det.",
+      "cornerHint": "Træk for at flytte, dobbeltklik for at fjerne",
+      "midpointHint": "Træk for at tilføje et hjørne her",
+      "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
+    }
+  },
+  "moderation": {
+    "title": "Venter på godkendelse",
+    "intro": "Bidrag til lag, der kræver godkendelse, vises her, før de kommer på kortet.",
+    "empty": "Der er intet, der venter på godkendelse.",
+    "approve": "Udgiv",
+    "reject": "Afvis",
+    "approved": "Udgivet",
+    "rejected": "Afvist"
+  },
+  "people": {
+    "title": "Brugere",
+    "intro": "Roller bestemmer, hvad man må. Kun en superadmin kan ændre dem.",
+    "email": "E-mail",
+    "name": "Navn",
+    "role": "Rolle",
+    "twoFactor": "Totrinsbekræftelse",
+    "joined": "Oprettet",
+    "roleChanged": "Rollen er opdateret",
+    "roles": {
+      "viewer": "Læser",
+      "contributor": "Bidragyder",
+      "moderator": "Moderator",
+      "admin": "Administrator",
+      "superadmin": "Superadmin"
+    },
+    "status": "Status",
+    "statusActive": "Aktiv",
+    "statusBlocked": "Blokeret",
+    "block": "Blokér",
+    "unblock": "Ophæv blokering",
+    "blocked": "{{name}} er blokeret og logget ud.",
+    "unblocked": "{{name}} kan logge ind igen.",
+    "blockConfirmTitle": "Blokér {{name}}?",
+    "blockConfirmBody": "Personen bliver logget ud alle steder med det samme og kan ikke logge ind igen, før blokeringen ophæves. Det, de har tilføjet, bliver på kortet."
+  },
   "auth": {
     "signInTitle": "Log ind",
     "signInIntro": "Du skal kun bruge en konto for at tilføje eller ændre noget på kortet.",
     "registerTitle": "Opret en konto",
+    "registerIntro": "Så kan du tilføje steder, ruter og områder til kortet.",
     "email": "E-mail",
     "displayName": "Dit navn",
+    "displayNameHelp": "Vises ved det, du tilføjer.",
     "password": "Adgangskode",
+    "passwordHelp": "Mindst 12 tegn.",
+    "currentPassword": "Nuværende adgangskode",
+    "newPassword": "Ny adgangskode",
     "totpCode": "To-faktor-kode",
+    "totpCodeHelp": "De seks cifre fra din godkendelsesapp.",
     "signIn": "Log ind",
     "register": "Opret kontoen",
     "needAccount": "Ingen konto endnu? Opret en.",
     "haveAccount": "Har du allerede en konto? Log ind.",
-    "signedOut": "Logget ud"
+    "registrationClosed": "Fællesskabet er kun for inviterede lige nu.",
+    "signedOut": "Logget ud",
+    "accountTitle": "Din konto",
+    "changePassword": "Skift din adgangskode",
+    "passwordChanged": "Adgangskoden er skiftet - log ind igen",
+    "twoFactorTitle": "Totrinsbekræftelse",
+    "twoFactorOff": "Fra",
+    "twoFactorOn": "Til",
+    "twoFactorIntro": "Tilføj et ekstra trin, når du logger ind, med en godkendelsesapp.",
+    "twoFactorSetupStep1": "1. Scan koden med din godkendelsesapp",
+    "twoFactorSetupStep2": "2. Skriv de seks cifre, den viser",
+    "twoFactorManualEntry": "Kan du ikke scanne? Skriv denne nøgle i stedet:",
+    "twoFactorEnable": "Slå det til",
+    "twoFactorDisable": "Slå det fra",
+    "twoFactorEnabled": "Totrinsbekræftelse er slået til",
+    "twoFactorDisabled": "Totrinsbekræftelse er slået fra",
+    "twoFactorQrAlt": "QR-kode til opsætning af totrinsbekræftelse"
+  },
+  "about": {
+    "title": "Om",
+    "contributeHeading": "Sådan tilføjer du noget",
+    "contributeBody": "Opret en konto, vælg et emne, og klik på kortet, hvor det skal ligge. Alt bliver tjekket af en moderator, før det vises, og du kan foreslå ændringer til steder, der allerede er på kortet.",
+    "openDataHeading": "Åbne data, åbent kort",
+    "openDataBody": "Eksempelstederne kommer fra OpenStreetMap, og koden er open source, så andre fællesskaber kan køre deres egen udgave.",
+    "whyHeading": "Små valg gør en forskel",
+    "whyBody": "Du behøver ikke at redde verden alene. Den største forskel gøres af hverdagens valg, tæt på hvor du bor - og de er lettere, når du ved, hvor du skal gå hen.",
+    "whyLocal": "Køb lokalt: gårdbutikker og vejboder sparer transport og holder pengene på øen.",
+    "whyRepair": "Reparér, byt og køb brugt, før du køber nyt.",
+    "whyMove": "Gå, cykl eller tag bussen, når du kan - og lad bilen op, hvor vinden blæser.",
+    "whyShare": "Del det, du ved: et godt sted på kortet hjælper den næste til at vælge grønt.",
+    "whyClose": "Kortet bliver lavet af dem, der bor her. Hvert sted, nogen tilføjer, gør det grønne valg en smule lettere for alle andre."
   },
   "errors": {
+    "bad_request": "Forespørgslen kunne ikke behandles.",
+    "validation_failed": "Nogle felter skal rettes.",
     "unauthorized": "Log venligst ind.",
+    "totp_required": "Skriv din kode til totrinsbekræftelse.",
     "invalid_credentials": "E-mail og adgangskode passer ikke sammen.",
     "forbidden": "Du har ikke rettigheder til det.",
     "not_found": "Det kunne ikke findes.",
+    "conflict": "Det er i konflikt med noget, der allerede findes.",
     "rate_limited": "For mange forsøg - vent et øjeblik.",
     "internal_error": "Noget gik galt hos os.",
+    "offline": "Kunne ikke få forbindelse til serveren.",
     "payload_too_large": "Filen er for stor."
   },
   "avatar": {
@@ -208,41 +373,6 @@
     "invalidTitle": "Linket virker ikke",
     "missing": "Invitationslinket er ufuldstændigt. Åbn det igen fra den besked, du fik."
   },
-  "people": {
-    "status": "Status",
-    "statusActive": "Aktiv",
-    "statusBlocked": "Blokeret",
-    "block": "Blokér",
-    "unblock": "Ophæv blokering",
-    "blocked": "{{name}} er blokeret og logget ud.",
-    "unblocked": "{{name}} kan logge ind igen.",
-    "blockConfirmTitle": "Blokér {{name}}?",
-    "blockConfirmBody": "Personen bliver logget ud alle steder med det samme og kan ikke logge ind igen, før blokeringen ophæves. Det, de har tilføjet, bliver på kortet."
-  },
-  "settingsAdmin": {
-    "basemap": "Baggrundskort",
-    "basemapHelp": "Det kort, der vises fra start. Alle kan selv skifte baggrundskort nederst til venstre.",
-    "area": {
-      "title": "Fællesskabets område",
-      "help": "Tegn det område, jeres fællesskab dækker. Man kan stadig panorere og zoome overalt på kortet, men kun tilføje ting inden for området. Lad det stå tomt for at tillade bidrag overalt.",
-      "draw": "Tegn området",
-      "redraw": "Tegn det igen",
-      "finish": "Afslut området",
-      "useVisible": "Brug det synlige kort",
-      "zoomTo": "Zoom til området",
-      "remove": "Fjern området",
-      "mapLabel": "Kort til at tegne fællesskabets område",
-      "none": "Intet område endnu: bidrag er tilladt overalt. Tegn et, eller zoom kortet ind på jeres område og brug det synlige kort.",
-      "drawingHint_one": "{{count}} hjørne sat. Klik på kortet for at sætte hjørner rundt om området, og afslut så.",
-      "drawingHint_other": "{{count}} hjørner sat. Klik på kortet for at sætte hjørner rundt om området, og afslut så (mindst 3).",
-      "editHint_one": "{{count}} hjørne.",
-      "editHint_other": "{{count}} hjørner. Træk i et hjørne for at flytte det, træk i et lille midtpunkt for at tilføje et hjørne, dobbeltklik på et hjørne for at fjerne det. Gem indstillingerne for at bruge det.",
-      "cornerHint": "Træk for at flytte, dobbeltklik for at fjerne",
-      "midpointHint": "Træk for at tilføje et hjørne her",
-      "crosses": "Omridset krydser sig selv. Flyt et hjørne, så kanterne ikke krydser, ellers kan området ikke gemmes."
-    },
-    "aboutHelp": "Vises på Om-siden. Brug ## til en overskrift, - til et punkt, **fed** og [tekst](https://…) til et link."
-  },
   "photos": {
     "title": "Billeder",
     "add": "Tilføj billeder",
@@ -262,13 +392,6 @@
       "not-image": "det er ikke en billedfil.",
       "too-large": "billedet er for stort.",
       "unreadable": "billedet kunne ikke læses. Prøv et JPEG- eller PNG-billede."
-    }
-  },
-  "layerAdmin": {
-    "visibleByDefault": "Vis, når kortet åbner",
-    "visibleByDefaultHelp": "Fra holder kortet roligt i starten: laget er stadig ét tryk væk, og en søgning tager det altid med.",
-    "fieldTypes": {
-      "openingHours": "Åbningstider"
     }
   },
   "welcome": {
@@ -342,20 +465,7 @@
     "fieldLocation": "Placering",
     "moved": "Flyttet på kortet",
     "empty": "(tom)",
-    "openPlace": "Vis på kortet"
-  },
-  "about": {
-    "title": "Om",
-    "whyHeading": "Små valg gør en forskel",
-    "whyBody": "Du behøver ikke at redde verden alene. Den største forskel gøres af hverdagens valg, tæt på hvor du bor - og de er lettere, når du ved, hvor du skal gå hen.",
-    "whyLocal": "Køb lokalt: gårdbutikker og vejboder sparer transport og holder pengene på øen.",
-    "whyRepair": "Reparér, byt og køb brugt, før du køber nyt.",
-    "whyMove": "Gå, cykl eller tag bussen, når du kan - og lad bilen op, hvor vinden blæser.",
-    "whyShare": "Del det, du ved: et godt sted på kortet hjælper den næste til at vælge grønt.",
-    "whyClose": "Kortet bliver lavet af dem, der bor her. Hvert sted, nogen tilføjer, gør det grønne valg en smule lettere for alle andre.",
-    "contributeHeading": "Sådan tilføjer du noget",
-    "contributeBody": "Opret en konto, vælg et emne, og klik på kortet, hvor det skal ligge. Alt bliver tjekket af en moderator, før det vises, og du kan foreslå ændringer til steder, der allerede er på kortet.",
-    "openDataHeading": "Åbne data, åbent kort",
-    "openDataBody": "Eksempelstederne kommer fra OpenStreetMap, og koden er open source, så andre fællesskaber kan køre deres egen udgave."
+    "openPlace": "Vis på kortet",
+    "field": "Felt"
   }
 }
