@@ -19,7 +19,9 @@ import {
   type PointIndex,
 } from './clustering.js';
 import { clusterIcon, markerIcon } from './markerIcon.js';
+import { addLocateControl, type LocateControl } from './locate.js';
 import type { DrawingState } from './useDrawing.js';
+import { useToast } from '../composables/useToast.js';
 
 /**
  * The Leaflet map, driven directly rather than through a wrapper library: the
@@ -53,10 +55,12 @@ const emit = defineEmits<{
 }>();
 
 const { t, i18next } = useTranslation();
+const toast = useToast();
 const container = useTemplateRef<HTMLDivElement>('container');
 
 let map: L.Map | null = null;
 let basemaps: BasemapSwitcher | null = null;
+let locate: LocateControl | null = null;
 /** Routes, areas and the selected place. */
 const featureLayer = L.layerGroup();
 /** Single places and groups of places, redrawn as the view changes. */
@@ -122,6 +126,10 @@ onMounted(() => {
   );
   i18next.on('languageChanged', relabelBasemaps);
 
+  locate = addLocateControl(map, t('map.locate'), (failure) => {
+    toast.showError(t(failure === 'denied' ? 'map.locateDenied' : 'map.locateFailed'));
+  });
+
   watch(
     () => [props.features, props.layersBySlug, props.selectedFeatureId] as const,
     drawFeatures,
@@ -161,6 +169,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   i18next.off('languageChanged', relabelBasemaps);
+  locate?.remove();
+  locate = null;
   map?.remove();
   map = null;
 });
@@ -219,6 +229,7 @@ function rememberBasemap(basemap: Basemap): void {
 
 function relabelBasemaps(): void {
   basemaps?.relabel();
+  locate?.setLabel(t('map.locate'));
 }
 
 /**

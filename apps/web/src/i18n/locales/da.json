@@ -35,6 +35,9 @@
   },
   "map": {
     "title": "Kort",
+    "locate": "Vis min placering",
+    "locateDenied": "Du har ikke givet adgang til din placering. Slå det til i browserens indstillinger.",
+    "locateFailed": "Din placering kunne ikke findes lige nu.",
     "searchLabel": "Søg i steder og lag",
     "searchPlaceholder": "fx Hammersly, cykling, genbrug",
     "filters": "Filtre",

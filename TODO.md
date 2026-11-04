@@ -87,8 +87,8 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 
 - **Some more complex import**
 - **Mobile use**
-  - Problem: you wanted a mobile app with location (navigation is already done through the Google Maps link).
-  - Suggested solution: make it an installable PWA (manifest, icons, service worker) plus a "show my location" button, instead of a native app. S-M
+  - Done (Nov 2026): installable PWA (manifest, icons, service worker) and a "Vis min placering" button - see DONE.
+  - Still open: test "Add to Home Screen" on a real Android phone and iPhone once it is on HTTPS (a service worker only runs on HTTPS or localhost).
   - **"Share people to meet other people, meetups?"** - decided (Nov 2026): no people profiles on the map (privacy risk); meetups go in the "Arrangementer og frivilligt arbejde" layer.
 - **Eco stories and guides**
   - Problem: you want more than pins: guides on how to live sustainably, info about climate anxiety, and nature heroes.
@@ -112,7 +112,8 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
   - Suggested solution: turn it on with `VITE_LANGUAGE_SWITCH=true` and put `<LanguageMenu />` back in `AppShell.vue`. If English content is needed, add second-language fields or a DeepL "translate" button. S-M
 - [ ] **Free drinking-water taps (refill your bottle)**
   - Why later: only worth it if there are enough on Bornholm.
-  - Suggested solution: a layer from OpenStreetMap `amenity=drinking_water`; count them first. S
+  - Counted (Nov 2026, Overpass): 28 OSM nodes tagged `amenity=drinking_water` on Bornholm and Christiansø (a few are pairs at the same spot, three marked `fee=no`), plus about 10 campsites/toilets/springs tagged `drinking_water=yes` (e.g. Koldekilde, Lejrplads Egeløkke). Clusters around Rønne, Hasle, Allinge and the Almindingen area. Enough for a small layer.
+  - Suggested solution: a "Drikkevand" layer (droplet icon) imported once from OSM with `osmId` on each point, so the later OSM sync can keep it fresh. S
 - [ ] **Topic ideas parked**
   - Water conservation / rainwater
   - Climate initiatives
@@ -135,3 +136,5 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 - Layers: "Lokal mad og drikke" (42 places), "Genbrug og reparation" with a type field (14); Dyreliv, Naturstier, Arrangementer and Grønne butikker hidden until they have content.
 - Filter fix: unticking the last layer leaves the map empty.
 - Layer icons in the layer's colour (instead of a coloured dot) in the side-panel layer list, the "add a place" layer picker and the admin layer table.
+- Installable app (PWA): manifest, home-screen icons (incl. maskable and Apple touch icon) and a service worker - pages network-first with an offline fallback, hashed assets cached, API and map tiles never cached.
+- "Vis min placering" button under the zoom buttons: one-off location, blue dot with an accuracy circle, friendly message when access is refused.

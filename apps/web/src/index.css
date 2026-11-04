@@ -123,6 +123,23 @@ body,
   background: rgba(var(--v-theme-on-header), 0.07);
 }
 
+/* "Show my location": the icon centred like the zoom signs; pulses while the phone looks. */
+.leaflet-container .leaflet-bar a.ecomap-locate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leaflet-container .leaflet-bar a.ecomap-locate--busy svg {
+  animation: ecomap-locate-pulse 1s ease-in-out infinite;
+}
+
+@keyframes ecomap-locate-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
 .leaflet-container .leaflet-bar a.leaflet-disabled {
   background: transparent;
   color: rgba(var(--v-theme-on-header), 0.3);

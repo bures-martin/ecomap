@@ -24,3 +24,15 @@ createApp(App)
   .use(createToaster())
   .use(createAuth(queryClient))
   .mount('#app');
+
+/*
+ * Makes the app installable on a phone and able to open offline (see
+ * public/sw.js). Not in development: a cached page would hide Vite's updates.
+ */
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      /* Without it the app simply works online only. */
+    });
+  });
+}

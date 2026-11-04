@@ -85,6 +85,12 @@ export default withVueTs(
     },
   },
 
+  /* The service worker runs in its own global scope, not a page's. */
+  {
+    files: ['apps/web/public/sw.js'],
+    languageOptions: { globals: globals.serviceworker },
+  },
+
   /* Tests may be looser: assertions and non-null access are idiomatic there. */
   {
     files: ['**/*.test.ts', '**/test/**/*.ts'],

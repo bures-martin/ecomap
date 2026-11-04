@@ -35,6 +35,9 @@
   },
   "map": {
     "title": "Map",
+    "locate": "Show my location",
+    "locateDenied": "You have not allowed access to your location. Turn it on in your browser settings.",
+    "locateFailed": "Your location could not be found right now.",
     "searchLabel": "Search places and layers",
     "searchPlaceholder": "e.g. Hammersly, cycling, recycling",
     "filters": "Filters",
