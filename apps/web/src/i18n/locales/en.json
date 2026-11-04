@@ -235,7 +235,15 @@
     "blocked": "{{name}} is blocked and has been signed out.",
     "unblocked": "{{name}} can sign in again.",
     "blockConfirmTitle": "Block {{name}}?",
-    "blockConfirmBody": "They are signed out everywhere straight away and cannot sign in again until unblocked. What they added stays on the map."
+    "blockConfirmBody": "They are signed out everywhere straight away and cannot sign in again until unblocked. What they added stays on the map.",
+    "newPassword": "New password",
+    "newPasswordConfirmTitle": "Make a temporary password for {{name}}?",
+    "newPasswordConfirmBody": "Their current password stops working and they are signed out everywhere. You get a temporary password to hand over - in person or by phone, not in a public message.",
+    "temporaryTitle": "Temporary password for {{name}}",
+    "temporaryExplain": "Give it to {{name}} and ask them to sign in with it and change their password under Your account.",
+    "temporaryOnce": "It is shown only now. If you close this window, you will have to make a new one.",
+    "copyPassword": "Copy the password",
+    "passwordCopied": "Password copied"
   },
   "auth": {
     "signInTitle": "Sign in",

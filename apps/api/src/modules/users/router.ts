@@ -7,6 +7,7 @@ import {
 import { Router } from 'express';
 import { z } from 'zod';
 import { assertPermission } from '../../auth/context.js';
+import { generateTemporaryPassword, hashPassword } from '../../auth/password.js';
 import type { Sql } from '../../db/client.js';
 import { ApiError, parseOrThrow } from '../../http/api-error.js';
 import { writeRateLimiter } from '../../http/rate-limit.js';
@@ -18,6 +19,7 @@ import {
   listUsers,
   setUserDisabled,
   toCurrentUser,
+  updateUserPassword,
   updateUserRole,
 } from './repository.js';
 
@@ -86,6 +88,31 @@ export function createUsersRouter(db: Sql): Router {
       await revokeInvitationsCreatedBy(db, id);
     }
     res.json(toCurrentUser(updated));
+  });
+
+  /*
+   * For someone who has forgotten their password, until reset by email exists:
+   * an admin gets a temporary password to hand over in person or by phone. The
+   * old password stops working and every session ends. Same rule as blocking -
+   * only someone of a higher role, never yourself. The password is in this one
+   * answer only and is never stored in readable form.
+   */
+  router.post('/:id/temporary-password', writeRateLimiter, async (req, res) => {
+    const actor = assertPermission(req, 'user:block');
+    const { id } = parseOrThrow(idParamSchema, req.params);
+
+    const target = await findUserById(db, id);
+    if (!target) throw ApiError.notFound('That account');
+    if (!canBlockUser({ id: actor.userId, role: actor.role }, target)) {
+      throw ApiError.forbidden(
+        'You can only reset the password of people with a lower role than yours',
+      );
+    }
+
+    const temporaryPassword = generateTemporaryPassword();
+    await updateUserPassword(db, id, await hashPassword(temporaryPassword));
+    await revokeAllRefreshTokensForUser(db, id);
+    res.set('Cache-Control', 'no-store').json({ temporaryPassword });
   });
 
   router.patch('/:id/role', writeRateLimiter, async (req, res) => {

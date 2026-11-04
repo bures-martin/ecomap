@@ -1179,6 +1179,47 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
   });
 
+  describe('temporary passwords', () => {
+    function reset(actor: { authHeader: { Authorization: string } }, targetId: string) {
+      return request(app).post(`/api/users/${targetId}/temporary-password`).set(actor.authHeader);
+    }
+
+    it('replaces the password and signs the person out', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const member = await createTestUser(db, 'contributor');
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(200);
+      const cookie = refreshCookieFrom(login)!;
+
+      const response = await reset(admin, member.id).expect(200);
+      const temporary = String(response.body.temporaryPassword);
+      expect(temporary).toMatch(/^[a-z2-9]{4}(-[a-z2-9]{4}){3}$/);
+      expect(response.headers['cache-control']).toBe('no-store');
+
+      await request(app).post('/api/auth/refresh').set('Cookie', cookie).expect(401);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(401);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: temporary })
+        .expect(200);
+    });
+
+    it('only works downwards, and never on yourself', async () => {
+      const admin = await createTestUser(db, 'admin');
+      const otherAdmin = await createTestUser(db, 'admin');
+      const member = await createTestUser(db, 'contributor');
+
+      await reset(admin, admin.id).expect(403);
+      await reset(admin, otherAdmin.id).expect(403);
+      await reset(member, admin.id).expect(403);
+    });
+  });
+
   describe('blocking accounts', () => {
     function block(
       actor: { authHeader: { Authorization: string } },

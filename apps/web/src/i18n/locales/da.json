@@ -235,7 +235,15 @@
     "blocked": "{{name}} er blokeret og logget ud.",
     "unblocked": "{{name}} kan logge ind igen.",
     "blockConfirmTitle": "Blokér {{name}}?",
-    "blockConfirmBody": "Personen bliver logget ud alle steder med det samme og kan ikke logge ind igen, før blokeringen ophæves. Det, de har tilføjet, bliver på kortet."
+    "blockConfirmBody": "Personen bliver logget ud alle steder med det samme og kan ikke logge ind igen, før blokeringen ophæves. Det, de har tilføjet, bliver på kortet.",
+    "newPassword": "Ny adgangskode",
+    "newPasswordConfirmTitle": "Lav en midlertidig adgangskode til {{name}}?",
+    "newPasswordConfirmBody": "Den nuværende adgangskode holder op med at virke, og personen bliver logget ud alle steder. Du får en midlertidig adgangskode, som du giver videre - fx personligt eller i telefonen, ikke i en offentlig besked.",
+    "temporaryTitle": "Midlertidig adgangskode til {{name}}",
+    "temporaryExplain": "Giv den til {{name}}, og bed dem logge ind med den og skifte adgangskode under Din konto.",
+    "temporaryOnce": "Den vises kun nu. Lukker du vinduet, må du lave en ny.",
+    "copyPassword": "Kopiér adgangskoden",
+    "passwordCopied": "Adgangskoden er kopieret"
   },
   "auth": {
     "signInTitle": "Log ind",

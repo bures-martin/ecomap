@@ -216,6 +216,13 @@ export function useSetUserDisabled() {
   });
 }
 
+/** A temporary password for someone who is locked out; the answer holds it once. */
+export function useCreateTemporaryPassword() {
+  return useMutation({
+    mutationFn: (id: string) => usersApi.createTemporaryPassword(id),
+  });
+}
+
 export function useUsers() {
   return useQuery({ queryKey: queryKeys.users, queryFn: () => usersApi.list() });
 }

@@ -3,6 +3,7 @@ import {
   communitySettingsSchema,
   createdInvitationSchema,
   currentUserSchema,
+  temporaryPasswordSchema,
   featureCollectionSchema,
   featureSchema,
   featureSuggestionSchema,
@@ -19,6 +20,7 @@ import {
   type CreateFeatureInput,
   type CreateLayerInput,
   type CurrentUser,
+  type TemporaryPassword,
   type DecideSuggestionInput,
   type Feature,
   type FeatureSuggestion,
@@ -202,6 +204,11 @@ export const usersApi = {
       method: 'PATCH',
       body: { disabled },
       schema: currentUserSchema,
+    }),
+  createTemporaryPassword: (id: string): Promise<TemporaryPassword> =>
+    apiRequest(`/api/users/${id}/temporary-password`, {
+      method: 'POST',
+      schema: temporaryPasswordSchema,
     }),
 };
 

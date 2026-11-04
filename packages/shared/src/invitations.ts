@@ -68,5 +68,9 @@ export type AcceptInvitationInput = z.infer<typeof acceptInvitationInputSchema>;
 export const updateUserStatusInputSchema = z.object({ disabled: z.boolean() });
 export type UpdateUserStatusInput = z.infer<typeof updateUserStatusInputSchema>;
 
+/** A one-off password an admin sets for someone who is locked out; shown once. */
+export const temporaryPasswordSchema = z.object({ temporaryPassword: z.string() });
+export type TemporaryPassword = z.infer<typeof temporaryPasswordSchema>;
+
 /** The path of the web page that accepts an invitation. The token rides in the fragment. */
 export const INVITATION_PAGE_PATH = '/join';

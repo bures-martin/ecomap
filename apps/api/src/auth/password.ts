@@ -1,4 +1,4 @@
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomInt, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 
 const scrypt = promisify(scryptCallback) as (
@@ -22,6 +22,26 @@ const SALT_LENGTH = 16;
 
 /** Format: `scrypt$N$r$p$<salt base64url>$<hash base64url>`. */
 const HASH_PATTERN = /^scrypt\$(\d+)\$(\d+)\$(\d+)\$([A-Za-z0-9_-]+)\$([A-Za-z0-9_-]+)$/;
+
+/*
+ * Letters and digits that cannot be mistaken for each other when read aloud or
+ * copied by hand: no 0/o, 1/l/i.
+ */
+const TEMPORARY_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
+
+/**
+ * A password an admin hands to someone who is locked out, e.g. "k7mq-3xwe-p9ad-trh2".
+ * Sixteen random characters (about 79 bits) in groups of four, so it is easy to
+ * read out; the dashes also satisfy the "a number or symbol" rule.
+ */
+export function generateTemporaryPassword(): string {
+  const groups = Array.from({ length: 4 }, () =>
+    Array.from({ length: 4 }, () => TEMPORARY_ALPHABET[randomInt(TEMPORARY_ALPHABET.length)]).join(
+      '',
+    ),
+  );
+  return groups.join('-');
+}
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(SALT_LENGTH);
