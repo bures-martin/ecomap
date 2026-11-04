@@ -1,5 +1,8 @@
 import {
   authSessionSchema,
+  registerResultSchema,
+  type RegisterResult,
+  type ResetPasswordInput,
   communitySettingsSchema,
   createdInvitationSchema,
   currentUserSchema,
@@ -136,8 +139,21 @@ export const featuresApi = {
 };
 
 export const authApi = {
-  register: (input: RegisterInput): Promise<AuthSession> =>
-    apiRequest('/api/auth/register', { method: 'POST', body: input, schema: authSessionSchema }),
+  /** Creates the account and e-mails a confirmation link; it does not sign in. */
+  register: (input: RegisterInput): Promise<RegisterResult> =>
+    apiRequest('/api/auth/register', { method: 'POST', body: input, schema: registerResultSchema }),
+  verifyEmail: (token: string): Promise<AuthSession> =>
+    apiRequest('/api/auth/verify-email', {
+      method: 'POST',
+      body: { token },
+      schema: authSessionSchema,
+    }),
+  resendVerification: (email: string): Promise<void> =>
+    apiRequest('/api/auth/resend-verification', { method: 'POST', body: { email } }),
+  forgotPassword: (email: string): Promise<void> =>
+    apiRequest('/api/auth/forgot-password', { method: 'POST', body: { email } }),
+  resetPassword: (input: ResetPasswordInput): Promise<void> =>
+    apiRequest('/api/auth/reset-password', { method: 'POST', body: input }),
   login: (input: LoginInput): Promise<AuthSession> =>
     apiRequest('/api/auth/login', { method: 'POST', body: input, schema: authSessionSchema }),
   refresh: (): Promise<AuthSession> =>

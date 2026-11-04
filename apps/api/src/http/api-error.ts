@@ -47,6 +47,10 @@ export class ApiError extends Error {
     return new ApiError('forbidden', message);
   }
 
+  static emailUnverified(message: string): ApiError {
+    return new ApiError('email_unverified', message);
+  }
+
   static notFound(what = 'That'): ApiError {
     return new ApiError('not_found', `${what} could not be found`);
   }

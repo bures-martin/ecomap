@@ -30,8 +30,9 @@ its own map. The first community is the island of **Bornholm** in Denmark.
 - **Accessible.** Checked against WCAG 2.2 AA in light and dark mode: everything works from the
   keyboard (including adding a place without a mouse), colours are shaded automatically so no
   colour choice breaks contrast, and reduced motion is respected.
-- **Accounts done properly.** Invitation links, roles, blocking, two-factor authentication,
-  profile pictures, and a privacy page each community fills in.
+- **Accounts done properly.** Sign-up with e-mail confirmation, "forgot password" by e-mail,
+  invitation links, roles, blocking, two-factor authentication, profile pictures, and a privacy
+  page each community fills in.
 - **Your data stays yours.** Admins export everything as GeoJSON or CSV in one click, and the
   production setup backs up the database every night.
 - **Shareable views.** Every filter lives in the URL, so a filtered map is a link.
@@ -204,8 +205,6 @@ must offer its source code to the people using it - so improvements stay open fo
 - The About and privacy texts support only a small Markdown subset (headings, lists, bold, links),
   rendered as elements and never as HTML — admin-written HTML would be a stored XSS waiting for
   the first compromised account.
-- No email yet. Invitations are links an admin copies and sends, and someone who forgets their
-  password gets a temporary one from an admin; reset by email comes later.
 - No self-service account deletion: the privacy page tells people to ask an admin.
 - `backend/` is the first version's Express server. It is no longer built or linted, and
   `apps/api` covers everything it did; delete it once you are happy to.

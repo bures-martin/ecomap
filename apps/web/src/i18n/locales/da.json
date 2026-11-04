@@ -310,7 +310,8 @@
     "rate_limited": "For mange forsøg - vent et øjeblik.",
     "internal_error": "Noget gik galt hos os.",
     "offline": "Kunne ikke få forbindelse til serveren.",
-    "payload_too_large": "Filen er for stor."
+    "payload_too_large": "Filen er for stor.",
+    "email_unverified": "Bekræft din e-mail, før du logger ind."
   },
   "avatar": {
     "title": "Profilbillede",
@@ -495,5 +496,28 @@
     "allShown_one": "{{count}} sted på kortet lige nu.",
     "allShown_other": "{{count}} steder på kortet lige nu.",
     "someShown": "De {{shown}} nærmeste af {{total}} steder på kortet. Zoom ind for at se resten."
+  },
+  "emailLinks": {
+    "verifyTitle": "Bekræft din e-mail",
+    "verifying": "Bekræfter din e-mail …",
+    "verified": "Din e-mail er bekræftet - velkommen!",
+    "linkInvalid": "Linket er for gammelt eller allerede brugt.",
+    "verifyFailedHelp": "Log ind, så kan du få et nyt link tilsendt:",
+    "checkInbox": "Tjek din e-mail: vi har sendt et link til {{email}}. Klik på det for at bekræfte din e-mail og logge ind.",
+    "checkSpam": "Kan du ikke finde den? Kig i spam-mappen, eller få den sendt igen.",
+    "sendAgain": "Send e-mailen igen",
+    "resent": "Sendt igen - tjek din indbakke.",
+    "notConfirmedYet": "Du skal bekræfte din e-mail, før du kan logge ind. Klik på linket i den e-mail, vi sendte, da du oprettede kontoen.",
+    "forgotLink": "Glemt adgangskode?",
+    "forgotTitle": "Glemt adgangskode",
+    "forgotIntro": "Skriv din e-mail, så sender vi et link, hvor du kan vælge en ny adgangskode.",
+    "sendResetLink": "Send link",
+    "forgotSent": "Hvis der findes en konto med {{email}}, har vi sendt et link. Det virker i 1 time.",
+    "backToSignIn": "Tilbage til log ind",
+    "resetTitle": "Vælg en ny adgangskode",
+    "resetIntro": "Når du har gemt den, bliver du logget ud alle andre steder.",
+    "saveNewPassword": "Gem ny adgangskode",
+    "resetDone": "Din adgangskode er skiftet - log ind med den nye.",
+    "askAgain": "Bed om et nyt link"
   }
 }

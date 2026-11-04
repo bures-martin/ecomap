@@ -28,7 +28,10 @@ export interface Auth {
   /** True until the initial refresh attempt has settled. */
   readonly isLoading: boolean;
   login: (input: LoginInput) => Promise<void>;
+  /** Creates the account; signing in waits for the link in the confirmation e-mail. */
   register: (input: RegisterInput) => Promise<void>;
+  /** The confirmation link: confirms the e-mail and signs in. */
+  verifyEmail: (token: string) => Promise<void>;
   /** Creates the account an invitation link was made for, and signs it in. */
   acceptInvitation: (input: AcceptInvitationInput) => Promise<void>;
   logout: () => Promise<void>;
@@ -112,7 +115,10 @@ export function createAuth(
       await queryClient.invalidateQueries();
     },
     register: async (input) => {
-      applySession(await authApi.register(input));
+      await authApi.register(input);
+    },
+    verifyEmail: async (token) => {
+      applySession(await authApi.verifyEmail(token));
       await queryClient.invalidateQueries();
     },
     acceptInvitation: async (input) => {

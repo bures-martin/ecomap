@@ -60,6 +60,18 @@ Open `https://<your domain>`, sign in with the admin account from `deploy/.env`,
 > Tip: put the long `docker compose -f deploy/docker-compose.yml --env-file deploy/.env` in an
 > alias, e.g. `alias dc='docker compose -f deploy/docker-compose.yml --env-file deploy/.env'`.
 
+## E-mail
+
+Sign-up confirmation and "Glemt adgangskode?" send e-mails, so production needs an SMTP
+service. Any works; Brevo and Mailjet are French, have EU data centres and free tiers that are
+plenty for a community map. Create an account, verify the sender address (or domain), and put
+the SMTP details in `deploy/.env` (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`,
+`MAIL_FROM`), then `dc up -d`.
+
+Without `SMTP_HOST` nothing is sent: each e-mail is written to the API log (`dc logs api`)
+instead. That is fine for an invite-only demo - invitations are links you send yourself - but
+then nobody can confirm a sign-up or reset a password by e-mail.
+
 ## 4. Backups
 
 The `backup` service writes a compressed dump to `deploy/backups/` when it starts and every night

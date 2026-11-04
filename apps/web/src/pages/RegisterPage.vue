@@ -3,6 +3,7 @@ import { PASSWORD_MIN_LENGTH } from '@ecomap/shared';
 import { useTranslation } from 'i18next-vue';
 import { computed, ref, shallowRef, watchEffect } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
+import { authApi } from '../api/endpoints.js';
 import { useCommunitySettings } from '../api/queries.js';
 import { useAuth } from '../auth/auth.js';
 import { fieldIssues, useApiErrorMessage } from '../composables/useApiErrorMessage.js';
@@ -18,6 +19,9 @@ const email = ref('');
 const password = ref('');
 const error = shallowRef<unknown>(null);
 const submitting = ref(false);
+/** After signing up: "check your e-mail", with the address they typed. */
+const sentTo = ref<string | null>(null);
+const resent = ref(false);
 
 const settings = computed(() => settingsQuery.data.value);
 const issues = computed(() => fieldIssues(error.value));
@@ -40,11 +44,18 @@ const submit = async (): Promise<void> => {
       email: email.value,
       password: password.value,
     });
+    sentTo.value = email.value;
   } catch (caught) {
     error.value = caught;
   } finally {
     submitting.value = false;
   }
+};
+
+const resend = async (): Promise<void> => {
+  if (!sentTo.value) return;
+  await authApi.resendVerification(sentTo.value).catch(() => undefined);
+  resent.value = true;
 };
 </script>
 
@@ -54,7 +65,20 @@ const submit = async (): Promise<void> => {
       <h1 class="text-headline-large font-weight-bold mb-2">{{ t('auth.registerTitle') }}</h1>
       <p class="text-medium-emphasis mb-6">{{ t('auth.registerIntro') }}</p>
 
-      <v-alert v-if="settings && !settings.allowPublicRegistration" type="info">
+      <div v-if="sentTo" class="d-flex flex-column ga-4" role="status">
+        <v-alert type="success" variant="tonal">
+          {{ t('emailLinks.checkInbox', { email: sentTo }) }}
+        </v-alert>
+        <p class="text-medium-emphasis">{{ t('emailLinks.checkSpam') }}</p>
+        <p v-if="resent">{{ t('emailLinks.resent') }}</p>
+        <div v-else>
+          <v-btn variant="tonal" color="primary" @click="resend">
+            {{ t('emailLinks.sendAgain') }}
+          </v-btn>
+        </div>
+      </div>
+
+      <v-alert v-else-if="settings && !settings.allowPublicRegistration" type="info">
         {{ t('auth.registrationClosed') }}
       </v-alert>
 

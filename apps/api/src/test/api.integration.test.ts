@@ -5,6 +5,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../app.js';
 import type { Sql } from '../db/client.js';
+import { sentMails } from '../mail/mailer.js';
 import { setUserTotpSecret, enableUserTotp } from '../modules/users/repository.js';
 import {
   hasTestDatabase,
@@ -35,7 +36,16 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
 
   beforeEach(async () => {
     await resetTestDatabase(db);
+    sentMails.length = 0;
   });
+
+  /** The token from the link in the newest e-mail to `to`. */
+  function linkTokenFor(to: string): string {
+    const mail = sentMails.filter((m) => m.to === to).at(-1);
+    const token = /#token=([\w-]+)/.exec(mail?.text ?? '')?.[1];
+    if (!token) throw new Error(`No link e-mailed to ${to}`);
+    return token;
+  }
 
   describe('GET /api/health', () => {
     it('reports ok and reaches the database', async () => {
@@ -51,25 +61,26 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       password: 'a-long-enough-passw0rd',
     };
 
-    it('registers, returns a session and sets an httpOnly refresh cookie', async () => {
+    async function registerAndConfirm(): Promise<request.Response> {
+      await request(app).post('/api/auth/register').send(credentials).expect(201);
+      return request(app)
+        .post('/api/auth/verify-email')
+        .send({ token: linkTokenFor(credentials.email) })
+        .expect(200);
+    }
+
+    it('registers without signing in, and e-mails a confirmation link', async () => {
       const response = await request(app).post('/api/auth/register').send(credentials).expect(201);
 
-      expect(response.body.user).toMatchObject({
-        email: credentials.email,
-        displayName: credentials.displayName,
-        role: 'contributor',
-        totpEnabled: false,
-      });
-      expect(response.body.accessToken).toEqual(expect.any(String));
-
-      const cookie = refreshCookieFrom(response);
-      expect(cookie).toContain('HttpOnly');
-      expect(cookie).toContain('SameSite=Strict');
-      expect(cookie).toContain('Path=/api/auth');
+      expect(response.body).toEqual({ status: 'verification_sent' });
+      expect(refreshCookieFrom(response)).toBeUndefined();
+      expect(sentMails).toHaveLength(1);
+      expect(sentMails[0]?.to).toBe(credentials.email);
+      expect(sentMails[0]?.text).toContain('/verify-email#token=');
     });
 
     it('never returns the password hash', async () => {
-      const response = await request(app).post('/api/auth/register').send(credentials).expect(201);
+      const response = await registerAndConfirm();
       expect(JSON.stringify(response.body)).not.toContain('scrypt$');
     });
 
@@ -91,8 +102,64 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       expect(response.body.error.code).toBe('conflict');
     });
 
-    it('signs in with the right password', async () => {
+    it('refuses to sign in until the e-mail is confirmed', async () => {
       await request(app).post('/api/auth/register').send(credentials).expect(201);
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: credentials.email, password: credentials.password })
+        .expect(403);
+      expect(response.body.error.code).toBe('email_unverified');
+    });
+
+    it('confirms with the link, signs in and sets an httpOnly refresh cookie', async () => {
+      const response = await registerAndConfirm();
+
+      expect(response.body.user).toMatchObject({
+        email: credentials.email,
+        displayName: credentials.displayName,
+        role: 'contributor',
+        totpEnabled: false,
+      });
+      expect(response.body.accessToken).toEqual(expect.any(String));
+
+      const cookie = refreshCookieFrom(response);
+      expect(cookie).toContain('HttpOnly');
+      expect(cookie).toContain('SameSite=Strict');
+      expect(cookie).toContain('Path=/api/auth');
+    });
+
+    it('uses a confirmation link only once', async () => {
+      await request(app).post('/api/auth/register').send(credentials).expect(201);
+      const token = linkTokenFor(credentials.email);
+      await request(app).post('/api/auth/verify-email').send({ token }).expect(200);
+      await request(app).post('/api/auth/verify-email').send({ token }).expect(400);
+    });
+
+    it('sends a new link on request - and only the newest one works', async () => {
+      await request(app).post('/api/auth/register').send(credentials).expect(201);
+      const first = linkTokenFor(credentials.email);
+
+      await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: credentials.email })
+        .expect(204);
+      const second = linkTokenFor(credentials.email);
+
+      expect(second).not.toBe(first);
+      await request(app).post('/api/auth/verify-email').send({ token: first }).expect(400);
+      await request(app).post('/api/auth/verify-email').send({ token: second }).expect(200);
+    });
+
+    it('answers a resend for an unknown address the same way, without sending', async () => {
+      await request(app)
+        .post('/api/auth/resend-verification')
+        .send({ email: 'nobody@example.test' })
+        .expect(204);
+      expect(sentMails).toHaveLength(0);
+    });
+
+    it('signs in with the right password once confirmed', async () => {
+      await registerAndConfirm();
       const response = await request(app)
         .post('/api/auth/login')
         .send({ email: credentials.email, password: credentials.password })
@@ -102,7 +169,7 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
 
     it('gives the same answer for a wrong password and an unknown account', async () => {
-      await request(app).post('/api/auth/register').send(credentials).expect(201);
+      await registerAndConfirm();
 
       const wrongPassword = await request(app)
         .post('/api/auth/login')
@@ -121,6 +188,75 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       await db`update community_settings set allow_public_registration = false where id = true`;
       const response = await request(app).post('/api/auth/register').send(credentials).expect(403);
       expect(response.body.error.code).toBe('forbidden');
+      expect(sentMails).toHaveLength(0);
+    });
+  });
+
+  describe('forgotten password', () => {
+    it('e-mails a reset link that sets a new password and ends every session', async () => {
+      const member = await createTestUser(db, 'contributor');
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(200);
+      const cookie = refreshCookieFrom(login)!;
+
+      await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: member.email })
+        .expect(204);
+      const token = linkTokenFor(member.email);
+      expect(sentMails.at(-1)?.text).toContain('/reset-password#token=');
+
+      await request(app)
+        .post('/api/auth/reset-password')
+        .send({ token, newPassword: 'a-brand-new-passw0rd' })
+        .expect(204);
+
+      await request(app).post('/api/auth/refresh').set('Cookie', cookie).expect(401);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: TEST_PASSWORD })
+        .expect(401);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: member.email, password: 'a-brand-new-passw0rd' })
+        .expect(200);
+
+      /* Once only. */
+      await request(app)
+        .post('/api/auth/reset-password')
+        .send({ token, newPassword: 'yet-another-passw0rd' })
+        .expect(400);
+    });
+
+    it('answers the same for an unknown address, without sending anything', async () => {
+      await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: 'nobody@example.test' })
+        .expect(204);
+      expect(sentMails).toHaveLength(0);
+    });
+
+    it('lets a reset link confirm a still-unconfirmed sign-up', async () => {
+      const credentials = {
+        email: 'late@example.test',
+        displayName: 'Late Confirmer',
+        password: 'a-long-enough-passw0rd',
+      };
+      await request(app).post('/api/auth/register').send(credentials).expect(201);
+      await request(app)
+        .post('/api/auth/forgot-password')
+        .send({ email: credentials.email })
+        .expect(204);
+      await request(app)
+        .post('/api/auth/reset-password')
+        .send({ token: linkTokenFor(credentials.email), newPassword: 'a-brand-new-passw0rd' })
+        .expect(204);
+      await request(app)
+        .post('/api/auth/login')
+        .send({ email: credentials.email, password: 'a-brand-new-passw0rd' })
+        .expect(200);
     });
   });
 
@@ -166,10 +302,11 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
   describe('session lifecycle', () => {
     it('refreshes with the cookie and rotates the token', async () => {
       const agent = request.agent(app);
+      const user = await createTestUser(db, 'contributor');
       await agent
-        .post('/api/auth/register')
-        .send({ email: 'rot@example.test', displayName: 'Rotator', password: TEST_PASSWORD })
-        .expect(201);
+        .post('/api/auth/login')
+        .send({ email: user.email, password: TEST_PASSWORD })
+        .expect(200);
 
       const first = await agent.post('/api/auth/refresh').expect(200);
       expect(first.body.accessToken).toEqual(expect.any(String));
@@ -179,10 +316,11 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
 
     it('refuses to reuse a refresh token after rotation', async () => {
+      const user = await createTestUser(db, 'contributor');
       const registration = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 'reuse@example.test', displayName: 'Reuser', password: TEST_PASSWORD })
-        .expect(201);
+        .post('/api/auth/login')
+        .send({ email: user.email, password: TEST_PASSWORD })
+        .expect(200);
 
       const originalCookie = refreshCookieFrom(registration);
       expect(originalCookie).toBeDefined();
@@ -201,11 +339,12 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
     });
 
     it('ends the session on logout', async () => {
-      const registration = await request(app)
-        .post('/api/auth/register')
-        .send({ email: 'bye@example.test', displayName: 'Leaver', password: TEST_PASSWORD })
-        .expect(201);
-      const cookie = refreshCookieFrom(registration)!;
+      const user = await createTestUser(db, 'contributor');
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({ email: user.email, password: TEST_PASSWORD })
+        .expect(200);
+      const cookie = refreshCookieFrom(login)!;
 
       await request(app).post('/api/auth/logout').set('Cookie', cookie).expect(204);
       await request(app).post('/api/auth/refresh').set('Cookie', cookie).expect(401);

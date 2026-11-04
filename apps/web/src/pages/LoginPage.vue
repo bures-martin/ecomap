@@ -3,6 +3,7 @@ import { useTranslation } from 'i18next-vue';
 import { computed, ref, watchEffect } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { ApiRequestError } from '../api/client.js';
+import { authApi } from '../api/endpoints.js';
 import { useAuth } from '../auth/auth.js';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { safeRedirectPath } from '../router.js';
@@ -20,6 +21,9 @@ const totpCode = ref('');
 const totpRequired = ref(false);
 const error = ref<string | null>(null);
 const submitting = ref(false);
+/** Signed up but not confirmed yet: offer to send the link again. */
+const unverified = ref(false);
+const resent = ref(false);
 
 /** Where a route guard sent them from, so sign-in can send them back. */
 const destination = computed(() => safeRedirectPath(route.query['from']));
@@ -32,6 +36,7 @@ watchEffect(() => {
 const submit = async (): Promise<void> => {
   submitting.value = true;
   error.value = null;
+  unverified.value = false;
 
   try {
     await auth.login({
@@ -42,12 +47,20 @@ const submit = async (): Promise<void> => {
   } catch (caught) {
     if (caught instanceof ApiRequestError && caught.code === 'totp_required') {
       totpRequired.value = true;
+    } else if (caught instanceof ApiRequestError && caught.code === 'email_unverified') {
+      unverified.value = true;
+      resent.value = false;
     } else {
       error.value = errorMessage(caught);
     }
   } finally {
     submitting.value = false;
   }
+};
+
+const resend = async (): Promise<void> => {
+  await authApi.resendVerification(email.value).catch(() => undefined);
+  resent.value = true;
 };
 </script>
 
@@ -59,6 +72,13 @@ const submit = async (): Promise<void> => {
 
       <form novalidate class="d-flex flex-column ga-4" @submit.prevent="submit">
         <v-alert v-if="error" type="error">{{ error }}</v-alert>
+        <v-alert v-if="unverified" type="info" variant="tonal">
+          <p>{{ t('emailLinks.notConfirmedYet') }}</p>
+          <p v-if="resent" class="mt-2" role="status">{{ t('emailLinks.resent') }}</p>
+          <v-btn v-else class="mt-2" size="small" variant="tonal" color="primary" @click="resend">
+            {{ t('emailLinks.sendAgain') }}
+          </v-btn>
+        </v-alert>
 
         <v-text-field
           v-model="email"
@@ -93,7 +113,10 @@ const submit = async (): Promise<void> => {
           {{ t('auth.signIn') }}
         </v-btn>
 
-        <RouterLink to="/register">{{ t('auth.needAccount') }}</RouterLink>
+        <div class="d-flex flex-wrap justify-space-between ga-2">
+          <RouterLink to="/register">{{ t('auth.needAccount') }}</RouterLink>
+          <RouterLink to="/forgot-password">{{ t('emailLinks.forgotLink') }}</RouterLink>
+        </div>
       </form>
     </v-card>
   </v-container>

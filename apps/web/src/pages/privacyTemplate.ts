@@ -27,6 +27,7 @@ Her står, hvilke oplysninger ${communityName} gemmer om dig, hvorfor, og hvad d
 
 - Vi gemmer din e-mail, dit viste navn, din adgangskode (kun som en krypteret hash, som ingen kan læse), din rolle, og om du har slået totrinsbekræftelse til.
 - Dit profilbillede, hvis du selv lægger et op.
+- Vi sender kun e-mails, du selv beder om: bekræftelse af din e-mail og nulstilling af din adgangskode. De sendes via [UDFYLD: e-mail-udbyder, fx Brevo i Frankrig].
 - En login-cookie, så du forbliver logget ind. Den er nødvendig for at kunne logge ind, bruges ikke til andet og udløber efter 30 dage.
 - Det, du tilføjer eller foreslår på kortet - navn, beskrivelse, placering og billeder - er offentligt, sammen med dit viste navn. Din e-mail kan kun administratorerne se.
 

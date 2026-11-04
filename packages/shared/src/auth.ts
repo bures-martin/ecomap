@@ -57,6 +57,32 @@ export const totpDisableInputSchema = z.object({
 });
 export type TotpDisableInput = z.infer<typeof totpDisableInputSchema>;
 
+/* -------------------------------------------- links sent by e-mail ---- */
+
+/** "Send me the link again" and "I forgot my password": just an address. */
+export const emailInputSchema = z.object({ email: emailSchema });
+export type EmailInput = z.infer<typeof emailInputSchema>;
+
+/** The secret from a confirmation or reset link (it travels in the URL fragment). */
+export const emailTokenSchema = z.string().min(20).max(200);
+
+export const verifyEmailInputSchema = z.object({ token: emailTokenSchema });
+export type VerifyEmailInput = z.infer<typeof verifyEmailInputSchema>;
+
+export const resetPasswordInputSchema = z.object({
+  token: emailTokenSchema,
+  newPassword: passwordSchema,
+});
+export type ResetPasswordInput = z.infer<typeof resetPasswordInputSchema>;
+
+/** Signing up no longer signs in: the e-mail address is confirmed first. */
+export const registerResultSchema = z.object({ status: z.literal('verification_sent') });
+export type RegisterResult = z.infer<typeof registerResultSchema>;
+
+/** The web pages the e-mailed links open; the token follows as #token=... */
+export const VERIFY_EMAIL_PAGE_PATH = '/verify-email';
+export const RESET_PASSWORD_PAGE_PATH = '/reset-password';
+
 export const publicUserSchema = z.object({
   id: z.uuid(),
   displayName: displayNameSchema,

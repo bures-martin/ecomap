@@ -46,6 +46,14 @@ services:
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD in deploy/.env}
       SEED_ADMIN_NAME: ${SEED_ADMIN_NAME:-Admin}
       COMMUNITY: ${COMMUNITY:-neutral}
+      # Links in e-mails (sign-up confirmation, password reset) point here.
+      PUBLIC_URL: https://${DOMAIN}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-EcoMap <no-reply@${DOMAIN}>}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     # Server logs (with IP addresses) are rotated by size - five files of 20 MB,
     # roughly a few weeks on a small community map. The privacy page says how long.

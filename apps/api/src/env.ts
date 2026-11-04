@@ -37,6 +37,26 @@ const envSchema = z.object({
   SEED_ADMIN_NAME: z.string().default('EcoMap Admin'),
   /** Which community `npm run db:seed` writes into the database - see src/communities. */
   COMMUNITY: z.enum(COMMUNITY_SLUGS).default('neutral'),
+  /**
+   * The address people reach the site at - links in e-mails point here.
+   * In development that is the Vite dev server.
+   */
+  PUBLIC_URL: z.url().default('http://localhost:5173'),
+  /**
+   * Outgoing e-mail (sign-up confirmation, password reset). Without SMTP_HOST
+   * nothing is sent: the e-mail is written to the log instead, which is fine on
+   * a laptop and makes the problem obvious on a server.
+   */
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
+  /** true for port 465 (TLS from the start); false uses STARTTLS on 587. */
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  MAIL_FROM: z.string().default('EcoMap <no-reply@localhost>'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 

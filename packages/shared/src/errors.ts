@@ -11,6 +11,8 @@ export const API_ERROR_CODES = [
   'totp_required',
   'invalid_credentials',
   'forbidden',
+  /** Signed up but has not clicked the link in the confirmation e-mail yet. */
+  'email_unverified',
   'not_found',
   'conflict',
   'rate_limited',
@@ -42,6 +44,7 @@ export const HTTP_STATUS_BY_ERROR_CODE: Readonly<Record<ApiErrorCode, number>> =
   totp_required: 401,
   invalid_credentials: 401,
   forbidden: 403,
+  email_unverified: 403,
   not_found: 404,
   conflict: 409,
   rate_limited: 429,

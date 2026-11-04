@@ -12,6 +12,8 @@ export interface UserRow {
   totpEnabled: boolean;
   avatarUpdatedAt: string | null;
   disabledAt: string | null;
+  /** Null until a self-registered person clicks the link in the confirmation e-mail. */
+  emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +30,7 @@ function userColumns(db: Queryable) {
     totp_enabled  as "totpEnabled",
     avatar_updated_at as "avatarUpdatedAt",
     disabled_at   as "disabledAt",
+    email_verified_at as "emailVerifiedAt",
     created_at    as "createdAt",
     updated_at    as "updatedAt"
   `;
@@ -47,17 +50,35 @@ export async function findUserByEmail(db: Queryable, email: string): Promise<Use
   return row ?? null;
 }
 
+/**
+ * `emailVerified` is false only for people who sign themselves up: an admin's
+ * invitation or the seed vouches for the address.
+ */
 export async function insertUser(
   db: Queryable,
-  input: { email: string; displayName: string; passwordHash: string; role: Role },
+  input: {
+    email: string;
+    displayName: string;
+    passwordHash: string;
+    role: Role;
+    emailVerified?: boolean;
+  },
 ): Promise<UserRow> {
+  const verified = input.emailVerified ?? true;
   const [row] = await db<UserRow[]>`
-    insert into users (email, display_name, password_hash, role)
-    values (${input.email}, ${input.displayName}, ${input.passwordHash}, ${input.role})
+    insert into users (email, display_name, password_hash, role, email_verified_at)
+    values (${input.email}, ${input.displayName}, ${input.passwordHash}, ${input.role},
+            ${verified ? db`now()` : null})
     returning ${userColumns(db)}
   `;
   if (!row) throw new Error('Insert returned no row');
   return row;
+}
+
+export async function markEmailVerified(db: Queryable, userId: string): Promise<void> {
+  await db`
+    update users set email_verified_at = coalesce(email_verified_at, now()) where id = ${userId}
+  `;
 }
 
 export async function updateUserPassword(

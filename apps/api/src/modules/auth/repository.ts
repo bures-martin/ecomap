@@ -60,3 +60,49 @@ export async function deleteExpiredRefreshTokens(db: Sql): Promise<number> {
   `;
   return rows.length;
 }
+
+/* ------------------------------------------- one-time e-mail links ---- */
+
+export type EmailTokenPurpose = 'verify_email' | 'reset_password';
+
+/**
+ * Stores a new link token (only its hash) and retires any earlier unused one
+ * for the same purpose, so only the newest e-mail's link works.
+ */
+export async function insertEmailToken(
+  db: Sql,
+  input: { userId: string; purpose: EmailTokenPurpose; tokenHash: string; expiresAt: Date },
+): Promise<void> {
+  await db.begin(async (tx) => {
+    await tx`
+      delete from email_tokens
+      where user_id = ${input.userId} and purpose = ${input.purpose} and used_at is null
+    `;
+    await tx`
+      insert into email_tokens (user_id, purpose, token_hash, expires_at)
+      values (${input.userId}, ${input.purpose}, ${input.tokenHash}, ${input.expiresAt})
+    `;
+  });
+}
+
+/**
+ * Uses up a link: returns whose it was, or null when it is unknown, already
+ * used, expired or meant for something else. One statement, so the same link
+ * cannot be used twice even by two clicks at once.
+ */
+export async function consumeEmailToken(
+  db: Sql,
+  tokenHash: string,
+  purpose: EmailTokenPurpose,
+): Promise<string | null> {
+  const [row] = await db<{ userId: string }[]>`
+    update email_tokens
+    set used_at = now()
+    where token_hash = ${tokenHash}
+      and purpose = ${purpose}
+      and used_at is null
+      and expires_at > now()
+    returning user_id as "userId"
+  `;
+  return row?.userId ?? null;
+}

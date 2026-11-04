@@ -1,8 +1,11 @@
 import {
   DEFAULT_ROLE,
+  RESET_PASSWORD_PAGE_PATH,
+  VERIFY_EMAIL_PAGE_PATH,
   type AuthSession,
   type LoginInput,
   type RegisterInput,
+  type ResetPasswordInput,
   type TotpSetup,
 } from '@ecomap/shared';
 import type { Sql } from '../../db/client.js';
@@ -11,25 +14,35 @@ import { hashPassword, needsRehash, verifyPassword } from '../../auth/password.j
 import { generateTotpSecret, totpUri, verifyTotpCode } from '../../auth/totp.js';
 import {
   accessTokenTtlSeconds,
+  createOpaqueToken,
   createRefreshToken,
+  hashOpaqueToken,
   hashRefreshToken,
   signAccessToken,
   type RefreshToken,
 } from '../../auth/tokens.js';
+import { env } from '../../env.js';
+import { logger } from '../../logger.js';
+import { sendMail } from '../../mail/mailer.js';
+import { resetPasswordMail, verifyEmailMail } from '../../mail/templates.js';
 import {
   disableUserTotp,
   enableUserTotp,
   findUserByEmail,
   findUserById,
   insertUser,
+  markEmailVerified,
   setUserTotpSecret,
   toCurrentUser,
   updateUserPassword,
   type UserRow,
 } from '../users/repository.js';
 import {
+  consumeEmailToken,
   findActiveRefreshToken,
+  insertEmailToken,
   insertRefreshToken,
+  type EmailTokenPurpose,
   revokeAllRefreshTokensForUser,
   revokeRefreshToken,
 } from './repository.js';
@@ -58,7 +71,21 @@ function getTimingDecoyHash(): Promise<string> {
   return timingDecoyHash;
 }
 
-export async function register(db: Sql, input: RegisterInput): Promise<IssuedSession> {
+/** How long the links in e-mails work. */
+const VERIFY_LINK_HOURS = 48;
+const RESET_LINK_HOURS = 1;
+
+export const UNVERIFIED_MESSAGE =
+  'Confirm your e-mail first - click the link we sent you, or ask for a new one.';
+
+/**
+ * Signing up creates the account and e-mails a confirmation link; it does not
+ * sign in. Only someone who can open that inbox can use the account, so nobody
+ * can sign up with another person's address. (Places they add still wait for a
+ * moderator, as before - confirming the e-mail is about the account, not the
+ * content.)
+ */
+export async function register(db: Sql, input: RegisterInput): Promise<void> {
   const settings = await getCommunitySettings(db);
   if (!settings.allowPublicRegistration) {
     throw ApiError.forbidden('This community is invite-only right now');
@@ -74,9 +101,90 @@ export async function register(db: Sql, input: RegisterInput): Promise<IssuedSes
     displayName: input.displayName,
     passwordHash: await hashPassword(input.password),
     role: DEFAULT_ROLE,
+    emailVerified: false,
   });
 
+  await sendLink(db, user, 'verify_email');
+}
+
+/** Clicking the confirmation link: the address is confirmed and the person is signed in. */
+export async function verifyEmail(db: Sql, token: string): Promise<IssuedSession> {
+  const userId = await consumeEmailToken(db, hashOpaqueToken(token), 'verify_email');
+  const user = userId ? await findUserById(db, userId) : null;
+  if (!user) {
+    throw ApiError.badRequest('That link has expired or has already been used - ask for a new one');
+  }
+  if (user.disabledAt) throw ApiError.forbidden(BLOCKED_MESSAGE);
+
+  await markEmailVerified(db, user.id);
   return issueSession(db, user);
+}
+
+/**
+ * A new confirmation link. Answers the same whether or not the address has an
+ * account, so it cannot be used to find out who is signed up.
+ */
+export async function resendVerification(db: Sql, email: string): Promise<void> {
+  const user = await findUserByEmail(db, email);
+  if (!user || user.emailVerifiedAt || user.disabledAt) return;
+  await sendLink(db, user, 'verify_email');
+}
+
+/** "I forgot my password": a reset link, with the same no-enumeration answer. */
+export async function forgotPassword(db: Sql, email: string): Promise<void> {
+  const user = await findUserByEmail(db, email);
+  if (!user || user.disabledAt) return;
+  await sendLink(db, user, 'reset_password');
+}
+
+/**
+ * Choosing a new password from the link. Every session ends, as with a normal
+ * password change, and the e-mail counts as confirmed - the link proved it.
+ */
+export async function resetPassword(db: Sql, input: ResetPasswordInput): Promise<void> {
+  const userId = await consumeEmailToken(db, hashOpaqueToken(input.token), 'reset_password');
+  const user = userId ? await findUserById(db, userId) : null;
+  if (!user) {
+    throw ApiError.badRequest('That link has expired or has already been used - ask for a new one');
+  }
+  if (user.disabledAt) throw ApiError.forbidden(BLOCKED_MESSAGE);
+
+  await updateUserPassword(db, user.id, await hashPassword(input.newPassword));
+  await markEmailVerified(db, user.id);
+  await revokeAllRefreshTokensForUser(db, user.id);
+}
+
+/**
+ * Creates a one-time link and e-mails it. A failed send is logged, not shown:
+ * the answer to the person must not depend on it (enumeration), and they can
+ * always ask for the link again.
+ */
+async function sendLink(db: Sql, user: UserRow, purpose: EmailTokenPurpose): Promise<void> {
+  const { token, hash } = createOpaqueToken();
+  const hours = purpose === 'verify_email' ? VERIFY_LINK_HOURS : RESET_LINK_HOURS;
+  await insertEmailToken(db, {
+    userId: user.id,
+    purpose,
+    tokenHash: hash,
+    expiresAt: new Date(Date.now() + hours * 3_600_000),
+  });
+
+  const settings = await getCommunitySettings(db);
+  const page = purpose === 'verify_email' ? VERIFY_EMAIL_PAGE_PATH : RESET_PASSWORD_PAGE_PATH;
+  /* The token rides in the fragment: it never reaches a server log or a Referer header. */
+  const link = `${env.PUBLIC_URL.replace(/\/$/, '')}${page}#token=${token}`;
+  const mail = {
+    to: user.email,
+    communityName: settings.name,
+    link,
+    locale: settings.defaultLocale,
+  };
+
+  try {
+    await sendMail(purpose === 'verify_email' ? verifyEmailMail(mail) : resetPasswordMail(mail));
+  } catch (error) {
+    logger.error({ err: error, purpose }, 'Could not send the e-mail');
+  }
 }
 
 export async function login(db: Sql, input: LoginInput): Promise<IssuedSession> {
@@ -96,6 +204,11 @@ export async function login(db: Sql, input: LoginInput): Promise<IssuedSession> 
    */
   if (user.disabledAt) {
     throw ApiError.forbidden(BLOCKED_MESSAGE);
+  }
+
+  /* Also only after the password, for the same reason. */
+  if (!user.emailVerifiedAt) {
+    throw ApiError.emailUnverified(UNVERIFIED_MESSAGE);
   }
 
   if (user.totpEnabled) {

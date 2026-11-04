@@ -3,12 +3,15 @@ import {
   AVATAR_MAX_BYTES,
   acceptInvitationInputSchema,
   changePasswordInputSchema,
+  emailInputSchema,
   invitationTokenInputSchema,
   loginInputSchema,
   registerInputSchema,
+  resetPasswordInputSchema,
   sniffImageContentType,
   totpDisableInputSchema,
   totpEnableInputSchema,
+  verifyEmailInputSchema,
 } from '@ecomap/shared';
 import express, { Router, type CookieOptions, type Response } from 'express';
 import { requireAuthContext } from '../../auth/context.js';
@@ -55,11 +58,40 @@ function clearRefreshCookie(res: Response): void {
 export function createAuthRouter(db: Sql): Router {
   const router = Router();
 
+  /* Signing up sends a confirmation e-mail; the link signs the person in. */
   router.post('/register', authRateLimiter, async (req, res) => {
     const input = parseOrThrow(registerInputSchema, req.body);
-    const { session, refreshToken } = await service.register(db, input);
+    await service.register(db, input);
+    res.status(201).json({ status: 'verification_sent' });
+  });
+
+  router.post('/verify-email', authRateLimiter, async (req, res) => {
+    const { token } = parseOrThrow(verifyEmailInputSchema, req.body);
+    const { session, refreshToken } = await service.verifyEmail(db, token);
     setRefreshCookie(res, refreshToken);
-    res.status(201).json(session);
+    res.json(session);
+  });
+
+  /*
+   * These two answer 204 whatever the address - whether it has an account is
+   * nobody's business but the account holder's.
+   */
+  router.post('/resend-verification', authRateLimiter, async (req, res) => {
+    const { email } = parseOrThrow(emailInputSchema, req.body);
+    await service.resendVerification(db, email);
+    res.status(204).end();
+  });
+
+  router.post('/forgot-password', authRateLimiter, async (req, res) => {
+    const { email } = parseOrThrow(emailInputSchema, req.body);
+    await service.forgotPassword(db, email);
+    res.status(204).end();
+  });
+
+  router.post('/reset-password', authRateLimiter, async (req, res) => {
+    const input = parseOrThrow(resetPasswordInputSchema, req.body);
+    await service.resetPassword(db, input);
+    res.status(204).end();
   });
 
   /*
