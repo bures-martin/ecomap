@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { FEATURE_STATUSES, type FeatureStatus, type Layer } from '@ecomap/shared';
-import { mdiMagnify } from '@mdi/js';
+import { mdiFilterRemoveOutline, mdiMagnify } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
 import { computed, useId } from 'vue';
 import { useAuth } from '../auth/auth.js';
@@ -101,7 +101,20 @@ const clearFilters = (): void => {
     />
 
     <section :aria-labelledby="headingId">
-      <h2 :id="headingId" class="text-title-small mb-1">{{ t('map.layersHeading') }}</h2>
+      <!-- Clearing sits next to what it clears, and only when there is something to clear. -->
+      <div class="d-flex align-center justify-space-between ga-2 mb-1">
+        <h2 :id="headingId" class="text-title-small">{{ t('map.layersHeading') }}</h2>
+        <v-btn
+          v-if="hasActiveFilters(props.filters)"
+          size="small"
+          variant="tonal"
+          color="primary"
+          :prepend-icon="mdiFilterRemoveOutline"
+          @click="clearFilters"
+        >
+          {{ t('map.clearFilters') }}
+        </v-btn>
+      </div>
 
       <p
         v-if="searching && visibleLayers.length === 0"
@@ -171,19 +184,9 @@ const clearFilters = (): void => {
 
     <v-divider />
 
-    <div class="d-flex flex-column ga-2">
-      <p class="text-body-medium text-medium-emphasis" aria-live="polite">
-        {{ t('map.showingCount', { shown: props.shown, total: props.total }) }}
-      </p>
-      <v-btn
-        v-if="hasActiveFilters(props.filters)"
-        size="small"
-        variant="text"
-        @click="clearFilters"
-      >
-        {{ t('map.clearFilters') }}
-      </v-btn>
-    </div>
+    <p class="text-body-medium text-medium-emphasis" aria-live="polite">
+      {{ t('map.showingCount', { shown: props.shown, total: props.total }) }}
+    </p>
   </div>
 </template>
 
