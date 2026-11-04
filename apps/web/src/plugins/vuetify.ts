@@ -6,12 +6,18 @@ import { readStoredColorScheme } from '../composables/useColorScheme.js';
 import { readableOn, withContrast } from './contrast.js';
 
 /**
- * The map's main action ("Tilføj til kortet"): dark ink with white text in
- * both schemes, so it stands apart from the white map buttons. Not the brand
- * green, which melts into green land and looks like the cluster circles, and
- * no bright hue, which would look like one of the layers' pins.
+ * A deep forest green: the header's text and logo, and the map's main action
+ * ("Tilføj til kortet"). On the map it is dark enough to stand out, where the
+ * brand green melts into green land and looks like the cluster circles, and no
+ * layer uses a green this dark, so the button is not read as a pin.
+ *
+ * The button sits on the map, which stays light, so it is the same in both
+ * schemes. On the dark header the text stays near-white and only the logo is
+ * green - a light one, since forest green would not read on charcoal.
  */
-const CALL_TO_ACTION = { cta: '#1a202c', 'on-cta': '#ffffff' } as const;
+const FOREST_GREEN = '#1e4d2b';
+const GREEN_ON_DARK = '#8fd1a3';
+const CALL_TO_ACTION = { cta: FOREST_GREEN, 'on-cta': '#ffffff' } as const;
 
 /** The surface each scheme's text and coloured buttons sit on. */
 const SURFACE = { light: '#ffffff', dark: '#1c2023' } as const;
@@ -88,8 +94,8 @@ export function createEcoMapVuetify(): ReturnType<typeof createVuetify> {
             surface: SURFACE.light,
             /* The header: off-white with a hint of green. */
             header: '#f3f6f2',
-            /* Softer than pure black: a deep green-grey for the title and links. */
-            'on-header': '#1e2b23',
+            'on-header': FOREST_GREEN,
+            logo: FOREST_GREEN,
             ...CALL_TO_ACTION,
           },
           /* Vuetify's 0.6 leaves field labels and hints at 4.3:1 on white. */
@@ -105,6 +111,7 @@ export function createEcoMapVuetify(): ReturnType<typeof createVuetify> {
             /* The header: a soft charcoal, a step lighter than the page. */
             header: '#20262a',
             'on-header': '#e6ebe7',
+            logo: GREEN_ON_DARK,
             ...CALL_TO_ACTION,
           },
         },

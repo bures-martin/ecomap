@@ -65,7 +65,7 @@ const signOut = async (): Promise<void> => {
         @click="drawerOpen = true"
       />
 
-      <v-icon :icon="mdiMap" color="primary" aria-hidden="true" class="mx-2" />
+      <v-icon :icon="mdiMap" color="logo" aria-hidden="true" class="mx-2" />
       <RouterLink to="/" class="app-title text-title-large">
         {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
       </RouterLink>
