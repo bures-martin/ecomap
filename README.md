@@ -170,18 +170,16 @@ The API's end-to-end tests use the database named by `TEST_DATABASE_URL`, creati
 and truncating between cases. Without that variable they skip themselves, so `npm test` still
 passes on a machine without Docker.
 
-## Deployment notes
+## Deploying
 
-- `npm run build` produces `apps/api/dist` (run with `npm start`) and `apps/web/dist` (static
-  files for any web server or CDN).
-- Serve both from one origin, or set `CORS_ORIGINS` to the web app's origin. The refresh cookie is
-  `Secure` when `NODE_ENV=production`, so the site must be on HTTPS.
-- The API runs its own migrations at start-up; run `npm run db:seed` once with the right
-  `COMMUNITY`.
-- Background maps are free, keyless tile services. For a busy public site, check each provider's
-  usage policy or move to a paid or self-hosted service.
-- PostgreSQL, PostGIS, OpenStreetMap and everything else here are open source and can be
-  self-hosted inside the EU.
+Everything for a real server is in [`deploy/`](deploy): Docker images for the API and the web
+app, Caddy with automatic HTTPS, PostGIS, and nightly backups with a restore check. Step by step:
+**[docs/deploy.md](docs/deploy.md)**.
+
+```bash
+cp deploy/.env.example deploy/.env    # domain, secrets, admin, COMMUNITY
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+```
 
 ## Data and credits
 

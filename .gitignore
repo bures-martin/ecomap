@@ -30,3 +30,7 @@ npm-debug.log*
 
 # Playwright MCP screenshots
 .playwright-mcp/
+
+# Production secrets and database backups (deploy/)
+deploy/.env
+deploy/backups/

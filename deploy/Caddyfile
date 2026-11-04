@@ -1,0 +1,38 @@
+# The public front door. DOMAIN comes from deploy/.env: a real domain gets a
+# free HTTPS certificate from Let's Encrypt automatically; "localhost" gets a
+# local one for trying the setup out.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# The map may ask for the location (the "show my location" button); nothing else.
+		Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+		-Server
+	}
+
+	# The API, on the same origin: no CORS, and the refresh cookie stays first-party.
+	handle /api/* {
+		reverse_proxy api:4000
+	}
+
+	# The web app.
+	handle {
+		root * /srv
+
+		# Built files carry a content hash in their names: cache them for a year.
+		# Everything else (index.html, sw.js, the manifest) is checked on every
+		# visit, so a new release reaches people straight away.
+		@hashed path /assets/*
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+		@other not path /assets/*
+		header @other Cache-Control "no-cache"
+
+		# A single-page app: any unknown path is a page of the app.
+		try_files {path} /index.html
+		file_server
+	}
+}
