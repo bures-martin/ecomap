@@ -98,3 +98,8 @@ Update the dates in the table at the top of this file, and commit with what chan
 
 The same routine is a project skill: ask Claude Code to "refresh the Bornholm data" and it follows
 [`.claude/skills/refresh-community-data`](../.claude/skills/refresh-community-data/SKILL.md).
+
+Before a release or a demo, ask it to "validate the Bornholm data": it follows
+[`.claude/skills/validate-community-data`](../.claude/skills/validate-community-data/SKILL.md) -
+fields, websites that still work, places still open, duplicates, claims in descriptions, and
+missing websites and phone numbers filled in from OpenStreetMap.

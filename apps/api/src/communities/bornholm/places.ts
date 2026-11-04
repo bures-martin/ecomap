@@ -1137,6 +1137,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       kind: 'Røgeri',
       sells: 'Røget fisk',
       openingHours: '11:00-16:00',
+      website: 'https://www.n-g-r.dk/',
     },
   },
   {
