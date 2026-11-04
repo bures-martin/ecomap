@@ -42,7 +42,7 @@
     "searchPlaceholder": "fx Hammersly, cykling, genbrug",
     "filters": "Filtre",
     "layersHeading": "Lag",
-    "allLayers": "Alle lag",
+    "allLayersShown": "Alle lag vises. Sæt flueben for kun at se nogle.",
     "clearFilters": "Ryd filtre",
     "showingCount": "Viser {{shown}} af {{total}}",
     "noResults": "Ingen bidrag passer til de filtre endnu.",
@@ -63,7 +63,6 @@
     "topics": "Emner",
     "clusterLabel_one": "{{count}} sted her - zoom ind",
     "clusterLabel_other": "{{count}} steder her - zoom ind",
-    "someLayersOff": "Nogle emner er slået fra fra start - sæt flueben, eller tryk på dem over kortet.",
     "moreTopics": "Flere ({{count}})"
   },
   "draw": {

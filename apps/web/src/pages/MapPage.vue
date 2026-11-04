@@ -38,14 +38,7 @@ import WelcomeCard from '../map/WelcomeCard.vue';
 import FeatureDetailsPanel from '../map/FeatureDetailsPanel.vue';
 import FeatureFormDialog from '../map/FeatureFormDialog.vue';
 import type { FeatureFormValues } from '../map/featureForm.js';
-import {
-  effectiveLayers,
-  readFilters,
-  showsNoLayers,
-  visibleLayerSlugs,
-  writeFilters,
-  type MapFilters,
-} from '../map/filters.js';
+import { readFilters, writeFilters, type MapFilters } from '../map/filters.js';
 import { featureCenter } from '../map/geo.js';
 import LayerFilterPanel from '../map/LayerFilterPanel.vue';
 import MapCanvas from '../map/MapCanvas.vue';
@@ -92,15 +85,11 @@ const layersQuery = useLayers();
  * up for a moment first.
  */
 const activeFilters = computed((): MapFilters => ({ ...filters.value, q: debouncedSearch.value }));
-const layersForMap = computed(() => layersQuery.data.value ?? []);
+/* No layer ticked asks for every layer - the API's meaning of an empty list. */
 const featuresQuery = useFeatures(
-  () => ({
-    ...activeFilters.value,
-    layers: effectiveLayers(activeFilters.value, layersForMap.value),
-  }),
-  () => layersQuery.data.value !== undefined && !showsNoLayers(activeFilters.value),
+  () => activeFilters.value,
+  () => layersQuery.data.value !== undefined,
 );
-const visibleSlugs = computed(() => visibleLayerSlugs(activeFilters.value, layersForMap.value));
 
 const sidebarOpen = ref(false);
 const startDialogOpen = ref(false);
@@ -128,10 +117,7 @@ const moderateFeature = useModerateFeature();
 
 const settings = computed(() => settingsQuery.data.value);
 const layers = computed(() => layersQuery.data.value ?? []);
-/* Every layer unticked: an empty map, not the last result kept on screen. */
-const features = computed(() =>
-  showsNoLayers(activeFilters.value) ? [] : (featuresQuery.data.value?.features ?? []),
-);
+const features = computed(() => featuresQuery.data.value?.features ?? []);
 
 /** Matches per layer while searching, for the layer list; null when not searching. */
 const searchMatches = computed((): ReadonlyMap<string, number> | null => {
@@ -458,7 +444,6 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
         :matches="searchMatches"
-        :visible-slugs="visibleSlugs"
         @update:filters="applyFilters"
       />
     </aside>
@@ -477,7 +462,6 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
         :matches="searchMatches"
-        :visible-slugs="visibleSlugs"
         @update:filters="applyFilters"
       />
     </v-navigation-drawer>

@@ -32,7 +32,8 @@ export function readFilters(params: URLSearchParams): MapFilters {
     layers: (params.get('layers') ?? '')
       .split(',')
       .map((slug) => slug.trim())
-      .filter((slug) => slug.length > 0),
+      /* A lone "-" was the old "every layer off" marker; now nothing ticked shows all. */
+      .filter((slug) => slug.length > 0 && slug !== '-'),
     q: params.get('q') ?? '',
     status: status.success ? status.data : null,
     mine: params.get('mine') === 'true',
@@ -80,68 +81,25 @@ export function filtersKey(filters: MapFilters): string {
 
 /* ------------------------------------------------- which layers show ---- */
 
-type LayerVisibility = Pick<Layer, 'slug' | 'visibleByDefault'>;
-
 /**
- * "No layer ticked" - an empty map on purpose, after unticking every layer.
- * Kept apart from an empty list, which means "the starting view". A single
- * dash can never be a layer slug (those are at least two characters).
- */
-export const NO_LAYERS = '-';
-
-export function showsNoLayers(filters: MapFilters): boolean {
-  return filters.layers.length === 1 && filters.layers[0] === NO_LAYERS;
-}
-
-/**
- * The layers the map asks the API for. An explicit pick (a ticked box or a
- * chip) always wins; a search looks through every layer, so "charger" finds
- * the chargers even when that layer starts switched off; otherwise the map
- * shows the layers an admin marked "show when the map opens".
+ * The layer list works like the filters on any shop or map site: nothing
+ * ticked shows every layer, and ticking narrows the map to just those. So an
+ * empty `layers` is both "no filter" and "everything", and the map can never
+ * end up empty by accident.
  *
- * Empty means every layer - the API's meaning - so it is also what this
- * returns when all layers are on by default, or (to avoid an empty map) when
- * none are.
- */
-export function effectiveLayers(filters: MapFilters, layers: readonly LayerVisibility[]): string[] {
-  if (filters.layers.length > 0) return filters.layers;
-  if (filters.q.trim() !== '') return [];
-  const defaults = layers.filter((layer) => layer.visibleByDefault).map((layer) => layer.slug);
-  return defaults.length === 0 || defaults.length === layers.length ? [] : defaults;
-}
-
-/** The layers currently on the map, for the ticks in the layer list. */
-export function visibleLayerSlugs(
-  filters: MapFilters,
-  layers: readonly LayerVisibility[],
-): Set<string> {
-  if (showsNoLayers(filters)) return new Set();
-  const effective = effectiveLayers(filters, layers);
-  return new Set(effective.length > 0 ? effective : layers.map((layer) => layer.slug));
-}
-
-/**
- * The new explicit pick after ticking or unticking one layer. It starts from
- * what is visible, and drops back to "no pick" when the result is just the
- * default set again, so the URL stays clean.
+ * Ticking or unticking one layer gives the new pick, kept in the order of the
+ * layer list so the URL is the same however the boxes were clicked.
  */
 export function layersAfterToggle(
   filters: MapFilters,
-  layers: readonly LayerVisibility[],
+  layers: readonly Pick<Layer, 'slug'>[],
   slug: string,
   on: boolean,
 ): string[] {
-  const visible = visibleLayerSlugs(filters, layers);
-  if (on) visible.add(slug);
-  else visible.delete(slug);
-
-  const next = layers.map((layer) => layer.slug).filter((candidate) => visible.has(candidate));
-  /* Unticking the last layer leaves the map empty, as the ticks say. */
-  if (next.length === 0) return [NO_LAYERS];
-  const defaults = visibleLayerSlugs({ ...filters, layers: [], q: '' }, layers);
-  const isDefault =
-    next.length === defaults.size && next.every((candidate) => defaults.has(candidate));
-  return isDefault ? [] : next;
+  const picked = new Set(filters.layers);
+  if (on) picked.add(slug);
+  else picked.delete(slug);
+  return layers.map((layer) => layer.slug).filter((candidate) => picked.has(candidate));
 }
 
 /** A chip shows a single topic: tapping it picks just that layer, tapping again lets go. */

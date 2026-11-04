@@ -86,6 +86,8 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 ## LATER
 
 - **Some more complex import**
+- [ ] **Remove or reuse the "Vis når kortet åbner" (visible by default) layer setting**
+  - Since Nov 2026 the map opens on every layer, so this admin setting no longer does anything. Either remove it (DB column, shared schema, admin form), or reuse it as "which topic chips show first". S
 - **Mobile use**
   - Done (Nov 2026): installable PWA (manifest, icons, service worker) and a "Vis min placering" button - see DONE.
   - Still open: test "Add to Home Screen" on a real Android phone and iPhone once it is on HTTPS (a service worker only runs on HTTPS or localhost).
@@ -134,7 +136,7 @@ Research (Nov 2026): no green guide map for Bornholm exists. bornholm.info has a
 - Review on all layers; any member can suggest changes to any place, moderators see a before/after view and approve or reject.
 - "Flyt på kortet" to move a point exactly.
 - Layers: "Lokal mad og drikke" (42 places), "Genbrug og reparation" with a type field (14); Dyreliv, Naturstier, Arrangementer and Grønne butikker hidden until they have content.
-- Filter fix: unticking the last layer leaves the map empty.
+- Layer filter works like on shops and map sites: nothing ticked shows every layer, ticking narrows to those layers; "Ryd filtre" (green, next to "Lag") appears only when something is ticked, searched or set, and goes back to showing everything. (Replaces the earlier "unticking the last layer leaves the map empty".)
 - Layer icons in the layer's colour (instead of a coloured dot) in the side-panel layer list, the "add a place" layer picker and the admin layer table.
 - Installable app (PWA): manifest, home-screen icons (incl. maskable and Apple touch icon) and a service worker - pages network-first with an offline fallback, hashed assets cached, API and map tiles never cached.
 - "Vis min placering" button under the zoom buttons: one-off location, blue dot with an accuracy circle, friendly message when access is refused.

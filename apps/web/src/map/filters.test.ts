@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   EMPTY_FILTERS,
-  effectiveLayers,
   layersAfterChip,
   layersAfterToggle,
-  NO_LAYERS,
-  visibleLayerSlugs,
   filtersKey,
   hasActiveFilters,
   readFilters,
@@ -105,53 +102,29 @@ describe('filtersKey', () => {
 });
 
 describe('which layers show', () => {
-  const layers = [
-    { slug: 'nature', visibleByDefault: true },
-    { slug: 'cycling', visibleByDefault: true },
-    { slug: 'ev', visibleByDefault: false },
-  ];
+  const layers = [{ slug: 'nature' }, { slug: 'cycling' }, { slug: 'ev' }];
   const none: MapFilters = { layers: [], q: '', status: null, mine: false };
 
-  it('opens on the layers marked to show at the start', () => {
-    expect(effectiveLayers(none, layers)).toEqual(['nature', 'cycling']);
-    expect([...visibleLayerSlugs(none, layers)]).toEqual(['nature', 'cycling']);
+  it('starts with nothing ticked, which shows every layer', () => {
+    expect(readFilters(new URLSearchParams('')).layers).toEqual([]);
+    expect(hasActiveFilters(none)).toBe(false);
   });
 
-  it('asks for everything when every layer shows at the start - the shortest request', () => {
-    const allOn = layers.map((layer) => ({ ...layer, visibleByDefault: true }));
-    expect(effectiveLayers(none, allOn)).toEqual([]);
+  it('narrows to the first ticked layer', () => {
+    expect(layersAfterToggle(none, layers, 'ev', true)).toEqual(['ev']);
   });
 
-  it('never opens on an empty map, even if every layer is switched off', () => {
-    const allOff = layers.map((layer) => ({ ...layer, visibleByDefault: false }));
-    expect(effectiveLayers(none, allOff)).toEqual([]);
+  it('keeps the layer-list order however the boxes were clicked', () => {
+    const picked = { ...none, layers: ['ev'] };
+    expect(layersAfterToggle(picked, layers, 'nature', true)).toEqual(['nature', 'ev']);
   });
 
-  it('searches every layer, including ones that start switched off', () => {
-    expect(effectiveLayers({ ...none, q: 'charger' }, layers)).toEqual([]);
+  it('goes back to every layer when the last tick is removed', () => {
+    expect(layersAfterToggle({ ...none, layers: ['ev'] }, layers, 'ev', false)).toEqual([]);
   });
 
-  it('lets an explicit pick win', () => {
-    expect(effectiveLayers({ ...none, layers: ['ev'] }, layers)).toEqual(['ev']);
-  });
-
-  it('ticks a layer on top of what is already visible', () => {
-    expect(layersAfterToggle(none, layers, 'ev', true)).toEqual(['nature', 'cycling', 'ev']);
-  });
-
-  it('drops back to "no pick" when the ticks match the starting set again', () => {
-    const picked = { ...none, layers: ['nature', 'cycling', 'ev'] };
-    expect(layersAfterToggle(picked, layers, 'ev', false)).toEqual([]);
-  });
-
-  it('leaves nothing ticked when the only layer left is unticked', () => {
-    const emptied = layersAfterToggle({ ...none, layers: ['ev'] }, layers, 'ev', false);
-    expect(emptied).toEqual([NO_LAYERS]);
-    expect(visibleLayerSlugs({ ...none, layers: emptied }, layers).size).toBe(0);
-  });
-
-  it('ticks a layer back on from an empty map', () => {
-    expect(layersAfterToggle({ ...none, layers: [NO_LAYERS] }, layers, 'ev', true)).toEqual(['ev']);
+  it('reads an old "every layer off" link as showing everything', () => {
+    expect(readFilters(new URLSearchParams('layers=-')).layers).toEqual([]);
   });
 
   it('makes a chip pick just its topic, and a second tap let go', () => {

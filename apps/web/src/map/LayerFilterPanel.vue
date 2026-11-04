@@ -23,8 +23,6 @@ const props = defineProps<{
    * layer, by slug. Null when nothing is being searched for.
    */
   matches: ReadonlyMap<string, number> | null;
-  /** The layers on the map right now, defaults and picks resolved. */
-  visibleSlugs: ReadonlySet<string>;
 }>();
 const emit = defineEmits<{
   'update:searchDraft': [value: string];
@@ -41,8 +39,6 @@ const toggleLayer = (slug: string, checked: boolean | null): void => {
     layers: layersAfterToggle(props.filters, props.layers, slug, checked === true),
   });
 };
-
-const someStartOff = computed(() => props.layers.some((layer) => !layer.visibleByDefault));
 
 const statusItems = computed(() => [
   { title: t('map.anyStatus'), value: '' },
@@ -82,9 +78,17 @@ const visibleLayers = computed(() => {
 const countFor = (layer: Layer): number =>
   props.matches ? (props.matches.get(layer.slug) ?? 0) : layer.featureCount;
 
+/*
+ * Offered as soon as anything is ticked, typed or set (the search box counts
+ * before its debounce catches up), and takes the map back to showing everything.
+ */
+const anythingSelected = computed(
+  () => hasActiveFilters(props.filters) || props.searchDraft.trim() !== '',
+);
+
 const clearFilters = (): void => {
   emit('update:searchDraft', '');
-  emit('update:filters', { ...EMPTY_FILTERS, layers: [] });
+  emit('update:filters', EMPTY_FILTERS);
 };
 </script>
 
@@ -105,7 +109,7 @@ const clearFilters = (): void => {
       <div class="d-flex align-center justify-space-between ga-2 mb-1">
         <h2 :id="headingId" class="text-title-small">{{ t('map.layersHeading') }}</h2>
         <v-btn
-          v-if="hasActiveFilters(props.filters)"
+          v-if="anythingSelected"
           size="small"
           variant="tonal"
           color="primary"
@@ -126,7 +130,7 @@ const clearFilters = (): void => {
       <v-checkbox
         v-for="layer in visibleLayers"
         :key="layer.id"
-        :model-value="props.visibleSlugs.has(layer.slug)"
+        :model-value="props.filters.layers.includes(layer.slug)"
         :color="layer.color"
         :base-color="layer.color"
         density="compact"
@@ -153,7 +157,7 @@ const clearFilters = (): void => {
         v-if="props.filters.layers.length === 0 && !searching"
         class="text-body-small text-medium-emphasis"
       >
-        {{ someStartOff ? t('map.someLayersOff') : t('map.allLayers') }}
+        {{ t('map.allLayersShown') }}
       </p>
     </section>
 

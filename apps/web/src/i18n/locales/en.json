@@ -42,7 +42,7 @@
     "searchPlaceholder": "e.g. Hammersly, cycling, recycling",
     "filters": "Filters",
     "layersHeading": "Layers",
-    "allLayers": "All layers",
+    "allLayersShown": "All layers are shown. Tick some to see only those.",
     "clearFilters": "Clear filters",
     "showingCount": "Showing {{shown}} of {{total}}",
     "noResults": "Nothing matches those filters yet.",
@@ -63,7 +63,6 @@
     "topics": "Topics",
     "clusterLabel_one": "{{count}} place here - zoom in",
     "clusterLabel_other": "{{count}} places here - zoom in",
-    "someLayersOff": "Some topics start switched off - tick them, or tap them above the map.",
     "moreTopics": "More ({{count}})"
   },
   "draw": {
