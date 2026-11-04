@@ -1,6 +1,7 @@
 import type { Community } from '../types.js';
 import { BORNHOLM_ABOUT } from './about.js';
 import { BORNHOLM_LAYERS } from './layers.js';
+import { BORNHOLM_OSM } from './osm.js';
 import { BORNHOLM_PLACES } from './places.js';
 import { BORNHOLM_PRIVACY } from './privacy.js';
 
@@ -18,6 +19,7 @@ export const BORNHOLM: Community = {
   },
   layers: BORNHOLM_LAYERS,
   places: BORNHOLM_PLACES,
+  osm: BORNHOLM_OSM,
   /*
    * Made-up sample places that the very first version of the seed created.
    * They look real but do not exist.

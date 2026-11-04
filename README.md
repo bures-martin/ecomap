@@ -191,6 +191,11 @@ The Bornholm places come from [OpenStreetMap](https://www.openstreetmap.org/copy
 (© OpenStreetMap contributors, ODbL). Each place keeps its OSM id, so it can be traced back to its
 source. Map tiles © their providers, credited in the map's corner.
 
+**Keeping the data fresh:** `npm run data:check` compares every place with OpenStreetMap today
+(closed, moved, renamed, new opening hours) and lists places the map does not have yet - a
+checklist, it changes nothing. Sources, licence and the full routine:
+**[docs/data.md](docs/data.md)**.
+
 ## Licence
 
 [GNU Affero General Public License v3.0 or later](LICENSE) © 2026 Martin Bures.

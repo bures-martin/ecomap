@@ -13,6 +13,7 @@
     "typecheck": "node ../../node_modules/typescript7/bin/tsc",
     "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/db/seed.ts",
+    "data:check": "tsx src/communities/osm-check.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

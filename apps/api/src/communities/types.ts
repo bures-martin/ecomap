@@ -27,6 +27,15 @@ export interface Community {
    * only ever removed when the seed's own admin account created them.
    */
   retiredPlaceNames?: readonly string[];
+  /** Where its places come from in OpenStreetMap - for `npm run data:check`. */
+  osm?: OsmSource;
+}
+
+export interface OsmSource {
+  /** [south, west, north, east] - the area searched for new places. */
+  bbox: readonly [number, number, number, number];
+  /** Per layer slug: Overpass filters for the kinds of places the layer is about. */
+  searches: Readonly<Record<string, readonly string[]>>;
 }
 
 export interface CommunityPlace {
