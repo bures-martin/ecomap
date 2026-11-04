@@ -103,6 +103,7 @@ onMounted(() => {
     markerZoomAnimation: !reduceMotion,
   });
   setUpKeyboard(container.value);
+  labelLeafletCredit();
   const pane = map.createPane(AREA_PANE);
   pane.style.zIndex = '350';
   pane.style.pointerEvents = 'none';
@@ -251,6 +252,16 @@ function relabelBasemaps(): void {
   basemaps?.relabel();
   locate?.setLabel(t('map.locate'));
   labelControls();
+  labelLeafletCredit();
+}
+
+/** The "Leaflet" credit in the map's corner, with its tooltip in the page's language. */
+function labelLeafletCredit(): void {
+  const link = document.createElement('a');
+  link.href = 'https://leafletjs.com';
+  link.title = t('map.leafletCredit');
+  link.textContent = 'Leaflet';
+  map?.attributionControl.setPrefix(link.outerHTML);
 }
 
 /** Leaflet's own controls speak English; these give them the app's words. */

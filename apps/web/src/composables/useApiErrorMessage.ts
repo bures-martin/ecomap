@@ -1,5 +1,18 @@
 import { useTranslation } from 'i18next-vue';
 import { ApiRequestError } from '../api/client.js';
+import { i18next } from '../i18n/index.js';
+import { translateServerMessage } from '../i18n/serverMessages.js';
+
+/**
+ * A message from the server (or the shared validation rules, which are
+ * written in English) in the page's language. On the English site it is shown
+ * as it is; elsewhere its translation, or `fallback` when it is not one we
+ * know - never English on a Danish page.
+ */
+export function localiseMessage(message: string, fallback: string): string {
+  if (i18next.language.startsWith('en')) return message || fallback;
+  return (message && translateServerMessage(message)) ?? fallback;
+}
 
 /**
  * Turns anything thrown by the API client into a sentence to show the user.
@@ -13,7 +26,7 @@ export function useApiErrorMessage(): (error: unknown) => string {
 
   return (error: unknown): string => {
     if (error instanceof ApiRequestError) {
-      return error.message || t(`errors.${error.code}`);
+      return localiseMessage(error.message, t(`errors.${error.code}`));
     }
     if (error instanceof TypeError) {
       /* `fetch` rejects with a TypeError when the network is unreachable. */
@@ -26,5 +39,10 @@ export function useApiErrorMessage(): (error: unknown) => string {
 /** Field-level messages from a failed request, keyed by their dotted path. */
 export function fieldIssues(error: unknown): Record<string, string> {
   if (!(error instanceof ApiRequestError)) return {};
-  return Object.fromEntries(error.issues.map((issue) => [issue.path, issue.message]));
+  return Object.fromEntries(
+    error.issues.map((issue) => [
+      issue.path,
+      localiseMessage(issue.message, i18next.t('errors.fieldInvalid')),
+    ]),
+  );
 }

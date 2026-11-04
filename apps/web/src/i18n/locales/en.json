@@ -66,7 +66,8 @@
     "clusterLabel_other": "{{count}} places here - zoom in",
     "moreTopics": "More ({{count}})",
     "pageHeading": "{{name}} map",
-    "backgroundMap": "Background map"
+    "backgroundMap": "Background map",
+    "leafletCredit": "A JavaScript library for interactive maps"
   },
   "draw": {
     "chooseLayer": "Which layer?",
@@ -161,7 +162,9 @@
       "date": "Date",
       "select": "Choice",
       "openingHours": "Opening hours"
-    }
+    },
+    "hiddenChip": "hidden",
+    "reviewedChip": "reviewed"
   },
   "settingsAdmin": {
     "title": "Community settings",
@@ -311,7 +314,8 @@
     "internal_error": "Something went wrong on our side.",
     "offline": "Could not reach the server.",
     "payload_too_large": "That file is too large.",
-    "email_unverified": "Confirm your e-mail before signing in."
+    "email_unverified": "Confirm your e-mail before signing in.",
+    "fieldInvalid": "Check this field."
   },
   "avatar": {
     "title": "Profile picture",

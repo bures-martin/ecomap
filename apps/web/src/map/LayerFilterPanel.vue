@@ -148,7 +148,9 @@ const clearFilters = (): void => {
             >
               {{ countFor(layer) }}
             </v-chip>
-            <v-chip v-if="!layer.isPublished" size="x-small" color="warning">hidden</v-chip>
+            <v-chip v-if="!layer.isPublished" size="x-small" color="warning">
+              {{ t('layerAdmin.hiddenChip') }}
+            </v-chip>
           </span>
         </template>
       </v-checkbox>

@@ -9,7 +9,11 @@ import {
 import { useTranslation } from 'i18next-vue';
 import { computed, ref, useId, watch } from 'vue';
 import { useCreateLayer, useUpdateLayer } from '../api/queries.js';
-import { fieldIssues, useApiErrorMessage } from '../composables/useApiErrorMessage.js';
+import {
+  fieldIssues,
+  localiseMessage,
+  useApiErrorMessage,
+} from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
 import FieldsEditor from './FieldsEditor.vue';
 import { slugify, toLayerDraft } from './layerDraft.js';
@@ -70,7 +74,9 @@ const onGeometries = (value: GeometryKind[]): void => {
 const submit = (): void => {
   const parsed = createLayerInputSchema.safeParse(draft.value);
   if (!parsed.success) {
-    toast.showError(parsed.error.issues[0]?.message ?? t('errors.validation_failed'));
+    toast.showError(
+      localiseMessage(parsed.error.issues[0]?.message ?? '', t('errors.validation_failed')),
+    );
     return;
   }
 

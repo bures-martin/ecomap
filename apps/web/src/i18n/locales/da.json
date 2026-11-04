@@ -66,7 +66,8 @@
     "clusterLabel_other": "{{count}} steder her - zoom ind",
     "moreTopics": "Flere ({{count}})",
     "pageHeading": "{{name}} - kort",
-    "backgroundMap": "Baggrundskort"
+    "backgroundMap": "Baggrundskort",
+    "leafletCredit": "Et JavaScript-bibliotek til interaktive kort"
   },
   "draw": {
     "chooseLayer": "Hvilket lag?",
@@ -161,7 +162,9 @@
       "date": "Dato",
       "select": "Valg",
       "openingHours": "Åbningstider"
-    }
+    },
+    "hiddenChip": "skjult",
+    "reviewedChip": "godkendes"
   },
   "settingsAdmin": {
     "title": "Indstillinger for fællesskabet",
@@ -311,7 +314,8 @@
     "internal_error": "Noget gik galt hos os.",
     "offline": "Kunne ikke få forbindelse til serveren.",
     "payload_too_large": "Filen er for stor.",
-    "email_unverified": "Bekræft din e-mail, før du logger ind."
+    "email_unverified": "Bekræft din e-mail, før du logger ind.",
+    "fieldInvalid": "Tjek dette felt."
   },
   "avatar": {
     "title": "Profilbillede",

@@ -82,8 +82,12 @@ const confirmDelete = (): void => {
                   <span class="d-flex align-center ga-2">
                     <LayerIcon :icon="layer.icon" :color="layer.color" />
                     <span>{{ layer.name }}</span>
-                    <v-chip v-if="!layer.isPublished" size="small">hidden</v-chip>
-                    <v-chip v-if="layer.requiresModeration" size="small">reviewed</v-chip>
+                    <v-chip v-if="!layer.isPublished" size="small">
+                      {{ t('layerAdmin.hiddenChip') }}
+                    </v-chip>
+                    <v-chip v-if="layer.requiresModeration" size="small">
+                      {{ t('layerAdmin.reviewedChip') }}
+                    </v-chip>
                   </span>
                 </td>
                 <td>

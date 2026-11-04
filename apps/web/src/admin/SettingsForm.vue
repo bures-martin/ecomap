@@ -8,7 +8,7 @@ import {
 import { useTranslation } from 'i18next-vue';
 import { computed, ref, useId } from 'vue';
 import { useUpdateSettings } from '../api/queries.js';
-import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
+import { localiseMessage, useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useToast } from '../composables/useToast.js';
 import AreaEditor from './AreaEditor.vue';
 import { privacyTemplate } from '../pages/privacyTemplate.js';
@@ -56,7 +56,10 @@ const submit = (): void => {
   });
 
   if (!input.success) {
-    validationError.value = input.error.issues[0]?.message ?? t('errors.validation_failed');
+    validationError.value = localiseMessage(
+      input.error.issues[0]?.message ?? '',
+      t('errors.validation_failed'),
+    );
     return;
   }
 
