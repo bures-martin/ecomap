@@ -40,8 +40,9 @@ import FeatureFormDialog from '../map/FeatureFormDialog.vue';
 import type { FeatureFormValues } from '../map/featureForm.js';
 import { readFilters, writeFilters, type MapFilters } from '../map/filters.js';
 import { featureCenter } from '../map/geo.js';
-import LayerFilterPanel from '../map/LayerFilterPanel.vue';
 import MapCanvas from '../map/MapCanvas.vue';
+import MapSidePanel from '../map/MapSidePanel.vue';
+import { placesInView, type MapView } from '../map/placeList.js';
 import { fromSearchParams, toSearchParams } from '../map/routeQuery.js';
 import StartDrawingDialog from '../map/StartDrawingDialog.vue';
 import { hasPhotoChanges, syncPhotos, type PhotoChanges } from '../map/photos.js';
@@ -158,11 +159,44 @@ const mapCanvas = useTemplateRef<{
   focusFeature: (id: string) => void;
 }>('mapCanvas');
 
-/** Closing the details hands focus back to the place on the map it came from. */
+/*
+ * The places on screen, for the list beside the map: what the map shows,
+ * nearest first - to the person once they have used "show my location".
+ */
+const mapView = shallowRef<MapView | null>(null);
+const userPosition = shallowRef<[number, number] | null>(null);
+const listed = computed(() =>
+  mapView.value
+    ? placesInView(features.value, mapView.value, userPosition.value)
+    : { places: [], total: 0 },
+);
+
+/** Which place was opened from the list, so closing it returns focus there. */
+const openedFromList = ref<string | null>(null);
+
+const selectFromMap = (feature: Feature): void => {
+  openedFromList.value = null;
+  selectFeature(feature);
+};
+
+const selectFromList = (feature: Feature): void => {
+  openedFromList.value = feature.id;
+  /* On a phone the list is in a drawer; close it so the place can be seen. */
+  sidebarOpen.value = false;
+  selectFeature(feature);
+};
+
+/** Closing the details hands focus back to where the place was opened from. */
 const closeDetails = (): void => {
   const id = selectedFeatureId.value;
-  if (id) mapCanvas.value?.focusFeature(id);
+  const backToList = id !== null && id === openedFromList.value && isDesktop.value;
+  if (id && !backToList) mapCanvas.value?.focusFeature(id);
   selectFeature(null);
+  if (backToList) {
+    void nextTick(() => {
+      document.querySelector<HTMLElement>(`[data-place-id="${CSS.escape(id)}"]`)?.focus();
+    });
+  }
 };
 
 const selectFeature = (feature: Feature | null): void => {
@@ -469,18 +503,23 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
   <div class="map-page">
     <aside
       v-if="isDesktop"
-      :aria-label="t('map.filters')"
+      :aria-label="t('placeList.panel')"
       class="map-sidebar"
       :style="{ width: `${SIDEBAR_WIDTH}px` }"
     >
-      <LayerFilterPanel
+      <MapSidePanel
         v-model:search-draft="searchDraft"
         :layers="layers"
         :filters="filters"
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
         :matches="searchMatches"
+        :places="listed.places"
+        :places-total="listed.total"
+        :layers-by-slug="layersBySlug"
+        :from-person="userPosition !== null"
         @update:filters="applyFilters"
+        @select="selectFromList"
       />
     </aside>
     <!-- Every filter change rewrites the query; that must not close the drawer. -->
@@ -491,14 +530,19 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
       disable-route-watcher
       :width="SIDEBAR_WIDTH"
     >
-      <LayerFilterPanel
+      <MapSidePanel
         v-model:search-draft="searchDraft"
         :layers="layers"
         :filters="filters"
         :shown="features.length"
         :total="featuresQuery.data.value?.total ?? 0"
         :matches="searchMatches"
+        :places="listed.places"
+        :places-total="listed.total"
+        :layers-by-slug="layersBySlug"
+        :from-person="userPosition !== null"
         @update:filters="applyFilters"
+        @select="selectFromList"
       />
     </v-navigation-drawer>
 
@@ -586,7 +630,9 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :drawing="drawing"
         :contribution-area="settings?.contributionArea ?? null"
         :area-color="settings?.primaryColor ?? DEFAULT_COMMUNITY_SETTINGS.primaryColor"
-        @select-feature="selectFeature"
+        @select-feature="selectFromMap"
+        @view-change="(view: MapView) => (mapView = view)"
+        @located="(position: [number, number]) => (userPosition = position)"
         @draw-position="placePosition"
       />
     </div>

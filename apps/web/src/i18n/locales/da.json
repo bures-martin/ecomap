@@ -487,5 +487,13 @@
     "intro": "Hent alle steder, ruter og områder som en fil - også dem, der venter på godkendelse, og dem på skjulte lag. GeoJSON åbnes i korttools som QGIS; CSV åbnes i Excel eller Google Sheets. Billeder er med som links.",
     "geojson": "Hent GeoJSON",
     "csv": "Hent CSV"
+  },
+  "placeList": {
+    "panel": "Filtre og steder",
+    "tab": "Steder ({{count}})",
+    "empty": "Ingen steder her. Zoom ud, flyt kortet eller ryd filtrene.",
+    "allShown_one": "{{count}} sted på kortet lige nu.",
+    "allShown_other": "{{count}} steder på kortet lige nu.",
+    "someShown": "De {{shown}} nærmeste af {{total}} steder på kortet. Zoom ind for at se resten."
   }
 }

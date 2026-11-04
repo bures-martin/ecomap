@@ -21,6 +21,7 @@ import {
 } from './clustering.js';
 import { clusterIcon, markerIcon } from './markerIcon.js';
 import { addLocateControl, type LocateControl } from './locate.js';
+import type { MapView } from './placeList.js';
 import type { DrawingState } from './useDrawing.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -53,6 +54,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   selectFeature: [feature: Feature];
   drawPosition: [position: Position];
+  /** What is on screen, after every pan and zoom - for the list of places. */
+  viewChange: [view: MapView];
+  /** Where the person is, once "show my location" has found them. */
+  located: [position: [number, number]];
 }>();
 
 const { t, i18next } = useTranslation();
@@ -108,6 +113,11 @@ onMounted(() => {
   drawingLayer.addTo(map);
   /* Zooming ends in a move too, so this covers both. */
   map.on('moveend', drawPoints);
+  map.on('moveend', emitView);
+  map.on('locationfound', (event: L.LocationEvent) => {
+    emit('located', [event.latlng.lat, event.latlng.lng]);
+  });
+  emitView();
 
   watch(() => [props.contributionArea, props.areaColor] as const, drawArea, { immediate: true });
 
@@ -257,6 +267,19 @@ function labelControls(): void {
   label('.leaflet-control-zoom-out', t('map.zoomOut'));
   label('.leaflet-control-layers-toggle', t('map.backgroundMap'));
   label('.leaflet-control-layers-list', t('map.backgroundMap'));
+}
+
+function emitView(): void {
+  if (!map) return;
+  const bounds = map.getBounds();
+  const center = map.getCenter();
+  emit('viewChange', {
+    south: bounds.getSouth(),
+    west: bounds.getWest(),
+    north: bounds.getNorth(),
+    east: bounds.getEast(),
+    center: [center.lat, center.lng],
+  });
 }
 
 /** Where a keyboard-placed point goes: the crosshair in the middle of the map. */

@@ -22,7 +22,8 @@ its own map. The first community is the island of **Bornholm** in Denmark.
   hours, "organic?", a website…). The legend, filters and forms all follow from that.
 - **Built by the community, kept honest by moderators.** Members add places and suggest changes to
   any place; moderators approve with a before/after view. Nothing reaches the public map unreviewed.
-- **A map people can actually use.** Grouped pins, topic chips, search across places and layers,
+- **A map people can actually use.** Grouped pins, topic chips, a list of the places on screen
+  (nearest first), search across places and layers,
   "open now" from real opening hours, directions via Google Maps, photos, free background maps
   (streets, satellite, topo, cycling) and "show my location".
 - **Installable on a phone** as an app (PWA), with an offline fallback.
@@ -31,6 +32,8 @@ its own map. The first community is the island of **Bornholm** in Denmark.
   colour choice breaks contrast, and reduced motion is respected.
 - **Accounts done properly.** Invitation links, roles, blocking, two-factor authentication,
   profile pictures, and a privacy page each community fills in.
+- **Your data stays yours.** Admins export everything as GeoJSON or CSV in one click, and the
+  production setup backs up the database every night.
 - **Shareable views.** Every filter lives in the URL, so a filtered map is a link.
 
 ## Generic by design: one codebase, any community

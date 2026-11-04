@@ -487,5 +487,13 @@
     "intro": "Download every place, route and area as a file - including those waiting for review and those on hidden layers. GeoJSON opens in map tools such as QGIS; CSV opens in Excel or Google Sheets. Photos are included as links.",
     "geojson": "Download GeoJSON",
     "csv": "Download CSV"
+  },
+  "placeList": {
+    "panel": "Filters and places",
+    "tab": "Places ({{count}})",
+    "empty": "No places here. Zoom out, move the map or clear the filters.",
+    "allShown_one": "{{count}} place on the map right now.",
+    "allShown_other": "{{count}} places on the map right now.",
+    "someShown": "The {{shown}} nearest of {{total}} places on the map. Zoom in to see the rest."
   }
 }
