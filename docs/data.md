@@ -5,16 +5,16 @@ folder in [`apps/api/src/communities`](../apps/api/src/communities).
 
 ## Where everything comes from
 
-| What                              | Source                                                                                                                                 | Where in the code                                                                    |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Places** (146)                  | [OpenStreetMap](https://www.openstreetmap.org), via the Overpass API, taken 2026-11-03 (drinking water and more local food 2026-11-04) | [`communities/bornholm/places.ts`](../apps/api/src/communities/bornholm/places.ts)   |
-| Which OSM tags feed each layer    | Written down per layer                                                                                                                 | [`communities/bornholm/osm.ts`](../apps/api/src/communities/bornholm/osm.ts)         |
-| **Layers** (names, icons, fields) | Written for the project, in Danish                                                                                                     | [`communities/bornholm/layers.ts`](../apps/api/src/communities/bornholm/layers.ts)   |
-| **About text** ("Om")             | Written for the project; every link checked 2026-11-03                                                                                 | [`communities/bornholm/about.ts`](../apps/api/src/communities/bornholm/about.ts)     |
-| **Privacy text**                  | Written from what the app and `deploy/` actually do                                                                                    | [`communities/bornholm/privacy.ts`](../apps/api/src/communities/bornholm/privacy.ts) |
-| **Background maps**               | Esri, OpenStreetMap, OpenTopoMap, CyclOSM tiles, loaded live                                                                           | [`apps/web/src/map/basemaps.ts`](../apps/web/src/map/basemaps.ts)                    |
+| What                              | Source                                                                                                                                                                      | Where in the code                                                                    |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Places** (152)                  | [OpenStreetMap](https://www.openstreetmap.org), via the Overpass API, taken 2026-11-03 (drinking water and more local food 2026-11-04; Gourmet Bornholm members 2026-11-05) | [`communities/bornholm/places.ts`](../apps/api/src/communities/bornholm/places.ts)   |
+| Which OSM tags feed each layer    | Written down per layer                                                                                                                                                      | [`communities/bornholm/osm.ts`](../apps/api/src/communities/bornholm/osm.ts)         |
+| **Layers** (names, icons, fields) | Written for the project, in Danish                                                                                                                                          | [`communities/bornholm/layers.ts`](../apps/api/src/communities/bornholm/layers.ts)   |
+| **About text** ("Om")             | Written for the project; every link checked 2026-11-03                                                                                                                      | [`communities/bornholm/about.ts`](../apps/api/src/communities/bornholm/about.ts)     |
+| **Privacy text**                  | Written from what the app and `deploy/` actually do                                                                                                                         | [`communities/bornholm/privacy.ts`](../apps/api/src/communities/bornholm/privacy.ts) |
+| **Background maps**               | Esri, OpenStreetMap, OpenTopoMap, CyclOSM tiles, loaded live                                                                                                                | [`apps/web/src/map/basemaps.ts`](../apps/web/src/map/basemaps.ts)                    |
 
-Places per layer: from the farm 27 · fish and smokehouses 12 · sweets and ice cream 12 ·
+Places per layer: from the farm 30 · fish and smokehouses 13 · sweets and ice cream 14 ·
 drinks 10 · drinking water 26 · cycling 15 · recycling and repair 14 ·
 renewable energy 10 · EV charging 8 · nature areas 6 · community gardens 5 · green shops 1 (hidden layer).
 
@@ -27,6 +27,13 @@ renewable energy 10 · EV charging 8 · nature areas 6 · community gardens 5 ·
   places had one on 2026-11-05. Tripadvisor, bornholm.info and HappyCow links are not in OSM;
   they are added by hand in the app. Places without a name are
   named by their kind and the nearest town ("Drikkevand ved Gudhjem").
+- **Gourmet Bornholm** links point at the producer's member page on gourmetbornholm.dk. On
+  2026-11-05 their member list (https://gourmetbornholm.dk/lokationer/, 72 members) was checked
+  against the map: 24 members already on it got their link, and 6 producers and shops that were
+  missing were added - from OpenStreetMap, like every other place. Their list is used only as a
+  checklist and a link; their descriptions and photos are never copied. Restaurants, hotels,
+  wholesalers and the like were left out (no layer for them), and 12 members were not in
+  OpenStreetMap (listed in the project notes, to add by hand in the app).
 - Descriptions are short Danish sentences written from the tags.
 - **"Økologisk"** is set only where the producer's own website says so, or OSM tags it.
 - Duplicates at the same spot and objects tagged as not working were left out.

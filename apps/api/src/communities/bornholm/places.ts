@@ -6,8 +6,10 @@
  * OSM tag; places without a name are named by their kind and nearest town.
  * `osmId` points at the source object, e.g. https://www.openstreetmap.org/node/1330908050
  *
- * Generated 2026-11-03 from the Overpass API (more local food 2026-11-04). Re-check before relying on
- * opening hours - the real world changes faster than a demo data set. The
+ * Generated 2026-11-03 from the Overpass API (more local food 2026-11-04;
+ * Gourmet Bornholm members and their member-page links 2026-11-05). Re-check
+ * before relying on opening hours - the real world changes faster than a demo
+ * data set. The
  * descriptions are in Danish, the language of the Bornholm showcase, and the
  * choice values match the Danish options of the starter layers.
  */
@@ -151,6 +153,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Gårdbutik med æbler og æbleprodukter.',
     coordinates: [14.77288, 55.23385],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/soldalen-mostballaden/',
       kind: 'Gårdbutik',
       website: 'https://mostballaden.dk',
     },
@@ -173,6 +176,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Frugt- og grøntavler, der sælger direkte fra gården.',
     coordinates: [14.89132, 55.16855],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/krogsholm-frugt/',
       kind: 'Gårdbutik',
       website: 'https://krogsholmfrugt.dk/',
     },
@@ -205,6 +209,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Gårdbutik, der også tilbyder rundvisninger på gården.',
     coordinates: [15.1338, 55.09388],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/hoestet/',
       kind: 'Gårdbutik',
       website: 'https://xn--hstet-vua.dk/',
     },
@@ -226,6 +231,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Vingård med egen butik.',
     coordinates: [14.96817, 55.02911],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/vingaarden-lille-gadegaard/',
       kind: 'Vingård',
       website: 'http://www.a7.dk/',
     },
@@ -713,6 +719,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Bryggeri med restaurant, der brygger økologisk specialøl i Svaneke.',
     coordinates: [15.14057, 55.13614],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/svaneke-bryghus/',
       kind: 'Bryggeri',
       organic: true,
       website: 'https://svanekebryghus.dk',
@@ -725,6 +732,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Ismejeri, der laver økologisk is fra bunden i Svaneke.',
     coordinates: [15.14317, 55.13545],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/bornholms-ismejeri/',
       kind: 'Is',
       organic: true,
       openingHours: 'Mo-Su 11:00-17:00',
@@ -738,6 +746,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Destilleri med økologisk gin, vodka og akvavit ved Vestermarie.',
     coordinates: [14.84275, 55.07528],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/wild-distillery-bornholm/',
       kind: 'Destilleri',
       organic: true,
       website: 'https://wilddistillery.dk/',
@@ -750,6 +759,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Lille bryggeri i Rønne.',
     coordinates: [14.69429, 55.09204],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/small-batch-brewery/',
       kind: 'Bryggeri',
     },
   },
@@ -760,6 +770,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Bryggeri med bar og butik i Tejn.',
     coordinates: [14.83437, 55.24959],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/penyllan-beerhere/',
       kind: 'Bryggeri',
       openingHours: '12:00-21:00',
       website: 'https://penyllan.com/bar/',
@@ -783,6 +794,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Cideri ved Tejn.',
     coordinates: [14.81333, 55.23498],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/pilegaard-cideri/',
       kind: 'Cideri',
     },
   },
@@ -814,6 +826,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Chokolademager i Svaneke.',
     coordinates: [15.14075, 55.13609],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/svaneke-chokoladeri/',
       kind: 'Chokolade',
       openingHours: 'Mo,Tu,Th,Fr 11:00-17:00; We 10:00-17:00; Sa 10:00-16:00; Su 11:00-16:00',
       website: 'https://svanekechokoladeri.dk/',
@@ -861,6 +874,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Bolsjekogeri i Svaneke.',
     coordinates: [15.14085, 55.13634],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/bolcheriet-svaneke/',
       kind: 'Bolcher og karamel',
       openingHours: 'Mo-Sa 10:00-19:30; Su 11:30-19:00',
     },
@@ -872,6 +886,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Karamelkogeri i Svaneke.',
     coordinates: [15.14439, 55.1365],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/karamelleriet/',
       kind: 'Bolcher og karamel',
       openingHours: 'Mo-Su 10:00-21:00',
       website: 'https://www.karamelleriet.dk/',
@@ -884,6 +899,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Karamelkogeri i Gudhjem.',
     coordinates: [14.9698, 55.21202],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/karamel-kompagniet/',
       kind: 'Bolcher og karamel',
       website: 'https://www.karamelkompagniet.dk/',
     },
@@ -938,6 +954,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       'Mølle i Aakirkeby, der maler bornholmsk korn til mel - både økologisk og konventionelt.',
     coordinates: [14.91501, 55.06632],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/bornholms-valsemoelle/',
       kind: 'Producent',
       openingHours: 'Mo-Sa 08:00-14:30',
       website: 'https://bornholms-valsemoelle.dk/',
@@ -950,6 +967,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Pasta lavet af bornholmsk hvede i Svaneke.',
     coordinates: [15.14155, 55.12562],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/pastariget/',
       kind: 'Producent',
       website: 'https://pastariget.dk/',
     },
@@ -1033,6 +1051,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Gårdbutik ved Østermarie.',
     coordinates: [14.99497, 55.10545],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/moenstergaard/',
       kind: 'Gårdbutik',
     },
   },
@@ -1088,6 +1107,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Røgeri ved havnen i Årsdale med bornholmsk røget fisk.',
     coordinates: [15.14364, 55.10758],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/aarsdale-roegeri-bistro/',
       kind: 'Røgeri',
       sells: 'Røget fisk',
       season: 'Maj-oktober',
@@ -1125,6 +1145,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Et af øens gamle røgerier, ved havnen i Hasle.',
     coordinates: [14.70331, 55.17977],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/hasle-roegeri/',
       kind: 'Røgeri',
       sells: 'Røget fisk',
       season: 'April-oktober',
@@ -1164,6 +1185,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Røgeri i Svaneke, der selv ryger fisken.',
     coordinates: [15.14336, 55.13965],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/svaneke-roegeri/',
       kind: 'Røgeri',
       sells: 'Røget fisk',
       openingHours: 'Mo-Su 10:00-20:00',
@@ -1177,6 +1199,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Fiskebutik ved Nordbornholms Røgeri i Sandvig.',
     coordinates: [14.80542, 55.27585],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/nordbornholms-roegeri/',
       kind: 'Røgeri',
       sells: 'Røget og frisk fisk',
       openingHours: 'PH,Mo-Su 09:00-18:00',
@@ -1202,6 +1225,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Butik i Gudhjem fra Fangst, der dåser bornholmsk fisk og skaldyr.',
     coordinates: [14.97017, 55.21354],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/fangst/',
       kind: 'Producent',
       sells: 'Fisk og skaldyr på dåse',
       season: 'Juli-august',
@@ -1227,6 +1251,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Gård, der dyrker og sælger aroniabær.',
     coordinates: [15.04671, 55.11342],
     properties: {
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/aronia-food-service/',
       kind: 'Gårdbutik',
       sells: 'Aroniabær',
     },
@@ -1561,5 +1586,93 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     description: 'Vandpost med gratis drikkevand.',
     coordinates: [14.70534, 55.1788],
     properties: {},
+  },
+  /*
+   * Gourmet Bornholm members that were not on the map yet (2026-11-05): found
+   * through the association's member list, taken from OpenStreetMap like every
+   * other place. Their member page is only linked, never copied.
+   */
+  {
+    osmId: 'way/137835001',
+    layerSlug: 'from-the-farm',
+    name: 'Bornholms Andelsmejeri',
+    description: 'Andelsmejeri i Klemensker, der laver ost.',
+    coordinates: [14.81054, 55.17653],
+    properties: {
+      kind: 'Producent',
+      sells: 'Ost og mejerivarer',
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/bornholms-andelsmejeri/',
+    },
+  },
+  {
+    osmId: 'node/5817216769',
+    layerSlug: 'from-the-farm',
+    name: 'Svaneke Brød',
+    description: 'Bageri med café i Svaneke.',
+    coordinates: [15.14381, 55.1371],
+    properties: {
+      kind: 'Producent',
+      sells: 'Brød',
+      payment: 'Flere muligheder',
+      openingHours: 'Mo off; Tu-Su 07:30-17:00',
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/svaneke-broed/',
+      instagram: 'https://www.instagram.com/svanekebrodbornholm',
+    },
+  },
+  {
+    osmId: 'node/4090577580',
+    layerSlug: 'from-the-farm',
+    name: 'Johannes Dam & Søn',
+    description: 'Bageri i Aakirkeby.',
+    coordinates: [14.92349, 55.07024],
+    properties: {
+      kind: 'Producent',
+      sells: 'Brød og kager',
+      openingHours: 'Mo-Fr 06:00-17:30; Sa 06:30-12:30',
+      website: 'http://bagerdam.dk/',
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/johannes-dam-soen/',
+    },
+  },
+  {
+    osmId: 'node/4341679257',
+    layerSlug: 'fish-and-smokehouses',
+    name: 'Christiansøpigens Sild',
+    description: 'Sild fra Christiansø, ved havnen i Svaneke.',
+    coordinates: [15.14537, 55.1373],
+    properties: {
+      kind: 'Fiskebutik',
+      sells: 'Sild',
+      website: 'https://christiansoe-pigens-sild.dk/',
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/christiansoe-pigens-sild/',
+    },
+  },
+  {
+    osmId: 'node/4309491313',
+    layerSlug: 'sweets-and-ice-cream',
+    name: 'Kalas cafe & bar',
+    description: 'Café med is på strandpromenaden i Sandvig.',
+    coordinates: [14.78366, 55.28849],
+    properties: {
+      kind: 'Is',
+      sells: 'Is',
+      payment: 'Flere muligheder',
+      openingHours: '12:00-18:00',
+      website: 'http://www.kalas-kalas.dk/',
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/sandvig-is-kalas/',
+    },
+  },
+  {
+    osmId: 'node/13592846869',
+    layerSlug: 'sweets-and-ice-cream',
+    name: 'Vingummi Bornholm',
+    description: 'Producent af vingummi ved Nexø.',
+    coordinates: [15.0619, 55.05781],
+    properties: {
+      kind: 'Bolcher og karamel',
+      sells: 'Vingummi',
+      website: 'https://vingummibornholm.dk/',
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/vingummi-bornholm/',
+      facebook: 'https://www.facebook.com/vingummibornholm/',
+    },
   },
 ];
