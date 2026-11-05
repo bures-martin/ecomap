@@ -28,6 +28,7 @@ import {
   useUpdateFeature,
 } from '../api/queries.js';
 import { useAuth } from '../auth/auth.js';
+import { IS_DEMO } from '../demo/demo.js';
 import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useDebouncedRef } from '../composables/useDebouncedRef.js';
@@ -644,7 +645,12 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
           @click="startDialogOpen = true"
         />
         <!-- Eager: the hint exists before it is shown, so the button can point at its text. -->
-        <v-tooltip v-else :text="t('map.addContributionHint')" location="top" eager>
+        <v-tooltip
+          v-else
+          :text="IS_DEMO ? t('demo.addHint') : t('map.addContributionHint')"
+          location="top"
+          eager
+        >
           <template #activator="{ props: activator }">
             <v-btn
               v-bind="activator"

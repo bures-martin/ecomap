@@ -1,0 +1,56 @@
+# The read-only demo on GitHub Pages: the map, its layers and places, with no
+# server and no accounts (see scripts/build-demo.mjs and apps/web/src/demo).
+# Rebuilt on every push to main, so it always shows the current map.
+#
+# One-time setup on GitHub: Settings -> Pages -> "Build and deployment" ->
+# Source: "GitHub Actions". The demo then lives at
+# https://<user>.github.io/<repository>/
+
+name: Demo on GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push replaces one still waiting.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Free GitHub Pages needs a public repository: skipped, not failed, until then.
+    if: ${{ github.event.repository.visibility == 'public' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Served from /<repository>/, e.g. /ecomap/.
+      - run: npm run demo:build -- "/${{ github.event.repository.name }}/"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist-demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

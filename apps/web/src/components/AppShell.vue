@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { mdiAccountCircle, mdiMap, mdiMenu } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
-import { computed, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useCommunitySettings } from '../api/queries.js';
 import { useAuth } from '../auth/auth.js';
 import { useToast } from '../composables/useToast.js';
+import { IS_DEMO, useDemoDialog } from '../demo/demo.js';
 import ColorSchemeMenu from './ColorSchemeMenu.vue';
 import UserAvatar from './UserAvatar.vue';
+
+/* Only the demo build ever shows it; everyone else never downloads it. */
+const DemoDialog = defineAsyncComponent(() => import('../demo/DemoDialog.vue'));
 
 /**
  * The frame around every page: a skip link, a header with the community's name,
@@ -25,6 +29,7 @@ const route = useRoute();
 const router = useRouter();
 
 const drawerOpen = ref(false);
+const demo = useDemoDialog();
 
 const adminLinks = computed(() =>
   [
@@ -69,6 +74,18 @@ const signOut = async (): Promise<void> => {
       <RouterLink to="/" class="app-title text-title-large">
         {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
       </RouterLink>
+      <!-- Always in view on the read-only demo, so nobody takes it for the real map. -->
+      <v-chip
+        v-if="IS_DEMO"
+        size="small"
+        color="warning"
+        variant="flat"
+        class="ml-2 flex-shrink-0"
+        :aria-label="t('demo.chipLabel')"
+        @click="demo.show()"
+      >
+        {{ t('demo.chip') }}
+      </v-chip>
 
       <nav v-if="isDesktop" :aria-label="t('nav.map')" class="d-flex ga-1">
         <v-btn
@@ -162,6 +179,7 @@ const signOut = async (): Promise<void> => {
       </v-alert>
       <slot />
     </main>
+    <DemoDialog v-if="IS_DEMO" />
   </div>
 </template>
 

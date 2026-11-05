@@ -13,6 +13,8 @@ export const BORNHOLM: Community = {
   slug: 'bornholm',
   settings: {
     defaultLocale: 'da',
+    tagline:
+      'Lokal mad, genbrug, drikkevand, ladestandere og natur - Bornholms grønne steder samlet på ét kort.',
     initialView: { lat: 55.1, lng: 14.9, zoom: 10 },
     aboutMarkdown: BORNHOLM_ABOUT,
     privacyMarkdown: BORNHOLM_PRIVACY,

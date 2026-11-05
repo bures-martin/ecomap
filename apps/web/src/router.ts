@@ -6,6 +6,7 @@ import {
   type Router,
   type RouteRecordRaw,
 } from 'vue-router';
+import { IS_DEMO, useDemoDialog } from './demo/demo.js';
 import AboutPage from './pages/AboutPage.vue';
 import LoginPage from './pages/LoginPage.vue';
 import MapPage from './pages/MapPage.vue';
@@ -60,11 +61,39 @@ export const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', component: NotFoundPage },
 ];
 
+/**
+ * Pages the read-only demo cannot offer: signing in, accounts, admin, and
+ * short links (which live on a server).
+ */
+const NOT_IN_DEMO = [
+  '/sign-in',
+  '/register',
+  '/join',
+  '/verify-email',
+  '/forgot-password',
+  '/reset-password',
+  '/account',
+  '/admin',
+  '/s',
+];
+const notInDemo = (path: string): boolean =>
+  NOT_IN_DEMO.some((blocked) => path === blocked || path.startsWith(`${blocked}/`));
+
 export function createEcoMapRouter(options: { memory?: boolean } = {}): Router {
-  return createRouter({
-    history: options.memory ? createMemoryHistory() : createWebHistory(),
+  const router = createRouter({
+    /* BASE_URL is "/" normally, and e.g. "/ecomap/" for the demo on GitHub Pages. */
+    history: options.memory ? createMemoryHistory() : createWebHistory(import.meta.env.BASE_URL),
     routes,
   });
+  if (IS_DEMO) {
+    router.beforeEach((to, from) => {
+      if (!notInDemo(to.path)) return true;
+      /* Explain instead - and stay put, or land on the map when opened directly. */
+      useDemoDialog().show();
+      return from.matched.length > 0 ? false : '/';
+    });
+  }
+  return router;
 }
 
 /**

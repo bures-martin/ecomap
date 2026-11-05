@@ -31,6 +31,7 @@
     "db:migrate": "npm run migrate -w @ecomap/api",
     "db:seed": "npm run seed -w @ecomap/api",
     "data:check": "npm run data:check -w @ecomap/api --",
+    "demo:build": "node scripts/build-demo.mjs",
     "setup": "npm run db:up && npm run db:migrate && npm run db:seed"
   },
   "devDependencies": {

@@ -21,6 +21,7 @@ export default withVueTs(
   {
     ignores: [
       '**/dist/**',
+      '**/dist-demo/**',
       '**/build/**',
       '**/coverage/**',
       '**/node_modules/**',
@@ -89,6 +90,13 @@ export default withVueTs(
   {
     files: ['apps/web/public/sw.js'],
     languageOptions: { globals: globals.serviceworker },
+  },
+
+  /* Build scripts (e.g. the demo build) run in Node and report to the terminal. */
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+    rules: { 'no-console': 'off' },
   },
 
   /* Tests may be looser: assertions and non-null access are idiomatic there. */

@@ -4,6 +4,11 @@ import { defineConfig } from 'vite';
 import vuetify from 'vite-plugin-vuetify';
 
 export default defineConfig({
+  /*
+   * Where the app is served from: "/" normally; e.g. "/ecomap/" for the read-only
+   * demo on GitHub Pages (see .github/workflows/demo.yml).
+   */
+  base: process.env['VITE_BASE'] ?? '/',
   /* Imports only the Vuetify components a template actually uses. */
   plugins: [vue(), vuetify({ autoImport: true })],
   server: {

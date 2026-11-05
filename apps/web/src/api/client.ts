@@ -1,5 +1,7 @@
 import { apiErrorSchema, type ApiErrorCode, type FieldIssue } from '@ecomap/shared';
 import type { z } from 'zod';
+import { IS_DEMO } from '../demo/demo.js';
+import { demoRequest } from '../demo/demoApi.js';
 
 /**
  * Thin typed wrapper around `fetch`.
@@ -67,6 +69,12 @@ export function apiAssetUrl(path: string): string {
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions<T> = {}): Promise<T> {
+  /* The read-only demo has no server: its data is checked by the same schemas. */
+  if (IS_DEMO) {
+    const payload = await demoRequest(path, options.method ?? 'GET');
+    return options.schema ? options.schema.parse(payload) : (payload as T);
+  }
+
   const response = await sendRequest(path, options);
 
   if (response.status === 401 && !options.skipRetry && refreshSession) {

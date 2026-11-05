@@ -14,6 +14,7 @@
     "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/db/seed.ts",
     "data:check": "tsx src/communities/osm-check.ts",
+    "demo:export": "tsx src/demo/exportStatic.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

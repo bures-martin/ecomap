@@ -5,6 +5,7 @@ import { useTranslation } from 'i18next-vue';
 import { computed, ref, useId, watch } from 'vue';
 import { linksApi } from '../api/endpoints.js';
 import { useToast } from '../composables/useToast.js';
+import { IS_DEMO } from '../demo/demo.js';
 
 /**
  * Sharing a place or the map as it is filtered now: a short link to copy or
@@ -34,9 +35,12 @@ const url = ref<string | null>(null);
 const qrSvg = ref<string | null>(null);
 const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
+/* The app's own address - "/" normally, "/ecomap/" for the demo on GitHub Pages. */
+const appUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+
 const longUrl = computed(() => {
   const query = shareableQuery(new URLSearchParams(props.query));
-  return `${window.location.origin}/${query ? `?${query}` : ''}`;
+  return `${appUrl}${query ? `?${query}` : ''}`;
 });
 
 watch(
@@ -53,11 +57,14 @@ watch(
     });
 
     let shared = longUrl.value;
-    try {
-      const link = await linksApi.create(query);
-      shared = `${window.location.origin}/s/${link.code}`;
-    } catch {
-      /* Keep the long address. */
+    /* Short links live on a server; the read-only demo shares the long address. */
+    if (!IS_DEMO) {
+      try {
+        const link = await linksApi.create(query);
+        shared = `${appUrl}s/${link.code}`;
+      } catch {
+        /* Keep the long address. */
+      }
     }
     if (stale()) return;
     url.value = shared;

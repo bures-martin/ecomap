@@ -568,5 +568,22 @@
     "opening": "Opening the link",
     "missingTitle": "This link does not exist",
     "missingBody": "It may have been typed wrong. Open the map and find the place there."
+  },
+  "demo": {
+    "chip": "Demo",
+    "chipLabel": "This is a demo - read more",
+    "title": "This is a demo",
+    "body": "On the real map, members add places themselves - farm shops, repair cafés, water taps and much more. A moderator approves them before they appear on the map.",
+    "limits": "Here you can see the map and everything on it, but not sign in or change anything.",
+    "howButton": "See how it works",
+    "howTitle": "How to add a place",
+    "stepOf": "Step {{step}} of {{total}}:",
+    "step1": "Choose which layer the place belongs to.",
+    "step2": "Put the pin where the place is.",
+    "step3": "Fill in the details. A moderator approves the place before it appears on the map.",
+    "previous": "Previous",
+    "next": "Next",
+    "ok": "OK",
+    "addHint": "Demo - see how to add a place"
   }
 }
