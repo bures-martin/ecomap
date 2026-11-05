@@ -1,5 +1,6 @@
 import type { Feature, Layer } from '@ecomap/shared';
 import {
+  mdiChefHat,
   mdiFacebook,
   mdiInstagram,
   mdiLeaf,
@@ -29,6 +30,7 @@ const ICON_BY_KEY: Readonly<Record<string, string>> = {
   tripadvisor: mdiOwl,
   bornholmInfo: mdiMapMarkerStar,
   happyCow: mdiLeaf,
+  gourmetBornholm: mdiChefHat,
 };
 
 export function placeLinks(feature: Feature, layer: Layer): PlaceLink[] {

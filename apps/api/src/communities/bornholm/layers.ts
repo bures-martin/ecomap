@@ -27,6 +27,13 @@ const LINK_FIELDS = {
     type: 'url' as const,
     helpText: 'Til veganske og vegetariske steder: linket til siden på happycow.net',
   },
+  gourmetBornholm: {
+    key: 'gourmetBornholm',
+    label: 'Gourmet Bornholm',
+    type: 'url' as const,
+    helpText:
+      'Hvis stedet er medlem af Gourmet Bornholm: linket til dets side på gourmetbornholm.dk',
+  },
 };
 type LinkKey = keyof typeof LINK_FIELDS;
 const linkFields = (...keys: LinkKey[]) => keys.map((key) => LINK_FIELDS[key]);
@@ -48,9 +55,22 @@ const localFoodFields = (kinds: string[]) => [
     type: 'select' as const,
     options: ['MobilePay', 'Kontanter', 'Kort', 'Flere muligheder'],
   },
+  {
+    key: 'selfService',
+    label: 'Selvbetjening',
+    type: 'boolean' as const,
+    helpText: 'Man tager selv og betaler selv - fx en vejbod med kasse eller MobilePay',
+  },
   { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' as const },
   { key: 'website', label: 'Hjemmeside', type: 'url' as const },
-  ...linkFields('facebook', 'instagram', 'tripadvisor', 'bornholmInfo', 'happyCow'),
+  ...linkFields(
+    'gourmetBornholm',
+    'facebook',
+    'instagram',
+    'tripadvisor',
+    'bornholmInfo',
+    'happyCow',
+  ),
 ];
 
 /**

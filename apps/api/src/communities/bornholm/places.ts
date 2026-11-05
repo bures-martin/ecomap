@@ -829,6 +829,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       kind: 'Chokolade',
       openingHours: 'Mo-Fr 11:00-17:00; Sa 10:00-13:00',
       website: 'https://www.kjaerstrup.dk/',
+      gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/kjaerstrup-chokolade/',
     },
   },
   {
