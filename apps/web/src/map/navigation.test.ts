@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { googleMapsDirectionsUrl, navigationTarget } from './navigation.js';
+import { googleMapsDirectionsUrl, googleMapsPlaceUrl, navigationTarget } from './navigation.js';
 
 describe('navigationTarget', () => {
   it('goes to a point itself', () => {
@@ -43,6 +43,14 @@ describe('googleMapsDirectionsUrl', () => {
   it('asks Google Maps for directions, latitude first', () => {
     expect(googleMapsDirectionsUrl([14.69156, 55.10208])).toBe(
       'https://www.google.com/maps/dir/?api=1&destination=55.102080%2C14.691560',
+    );
+  });
+});
+
+describe('googleMapsPlaceUrl', () => {
+  it('searches for the name right where the pin is', () => {
+    expect(googleMapsPlaceUrl(' Kalnes Gård & Røgeri ', [14.69156, 55.10208])).toBe(
+      'https://www.google.com/maps/search/Kalnes%20G%C3%A5rd%20%26%20R%C3%B8geri/@55.102080,14.691560,17z',
     );
   });
 });

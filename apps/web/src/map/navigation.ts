@@ -27,3 +27,14 @@ export function googleMapsDirectionsUrl([lng, lat]: Position): string {
   const destination = `${lat.toFixed(6)},${lng.toFixed(6)}`;
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
 }
+
+/**
+ * The place's own Google Maps page - reviews, photos, "open now" - found by
+ * searching for its name at its spot. Maps URLs' documented `query` takes a
+ * name *or* coordinates, and a name alone finds the wrong "Red Barnet"; the
+ * `@lat,lng,zoom` form Google Maps itself uses keeps the search on our pin
+ * and still opens the app on a phone. Zoom 17 is a few streets across.
+ */
+export function googleMapsPlaceUrl(name: string, [lng, lat]: Position): string {
+  return `https://www.google.com/maps/search/${encodeURIComponent(name.trim())}/@${lat.toFixed(6)},${lng.toFixed(6)},17z`;
+}

@@ -22,7 +22,10 @@ renewable energy 10 · EV charging 8 · nature areas 6 · community gardens 5 ·
 
 - Every place is one OpenStreetMap object. Its `osmId` (e.g. `node/1330908050`) points at the
   source: `https://www.openstreetmap.org/node/1330908050`.
-- Names, opening hours, websites and field values come from OSM tags. Places without a name are
+- Names, opening hours, websites and field values come from OSM tags. Facebook and Instagram
+  links come from `contact:facebook` / `contact:instagram` (and `facebook` / `instagram`) - only 4
+  places had one on 2026-11-05. Tripadvisor, bornholm.info and HappyCow links are not in OSM;
+  they are added by hand in the app. Places without a name are
   named by their kind and the nearest town ("Drikkevand ved Gudhjem").
 - Descriptions are short Danish sentences written from the tags.
 - **"Økologisk"** is set only where the producer's own website says so, or OSM tags it.

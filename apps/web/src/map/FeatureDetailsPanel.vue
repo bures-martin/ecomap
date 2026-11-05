@@ -7,9 +7,16 @@ import {
   type Feature,
   type Layer,
 } from '@ecomap/shared';
-import { mdiClose, mdiCursorMove, mdiDelete, mdiNavigationVariant, mdiPencil } from '@mdi/js';
+import {
+  mdiClose,
+  mdiCursorMove,
+  mdiDelete,
+  mdiGoogleMaps,
+  mdiNavigationVariant,
+  mdiPencil,
+} from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
-import { computed, nextTick, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, useId, useTemplateRef, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuth } from '../auth/auth.js';
 import LinkifiedText from '../components/LinkifiedText.vue';
@@ -17,7 +24,8 @@ import UserAvatar from '../components/UserAvatar.vue';
 import FeatureGallery from './FeatureGallery.vue';
 import LayerIcon from './LayerIcon.vue';
 import OpeningHoursView from './OpeningHoursView.vue';
-import { googleMapsDirectionsUrl, navigationTarget } from './navigation.js';
+import { googleMapsDirectionsUrl, googleMapsPlaceUrl, navigationTarget } from './navigation.js';
+import { placeLinks } from './placeLinks.js';
 import { useLanguage } from '../i18n/index.js';
 
 /**
@@ -38,6 +46,7 @@ const { t } = useTranslation();
 const language = useLanguage();
 const auth = useAuth();
 const { xs, width: viewportWidth } = useDisplay();
+const linksHeadingId = useId();
 
 const actor = computed(() => (auth.user ? { id: auth.user.id, role: auth.user.role } : null));
 const mayEdit = computed(() =>
@@ -59,6 +68,17 @@ const mayDelete = computed(() =>
 
 const navigationUrl = computed(() =>
   props.feature ? googleMapsDirectionsUrl(navigationTarget(props.feature.geometry)) : null,
+);
+
+const googleMapsUrl = computed(() =>
+  props.feature
+    ? googleMapsPlaceUrl(props.feature.name, navigationTarget(props.feature.geometry))
+    : null,
+);
+
+/** Website, Facebook, Tripadvisor and co. - shown as buttons, not in the field list. */
+const links = computed(() =>
+  props.feature && props.layer ? placeLinks(props.feature, props.layer) : [],
 );
 
 const open = computed({
@@ -100,6 +120,7 @@ const filledFields = computed(() => {
   const { feature, layer } = props;
   if (!feature || !layer) return [];
   return layer.fields.flatMap((field) => {
+    if (field.type === 'url') return [];
     const value = feature.properties[field.key];
     if (value === undefined || value === null || value === '') return [];
     return [
@@ -210,6 +231,39 @@ function formatPropertyValue(
         </dl>
       </template>
 
+      <!--
+        Where to read more: the place on Google Maps (reviews, photos, "open
+        now") for every place, then whichever of its own links it has.
+      -->
+      <v-divider />
+      <section :aria-labelledby="linksHeadingId">
+        <h3 :id="linksHeadingId" class="text-title-small mb-2">{{ t('feature.links') }}</h3>
+        <div class="link-grid">
+          <v-btn
+            :href="googleMapsUrl ?? undefined"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            :prepend-icon="mdiGoogleMaps"
+            class="link-button"
+          >
+            Google Maps
+          </v-btn>
+          <v-btn
+            v-for="link in links"
+            :key="link.key"
+            :href="link.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outlined"
+            :prepend-icon="link.icon"
+            class="link-button"
+          >
+            {{ link.label }}
+          </v-btn>
+        </div>
+      </section>
+
       <v-divider />
 
       <div class="d-flex align-center ga-2">
@@ -293,5 +347,24 @@ function formatPropertyValue(
 
 .property-list dd {
   margin: 0;
+}
+
+/* Two to a row in the drawer, one to a row when there is no room for two. */
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+/* Labels as the layer writes them ("bornholm.info"), cut short rather than overflowing. */
+.link-button {
+  justify-content: flex-start;
+  min-width: 0;
+  text-transform: none;
+}
+
+.link-button :deep(.v-btn__content) {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

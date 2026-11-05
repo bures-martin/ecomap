@@ -1,5 +1,36 @@
 import { createLayerInputSchema, type CreateLayerInput } from '@ecomap/shared';
 
+/**
+ * Where else a place is found online. Each is a URL field, so the details
+ * panel shows it as a button with the label below (and a matching icon for
+ * these keys). Facebook and Instagram come from OpenStreetMap's
+ * `contact:facebook` / `contact:instagram`; the rest are filled in by hand.
+ */
+const LINK_FIELDS = {
+  facebook: { key: 'facebook', label: 'Facebook', type: 'url' as const },
+  instagram: { key: 'instagram', label: 'Instagram', type: 'url' as const },
+  tripadvisor: {
+    key: 'tripadvisor',
+    label: 'Tripadvisor',
+    type: 'url' as const,
+    helpText: 'Linket til stedets side på Tripadvisor, hvis det har en',
+  },
+  bornholmInfo: {
+    key: 'bornholmInfo',
+    label: 'bornholm.info',
+    type: 'url' as const,
+    helpText: 'Linket til stedets side på bornholm.info, hvis det har en',
+  },
+  happyCow: {
+    key: 'happyCow',
+    label: 'HappyCow',
+    type: 'url' as const,
+    helpText: 'Til veganske og vegetariske steder: linket til siden på happycow.net',
+  },
+};
+type LinkKey = keyof typeof LINK_FIELDS;
+const linkFields = (...keys: LinkKey[]) => keys.map((key) => LINK_FIELDS[key]);
+
 /** The fields every local-food layer shares; only the kinds differ. */
 const localFoodFields = (kinds: string[]) => [
   { key: 'kind', label: 'Hvad er det?', type: 'select' as const, options: kinds },
@@ -19,6 +50,7 @@ const localFoodFields = (kinds: string[]) => [
   },
   { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' as const },
   { key: 'website', label: 'Hjemmeside', type: 'url' as const },
+  ...linkFields('facebook', 'instagram', 'tripadvisor', 'bornholmInfo', 'happyCow'),
 ];
 
 /**
@@ -43,6 +75,7 @@ export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
       { key: 'contact', label: 'Kontakt', type: 'text' },
       { key: 'website', label: 'Hjemmeside', type: 'url' },
       { key: 'acceptsNewMembers', label: 'Optager nye medlemmer', type: 'boolean' },
+      ...linkFields('facebook', 'instagram'),
     ],
   }),
   createLayerInputSchema.parse({
@@ -70,6 +103,7 @@ export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
       },
       { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' },
       { key: 'website', label: 'Hjemmeside', type: 'url' },
+      ...linkFields('facebook', 'instagram'),
     ],
   }),
   createLayerInputSchema.parse({
@@ -91,6 +125,7 @@ export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
       { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' },
       { key: 'website', label: 'Hjemmeside', type: 'url' },
       { key: 'free', label: 'Gratis at bruge', type: 'boolean' },
+      ...linkFields('facebook', 'instagram', 'tripadvisor', 'bornholmInfo'),
     ],
   }),
   createLayerInputSchema.parse({
@@ -136,6 +171,7 @@ export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
     fields: [
       { key: 'managedBy', label: 'Passes af', type: 'text' },
       { key: 'website', label: 'Hjemmeside', type: 'url' },
+      ...linkFields('tripadvisor', 'bornholmInfo'),
     ],
   }),
   createLayerInputSchema.parse({
@@ -276,6 +312,7 @@ export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
       },
       { key: 'openingHours', label: 'Åbningstider', type: 'openingHours' },
       { key: 'website', label: 'Hjemmeside', type: 'url' },
+      ...linkFields('facebook', 'instagram', 'bornholmInfo', 'happyCow'),
     ],
   }),
   createLayerInputSchema.parse({

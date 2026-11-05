@@ -22,6 +22,8 @@ export const NEUTRAL: Community = {
       fields: [
         { key: 'openingHours', label: 'Opening hours', type: 'openingHours' },
         { key: 'website', label: 'Website', type: 'url' },
+        { key: 'facebook', label: 'Facebook', type: 'url' },
+        { key: 'instagram', label: 'Instagram', type: 'url' },
       ],
     }),
     createLayerInputSchema.parse({
@@ -36,6 +38,8 @@ export const NEUTRAL: Community = {
         { key: 'openingHours', label: 'Opening hours', type: 'openingHours' },
         { key: 'organic', label: 'Organic', type: 'boolean' },
         { key: 'website', label: 'Website', type: 'url' },
+        { key: 'facebook', label: 'Facebook', type: 'url' },
+        { key: 'instagram', label: 'Instagram', type: 'url' },
       ],
     }),
     createLayerInputSchema.parse({
@@ -49,6 +53,8 @@ export const NEUTRAL: Community = {
       fields: [
         { key: 'openingHours', label: 'Opening hours', type: 'openingHours' },
         { key: 'website', label: 'Website', type: 'url' },
+        { key: 'facebook', label: 'Facebook', type: 'url' },
+        { key: 'instagram', label: 'Instagram', type: 'url' },
       ],
     }),
     createLayerInputSchema.parse({
@@ -59,7 +65,11 @@ export const NEUTRAL: Community = {
       icon: 'bike',
       allowedGeometries: ['Point', 'LineString'],
       sortOrder: 40,
-      fields: [{ key: 'website', label: 'Website', type: 'url' }],
+      fields: [
+        { key: 'website', label: 'Website', type: 'url' },
+        { key: 'facebook', label: 'Facebook', type: 'url' },
+        { key: 'instagram', label: 'Instagram', type: 'url' },
+      ],
     }),
     createLayerInputSchema.parse({
       slug: 'nature-areas',

@@ -119,6 +119,7 @@
     },
     "navigate": "Navigate",
     "navigateToStart": "Navigate to start",
+    "links": "Find them online",
     "writeInLanguage": "Please write in {{language}} if you can - it is the language of this map.",
     "move": "Move on the map",
     "movedNote": "New position chosen on the map. Save to keep it."

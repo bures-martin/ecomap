@@ -140,6 +140,8 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       kind: 'Andelslandbrug',
       organic: true,
       website: 'https://www.hammersly.dk',
+      facebook: 'https://www.facebook.com/hammersly.andelsgaarde/',
+      instagram: 'https://www.instagram.com/hammersly.andelsgaarde/',
     },
   },
   {
@@ -903,6 +905,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [15.13543, 55.06344],
     properties: {
       kind: 'Is',
+      facebook: 'https://www.facebook.com/nettis.dk/',
     },
   },
   {
@@ -1296,6 +1299,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       kind: 'Producent',
       sells: 'Brød',
       openingHours: 'Tu-Th,Sa,Su 08:00-17:00; Fr 08:00-16:00; Mo off',
+      instagram: 'https://www.instagram.com/mikrobageren_i_listed',
     },
   },
   {
@@ -1327,6 +1331,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [14.86082, 55.14795],
     properties: {
       type: 'Genbrugsbutik',
+      facebook: 'https://www.facebook.com/profile.php?id=61578150895662',
     },
   },
   {
