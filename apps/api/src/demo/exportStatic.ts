@@ -76,7 +76,8 @@ export function buildStaticDemo(community: Community, at: Date): StaticDemoData 
         properties: place.properties,
         status: 'published' as const,
         createdById: null,
-        createdByName: null,
+        /* Not "a former member": every demo place comes from OpenStreetMap. */
+        createdByName: 'OpenStreetMap',
         createdByAvatarUrl: null,
         images: [],
         createdAt: timestamp,

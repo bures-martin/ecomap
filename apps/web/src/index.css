@@ -175,6 +175,14 @@ body,
   border-radius: 12px;
 }
 
+/*
+ * The basemap button sits on the same line as "Tilføj til kortet" in the other
+ * corner: 24px up, which that button needs to stay clear of the map credits.
+ */
+.leaflet-bottom.leaflet-left .leaflet-control-layers {
+  margin-bottom: 24px;
+}
+
 /* The open list goes over the map's own cards, such as the welcome card. */
 .leaflet-bottom.leaflet-left:has(.leaflet-control-layers-expanded) {
   z-index: 1100;

@@ -33,6 +33,7 @@ import ConfirmDialog from '../components/ConfirmDialog.vue';
 import { useApiErrorMessage } from '../composables/useApiErrorMessage.js';
 import { useDebouncedRef } from '../composables/useDebouncedRef.js';
 import { useToast } from '../composables/useToast.js';
+import { detailsSheetHeight } from '../map/detailsSheet.js';
 import DrawingToolbar from '../map/DrawingToolbar.vue';
 import TopicChips from '../map/TopicChips.vue';
 import WelcomeCard from '../map/WelcomeCard.vue';
@@ -58,7 +59,7 @@ const SIDEBAR_WIDTH = 320;
  * component, so a filtered map is a link somebody can send to a neighbour.
  */
 const { t } = useTranslation();
-const { mdAndUp: isDesktop } = useDisplay();
+const { mdAndUp: isDesktop, xs: isPhone, height: viewportHeight } = useDisplay();
 const toast = useToast();
 const queryClient = useQueryClient();
 const errorMessage = useApiErrorMessage();
@@ -258,6 +259,11 @@ const mapFocus = computed(() => {
     zoom: feature.id === sharedLinkFeatureId ? SHARED_LINK_ZOOM : null,
   };
 });
+
+/* On a phone a place's details cover the bottom of the map; the map centres the place above them. */
+const mapBottomInset = computed(() =>
+  isPhone.value && selectedFeatureId.value ? detailsSheetHeight(viewportHeight.value) : 0,
+);
 
 const mapZoom = computed(
   () => settings.value?.initialView.zoom ?? DEFAULT_COMMUNITY_SETTINGS.initialView.zoom,
@@ -678,6 +684,7 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
         :center="mapCenter"
         :zoom="mapZoom"
         :focus="mapFocus"
+        :bottom-inset="mapBottomInset"
         :features="features"
         :layers-by-slug="layersBySlug"
         :selected-feature-id="selectedFeatureId"
@@ -815,10 +822,15 @@ const moderate = (feature: Feature, status: 'published' | 'rejected'): void => {
   z-index: 1200;
 }
 
+/*
+ * Mirrors the basemap button in the bottom-left corner: the same 10px from the
+ * side as all of Leaflet's controls, and on the same line, 24px up - clear of
+ * the map credits along the bottom right (see index.css).
+ */
 .map-actions {
   position: absolute;
   bottom: 24px;
-  right: 24px;
+  right: 10px;
   z-index: 1000;
   display: flex;
   flex-direction: column;

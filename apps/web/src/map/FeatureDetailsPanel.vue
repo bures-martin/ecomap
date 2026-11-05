@@ -26,6 +26,7 @@ import UserAvatar from '../components/UserAvatar.vue';
 import FeatureGallery from './FeatureGallery.vue';
 import LayerIcon from './LayerIcon.vue';
 import OpeningHoursView from './OpeningHoursView.vue';
+import { detailsSheetHeight } from './detailsSheet.js';
 import { googleMapsDirectionsUrl, googleMapsPlaceUrl, navigationTarget } from './navigation.js';
 import { placeLinks } from './placeLinks.js';
 import { useLanguage } from '../i18n/index.js';
@@ -47,7 +48,8 @@ const emit = defineEmits<{
 const { t } = useTranslation();
 const language = useLanguage();
 const auth = useAuth();
-const { xs, width: viewportWidth } = useDisplay();
+const { xs, height: viewportHeight } = useDisplay();
+const sheetHeight = computed(() => detailsSheetHeight(viewportHeight.value));
 const linksHeadingId = useId();
 const sharing = ref(false);
 
@@ -164,12 +166,20 @@ function formatPropertyValue(
     lives in the query string), so Vuetify would otherwise close the panel the
     moment it opens.
   -->
+  <!--
+    On a phone it slides up from the bottom and covers only part of the map
+    (see detailsSheet.ts), without dimming it: the place stays in view above,
+    and tapping another pin simply shows that one. For a drawer at the
+    bottom, Vuetify's "width" is its height.
+  -->
   <v-navigation-drawer
     v-model="open"
-    location="right"
+    :location="xs ? 'bottom' : 'right'"
     temporary
+    :scrim="!xs"
     disable-route-watcher
-    :width="xs ? viewportWidth : 380"
+    :width="xs ? sheetHeight : 380"
+    :class="{ 'details-sheet': xs }"
   >
     <article
       v-if="props.feature"
@@ -361,6 +371,13 @@ function formatPropertyValue(
 </template>
 
 <style scoped>
+/* The phone's bottom sheet: rounded top corners and a shadow, so it reads as lying on the map. */
+.details-sheet {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.18);
+}
+
 /* Focused by script, not by Tab: a quiet ring is enough to show where you are. */
 .details-heading:focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary));

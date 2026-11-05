@@ -42,6 +42,12 @@ const props = defineProps<{
    * current zoom; a number zooms in at least that far (a shared link).
    */
   focus: { id: string; position: [number, number]; zoom: number | null } | null;
+  /**
+   * How much of the map's bottom is covered, in pixels - by the place's
+   * details on a phone. A place being brought into view is centred in the
+   * part still visible above it.
+   */
+  bottomInset?: number;
   features: readonly Feature[];
   layersBySlug: ReadonlyMap<string, Layer>;
   selectedFeatureId: string | null;
@@ -181,12 +187,17 @@ onMounted(() => {
     () => props.focus,
     (focus, previous) => {
       if (!map || !focus || focus.id === previous?.id) return;
+      const zoom = focus.zoom === null ? map.getZoom() : Math.max(map.getZoom(), focus.zoom);
+      /* Centre it in the visible part: the map's middle moves down by half the covered height. */
+      const inset = props.bottomInset ?? 0;
+      const center =
+        inset > 0
+          ? map.unproject(map.project(focus.position, zoom).add([0, inset / 2]), zoom)
+          : focus.position;
       if (focus.zoom === null) {
-        map.panTo(focus.position, { animate: !reduceMotion });
+        map.panTo(center, { animate: !reduceMotion });
       } else {
-        map.setView(focus.position, Math.max(map.getZoom(), focus.zoom), {
-          animate: !reduceMotion,
-        });
+        map.setView(center, zoom, { animate: !reduceMotion });
       }
     },
     { immediate: true },

@@ -173,18 +173,24 @@ watch([topics, () => props.filters], async () => {
       </v-list>
     </v-menu>
 
-    <!-- Invisible copies, only for measuring how many chips fit. -->
-    <div ref="measure" class="topic-chips__measure" aria-hidden="true" inert>
-      <span v-for="layer in topics" :key="layer.id" class="topic-chip" data-chip>
-        <svg viewBox="0 0 24 24" width="18" height="18">
-          <path :d="layerIconPath(layer.icon)" />
-        </svg>
-        <span>{{ layer.name }}</span>
-      </span>
-      <span class="topic-chip topic-chip--more" data-more>
-        <span>{{ t('map.moreTopics', { count: topics.length }) }}</span>
-        <svg viewBox="0 0 24 24" width="18" height="18" />
-      </span>
+    <!--
+      Invisible copies, only for measuring how many chips fit. The clip keeps
+      them from sticking out past the screen's edge: on a phone they made the
+      whole page wider, so it slid sideways and dialogs ran off screen.
+    -->
+    <div class="topic-chips__measure-clip" aria-hidden="true" inert>
+      <div ref="measure" class="topic-chips__measure">
+        <span v-for="layer in topics" :key="layer.id" class="topic-chip" data-chip>
+          <svg viewBox="0 0 24 24" width="18" height="18">
+            <path :d="layerIconPath(layer.icon)" />
+          </svg>
+          <span>{{ layer.name }}</span>
+        </span>
+        <span class="topic-chip topic-chip--more" data-more>
+          <span>{{ t('map.moreTopics', { count: topics.length }) }}</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" />
+        </span>
+      </div>
     </div>
   </nav>
 </template>
@@ -200,6 +206,15 @@ watch([topics, () => props.filters], async () => {
   display: flex;
   gap: 8px;
   padding: 2px 0 6px;
+  pointer-events: none;
+}
+
+/* The same box as the chip row, so the copies measure exactly as before - just clipped. */
+.topic-chips__measure-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
   pointer-events: none;
 }
 

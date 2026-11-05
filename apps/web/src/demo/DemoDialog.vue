@@ -38,6 +38,7 @@ watch(demo.open, (open) => {
   <v-dialog
     :model-value="demo.open.value"
     :max-width="showingSteps ? 720 : 460"
+    scrollable
     :aria-labelledby="titleId"
     @update:model-value="(value: boolean) => !value && demo.hide()"
   >
@@ -114,9 +115,12 @@ watch(demo.open, (open) => {
   margin: 0;
 }
 
+/* Never taller than about half the screen, so the caption and buttons stay in view on a phone. */
 .demo-step__image {
   width: 100%;
   height: auto;
+  max-height: 55dvh;
+  object-fit: contain;
   border-radius: 8px;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }

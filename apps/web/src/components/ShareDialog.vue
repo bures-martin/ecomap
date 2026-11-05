@@ -110,6 +110,7 @@ async function shareVia(): Promise<void> {
   <v-dialog
     :model-value="props.open"
     max-width="420"
+    scrollable
     :aria-labelledby="titleId"
     @update:model-value="(value: boolean) => !value && emit('close')"
   >
