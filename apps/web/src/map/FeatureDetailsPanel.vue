@@ -385,15 +385,27 @@ function formatPropertyValue(
   gap: 8px;
 }
 
-/* Labels as the layer writes them ("bornholm.info"), cut short rather than overflowing. */
+/*
+ * Labels as the layer writes them ("Gourmet Bornholm"): a long one wraps onto
+ * a second line, left-aligned next to its icon, instead of being cut off.
+ */
 .link-button {
   justify-content: flex-start;
   min-width: 0;
+  height: auto;
+  min-height: 36px;
+  padding-block: 6px;
+  padding-inline: 12px;
   text-transform: none;
 }
 
 .link-button :deep(.v-btn__content) {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-start;
+  white-space: normal;
+  text-align: start;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 </style>
