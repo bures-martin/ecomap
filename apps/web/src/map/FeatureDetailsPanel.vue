@@ -238,12 +238,14 @@ function formatPropertyValue(
       <v-divider />
       <section :aria-labelledby="linksHeadingId">
         <h3 :id="linksHeadingId" class="text-title-small mb-2">{{ t('feature.links') }}</h3>
+        <!-- The theme's link green: the brand green on white, a lighter one on dark. -->
         <div class="link-grid">
           <v-btn
             :href="googleMapsUrl ?? undefined"
             target="_blank"
             rel="noopener noreferrer"
             variant="outlined"
+            color="link"
             :prepend-icon="mdiGoogleMaps"
             class="link-button"
           >
@@ -256,6 +258,7 @@ function formatPropertyValue(
             target="_blank"
             rel="noopener noreferrer"
             variant="outlined"
+            color="link"
             :prepend-icon="link.icon"
             class="link-button"
           >
