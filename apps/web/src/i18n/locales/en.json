@@ -570,8 +570,6 @@
     "missingBody": "It may have been typed wrong. Open the map and find the place there."
   },
   "demo": {
-    "chip": "Demo",
-    "chipLabel": "This is a demo - read more",
     "title": "This is a demo",
     "body": "On the real map, members add places themselves - farm shops, repair cafés, water taps and much more. A moderator approves them before they appear on the map.",
     "limits": "Here you can see the map and everything on it, but not sign in or change anything.",

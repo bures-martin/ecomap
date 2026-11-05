@@ -7,7 +7,7 @@ import { useDisplay } from 'vuetify';
 import { useCommunitySettings } from '../api/queries.js';
 import { useAuth } from '../auth/auth.js';
 import { useToast } from '../composables/useToast.js';
-import { IS_DEMO, useDemoDialog } from '../demo/demo.js';
+import { IS_DEMO } from '../demo/demo.js';
 import ColorSchemeMenu from './ColorSchemeMenu.vue';
 import UserAvatar from './UserAvatar.vue';
 
@@ -21,7 +21,7 @@ const DemoDialog = defineAsyncComponent(() => import('../demo/DemoDialog.vue'));
 defineSlots<{ default: () => unknown }>();
 
 const { t } = useTranslation();
-/* On a phone the name is a size smaller, so it fits next to the icons (and the demo badge). */
+/* On a phone the name is a size smaller, so it fits next to the icons. */
 const { mdAndUp: isDesktop, xs: isPhone } = useDisplay();
 const settingsQuery = useCommunitySettings();
 const auth = useAuth();
@@ -30,7 +30,6 @@ const route = useRoute();
 const router = useRouter();
 
 const drawerOpen = ref(false);
-const demo = useDemoDialog();
 
 const adminLinks = computed(() =>
   [
@@ -80,18 +79,6 @@ const signOut = async (): Promise<void> => {
         >
           {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
         </RouterLink>
-        <!-- Right after the name on the read-only demo, so nobody takes it for the real map. -->
-        <v-chip
-          v-if="IS_DEMO"
-          size="small"
-          color="primary"
-          variant="flat"
-          class="flex-shrink-0"
-          :aria-label="t('demo.chipLabel')"
-          @click="demo.show()"
-        >
-          {{ t('demo.chip') }}
-        </v-chip>
       </div>
 
       <nav v-if="isDesktop" :aria-label="t('nav.map')" class="d-flex ga-1">
@@ -207,7 +194,7 @@ const signOut = async (): Promise<void> => {
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-/* The name (and the demo badge right after it) take the free space; the links sit on the right. */
+/* The name takes the free space; the links sit on the right. */
 .app-brand {
   display: flex;
   align-items: center;

@@ -570,8 +570,6 @@
     "missingBody": "Det kan være skrevet forkert. Prøv at åbne kortet og find stedet der."
   },
   "demo": {
-    "chip": "Demo",
-    "chipLabel": "Dette er en demo - læs mere",
     "title": "Dette er en demo",
     "body": "På det rigtige kort tilføjer medlemmerne selv steder - gårdbutikker, repair caféer, vandposter og meget mere. En moderator godkender dem, før de kommer på kortet.",
     "limits": "Her kan du se kortet og alt, hvad der står på det, men ikke logge ind eller ændre noget.",
