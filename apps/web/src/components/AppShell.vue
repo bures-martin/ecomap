@@ -21,7 +21,8 @@ const DemoDialog = defineAsyncComponent(() => import('../demo/DemoDialog.vue'));
 defineSlots<{ default: () => unknown }>();
 
 const { t } = useTranslation();
-const { mdAndUp: isDesktop } = useDisplay();
+/* On a phone the name is a size smaller, so it fits next to the icons (and the demo badge). */
+const { mdAndUp: isDesktop, xs: isPhone } = useDisplay();
 const settingsQuery = useCommunitySettings();
 const auth = useAuth();
 const toast = useToast();
@@ -71,21 +72,27 @@ const signOut = async (): Promise<void> => {
       />
 
       <v-icon :icon="mdiMap" color="logo" aria-hidden="true" class="mx-2" />
-      <RouterLink to="/" class="app-title text-title-large">
-        {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
-      </RouterLink>
-      <!-- Always in view on the read-only demo, so nobody takes it for the real map. -->
-      <v-chip
-        v-if="IS_DEMO"
-        size="small"
-        color="warning"
-        variant="flat"
-        class="ml-2 flex-shrink-0"
-        :aria-label="t('demo.chipLabel')"
-        @click="demo.show()"
-      >
-        {{ t('demo.chip') }}
-      </v-chip>
+      <div class="app-brand">
+        <RouterLink
+          to="/"
+          class="app-title"
+          :class="isPhone ? 'text-title-medium' : 'text-title-large'"
+        >
+          {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
+        </RouterLink>
+        <!-- Right after the name on the read-only demo, so nobody takes it for the real map. -->
+        <v-chip
+          v-if="IS_DEMO"
+          size="small"
+          color="primary"
+          variant="flat"
+          class="flex-shrink-0"
+          :aria-label="t('demo.chipLabel')"
+          @click="demo.show()"
+        >
+          {{ t('demo.chip') }}
+        </v-chip>
+      </div>
 
       <nav v-if="isDesktop" :aria-label="t('nav.map')" class="d-flex ga-1">
         <v-btn
@@ -200,11 +207,23 @@ const signOut = async (): Promise<void> => {
   border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
+/* The name (and the demo badge right after it) take the free space; the links sit on the right. */
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-grow: 1;
+  min-width: 0;
+}
+
 .app-title {
   color: inherit;
   text-decoration: none;
-  flex-grow: 1;
   font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-main {
