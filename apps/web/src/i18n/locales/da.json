@@ -549,5 +549,24 @@
     "banner": "Som administrator skal du slå totrinsbekræftelse til, før du kan bruge administrationen (indstillinger, lag, brugere).",
     "action": "Slå det til",
     "accountHint": "Som administrator skal du have totrinsbekræftelse slået til for at bruge administrationen."
+  },
+  "share": {
+    "button": "Del",
+    "placeHeading": "Del {{name}}",
+    "mapButton": "Del kortet",
+    "filteredMapButton": "Del dette udsnit",
+    "mapHeading": "Del kortet",
+    "filteredMapHeading": "Del kortet, som det er filtreret nu",
+    "mapShareTitle": "Kortet",
+    "link": "Link",
+    "copy": "Kopiér link",
+    "copied": "Linket er kopieret",
+    "copyFailed": "Linket kunne ikke kopieres - markér det og kopiér selv",
+    "shareVia": "Del…",
+    "qrAlt": "QR-kode til linket",
+    "downloadQr": "Hent QR-kode (til tryk)",
+    "opening": "Åbner linket",
+    "missingTitle": "Linket findes ikke",
+    "missingBody": "Det kan være skrevet forkert. Prøv at åbne kortet og find stedet der."
   }
 }

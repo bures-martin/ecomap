@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { FEATURE_STATUSES, type FeatureStatus, type Layer } from '@ecomap/shared';
-import { mdiFilterRemoveOutline, mdiMagnify } from '@mdi/js';
+import { mdiFilterRemoveOutline, mdiMagnify, mdiShareVariant } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
-import { computed, useId } from 'vue';
+import { computed, ref, useId } from 'vue';
 import { useAuth } from '../auth/auth.js';
-import { EMPTY_FILTERS, hasActiveFilters, layersAfterToggle, type MapFilters } from './filters.js';
+import ShareDialog from '../components/ShareDialog.vue';
+import {
+  EMPTY_FILTERS,
+  hasActiveFilters,
+  layersAfterToggle,
+  writeFilters,
+  type MapFilters,
+} from './filters.js';
 import LayerIcon from './LayerIcon.vue';
 
 /**
@@ -86,6 +93,17 @@ const anythingSelected = computed(
   () => hasActiveFilters(props.filters) || props.searchDraft.trim() !== '',
 );
 
+/*
+ * Sharing the map as filtered now. Only layers and search travel - "only mine"
+ * and a moderator's status filter are personal - so the button only says
+ * "this view" when one of those two is set.
+ */
+const sharing = ref(false);
+const shareQuery = computed(() => writeFilters(props.filters, new URLSearchParams()).toString());
+const hasShareableFilters = computed(
+  () => props.filters.layers.length > 0 || props.filters.q.trim() !== '',
+);
+
 const clearFilters = (): void => {
   emit('update:searchDraft', '');
   emit('update:filters', EMPTY_FILTERS);
@@ -162,6 +180,25 @@ const clearFilters = (): void => {
         {{ t('map.allLayersShown') }}
       </p>
     </section>
+
+    <!-- The map as filtered now (layers and search) - e.g. only local food, for a brochure. -->
+    <div>
+      <v-btn
+        variant="tonal"
+        color="primary"
+        :prepend-icon="mdiShareVariant"
+        @click="sharing = true"
+      >
+        {{ hasShareableFilters ? t('share.filteredMapButton') : t('share.mapButton') }}
+      </v-btn>
+    </div>
+    <ShareDialog
+      :open="sharing"
+      :heading="hasShareableFilters ? t('share.filteredMapHeading') : t('share.mapHeading')"
+      :title="t('share.mapShareTitle')"
+      :query="shareQuery"
+      @close="sharing = false"
+    />
 
     <template v-if="auth.user !== null || auth.can('feature:moderate')">
       <v-divider />

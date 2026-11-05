@@ -12,3 +12,4 @@ export * from './invitations.js';
 export * from './settings.js';
 export * from './errors.js';
 export * from './locales.js';
+export * from './shortLinks.js';

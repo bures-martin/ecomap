@@ -14,6 +14,7 @@ import { createFeaturesRouter } from './modules/features/router.js';
 import { createSuggestionsRouter } from './modules/suggestions/router.js';
 import { createInvitationsRouter } from './modules/invitations/router.js';
 import { createLayersRouter } from './modules/layers/router.js';
+import { createLinksRouter } from './modules/links/router.js';
 import { createExportRouter } from './modules/export/router.js';
 import { createSettingsRouter } from './modules/settings/router.js';
 import { createUsersRouter } from './modules/users/router.js';
@@ -69,6 +70,7 @@ export function createApp(db: Sql): Express {
   app.use('/api/users', createUsersRouter(db));
   app.use('/api/invitations', createInvitationsRouter(db));
   app.use('/api/export', createExportRouter(db));
+  app.use('/api/links', createLinksRouter(db));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

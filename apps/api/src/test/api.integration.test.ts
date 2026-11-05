@@ -1789,4 +1789,49 @@ describe.skipIf(!hasTestDatabase)('EcoMap API', () => {
       await request(app).get('/api/features/not-a-uuid').expect(422);
     });
   });
+
+  describe('short links', () => {
+    const place = '34811992-1c48-4b91-988f-92711c809d2a';
+
+    it('lets anyone, signed in or not, make a link and open it again', async () => {
+      const created = await request(app)
+        .post('/api/links')
+        .send({ query: `?feature=${place}&layers=from-the-farm` })
+        .expect(201);
+      expect(created.body.code).toMatch(/^[23456789abcdefghjkmnpqrstuvwxyz]{6}$/);
+
+      const opened = await request(app).get(`/api/links/${created.body.code}`).expect(200);
+      expect(opened.body).toEqual({
+        code: created.body.code,
+        query: `feature=${place}&layers=from-the-farm`,
+      });
+    });
+
+    it('gives the same view the same code', async () => {
+      const first = await request(app)
+        .post('/api/links')
+        .send({ query: `q=bi&feature=${place}` });
+      const second = await request(app)
+        .post('/api/links')
+        .send({ query: `feature=${place.toUpperCase()}&q=bi` });
+      expect(second.body.code).toBe(first.body.code);
+    });
+
+    it('stores only the map view, never anything that could lead elsewhere', async () => {
+      const created = await request(app)
+        .post('/api/links')
+        .send({ query: 'next=https://evil.example&mine=true' })
+        .expect(201);
+      expect(created.body.query).toBe('');
+    });
+
+    it('accepts a code typed in capitals, and says when a code does not exist', async () => {
+      const created = await request(app).post('/api/links').send({ query: 'q=honning' });
+      await request(app).get(`/api/links/${created.body.code.toUpperCase()}`).expect(200);
+
+      const missing = await request(app).get('/api/links/zzzzzz').expect(404);
+      expect(missing.body.error.code).toBe('not_found');
+      await request(app).get('/api/links/not-a-code').expect(422);
+    });
+  });
 });

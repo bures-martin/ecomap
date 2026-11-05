@@ -14,12 +14,14 @@ import {
   mdiGoogleMaps,
   mdiNavigationVariant,
   mdiPencil,
+  mdiShareVariant,
 } from '@mdi/js';
 import { useTranslation } from 'i18next-vue';
-import { computed, nextTick, useId, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuth } from '../auth/auth.js';
 import LinkifiedText from '../components/LinkifiedText.vue';
+import ShareDialog from '../components/ShareDialog.vue';
 import UserAvatar from '../components/UserAvatar.vue';
 import FeatureGallery from './FeatureGallery.vue';
 import LayerIcon from './LayerIcon.vue';
@@ -47,6 +49,15 @@ const language = useLanguage();
 const auth = useAuth();
 const { xs, width: viewportWidth } = useDisplay();
 const linksHeadingId = useId();
+const sharing = ref(false);
+
+/* A different place closes the share dialog of the one before. */
+watch(
+  () => props.feature?.id,
+  () => {
+    sharing.value = false;
+  },
+);
 
 const actor = computed(() => (auth.user ? { id: auth.user.id, role: auth.user.role } : null));
 const mayEdit = computed(() =>
@@ -197,7 +208,7 @@ function formatPropertyValue(
         A plain link to Google Maps: a new tab on a computer, the Google Maps
         app on a phone that has it. Routes are navigated to their start.
       -->
-      <div>
+      <div class="d-flex flex-wrap ga-2">
         <v-btn
           :href="navigationUrl ?? undefined"
           target="_blank"
@@ -212,7 +223,22 @@ function formatPropertyValue(
               : t('feature.navigate')
           }}
         </v-btn>
+        <v-btn
+          color="primary"
+          variant="tonal"
+          :prepend-icon="mdiShareVariant"
+          @click="sharing = true"
+        >
+          {{ t('share.button') }}
+        </v-btn>
       </div>
+      <ShareDialog
+        :open="sharing"
+        :heading="t('share.placeHeading', { name: props.feature.name })"
+        :title="props.feature.name"
+        :query="`feature=${props.feature.id}`"
+        @close="sharing = false"
+      />
 
       <FeatureGallery :feature="props.feature" />
 

@@ -55,7 +55,7 @@ export async function setupTestDatabase(): Promise<Sql> {
 
 /** Empties every table between tests, leaving the schema and the settings row. */
 export async function resetTestDatabase(db: Sql): Promise<void> {
-  await db`truncate table refresh_tokens, features, layers, users restart identity cascade`;
+  await db`truncate table refresh_tokens, features, layers, users, short_links restart identity cascade`;
   await db`
     update community_settings
     set name = 'EcoMap Community',

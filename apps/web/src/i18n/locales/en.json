@@ -549,5 +549,24 @@
     "banner": "As an administrator, turn on two-factor sign-in before using the admin pages (settings, layers, people).",
     "action": "Turn it on",
     "accountHint": "As an administrator you need two-factor sign-in turned on to use the admin pages."
+  },
+  "share": {
+    "button": "Share",
+    "placeHeading": "Share {{name}}",
+    "mapButton": "Share the map",
+    "filteredMapButton": "Share this view",
+    "mapHeading": "Share the map",
+    "filteredMapHeading": "Share the map as filtered now",
+    "mapShareTitle": "The map",
+    "link": "Link",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy the link - select it and copy it yourself",
+    "shareVia": "Share…",
+    "qrAlt": "QR code for the link",
+    "downloadQr": "Download QR code (for print)",
+    "opening": "Opening the link",
+    "missingTitle": "This link does not exist",
+    "missingBody": "It may have been typed wrong. Open the map and find the place there."
   }
 }

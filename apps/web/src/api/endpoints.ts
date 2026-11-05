@@ -35,6 +35,8 @@ import {
   type LoginInput,
   type ModerateFeatureInput,
   type RegisterInput,
+  shortLinkSchema,
+  type ShortLink,
   type SuggestFeatureInput,
   type SuggestionStatus,
   type TotpSetup,
@@ -243,3 +245,11 @@ export function featureQueryString(filters: MapFilters): string {
   if (filters.mine) params.set('mine', 'true');
   return params.toString();
 }
+
+/** Short links for sharing a place or a filtered map (`/s/k7m2qx`). */
+export const linksApi = {
+  create: (query: string): Promise<ShortLink> =>
+    apiRequest('/api/links', { method: 'POST', body: { query }, schema: shortLinkSchema }),
+  open: (code: string): Promise<ShortLink> =>
+    apiRequest(`/api/links/${encodeURIComponent(code)}`, { schema: shortLinkSchema }),
+};

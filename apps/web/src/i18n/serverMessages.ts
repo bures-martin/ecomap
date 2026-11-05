@@ -76,6 +76,7 @@ const EXACT: Readonly<Record<string, string>> = {
   'Enter your password': 'Skriv din adgangskode.',
   'Enter the six-digit code': 'Skriv den sekscifrede kode.',
   'Give it a short name': 'Giv det et kort navn.',
+  'Not a short link': 'Det er ikke et gyldigt link.',
   'Use lowercase words separated by single hyphens':
     'Brug små bogstaver og ord adskilt af én bindestreg, fx lokal-mad.',
   'Use a hex colour such as #2f855a': 'Brug en farvekode som #2f855a.',
