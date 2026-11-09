@@ -1362,17 +1362,6 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     },
   },
   {
-    osmId: 'node/9297907802',
-    layerSlug: 'green-shops',
-    name: 'Helseland',
-    description: 'Helsekost og økologiske varer i Aakirkeby.',
-    coordinates: [14.92074, 55.07174],
-    properties: {
-      whatMakesItGreen: 'Økologisk',
-      website: 'https://www.helsam.dk/butikker/nordsjaelland-og-bornholm/helseland-aakirkeby',
-    },
-  },
-  {
     osmId: 'node/5623108227',
     layerSlug: 'green-shops',
     name: 'Ernst',
@@ -1380,6 +1369,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [14.71727, 55.15469],
     properties: {
       whatMakesItGreen: 'Økologisk',
+      facebook: 'https://www.facebook.com/ErnstiMuleby/',
     },
   },
   {

@@ -7,7 +7,7 @@ folder in [`apps/api/src/communities`](../apps/api/src/communities).
 
 | What                              | Source                                                                                                                                                                                              | Where in the code                                                                    |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Places** (153)                  | [OpenStreetMap](https://www.openstreetmap.org), via the Overpass API, taken 2026-11-03 (drinking water and more local food 2026-11-04; Gourmet Bornholm members 2026-11-05; green shops 2026-11-09) | [`communities/bornholm/places.ts`](../apps/api/src/communities/bornholm/places.ts)   |
+| **Places** (152)                  | [OpenStreetMap](https://www.openstreetmap.org), via the Overpass API, taken 2026-11-03 (drinking water and more local food 2026-11-04; Gourmet Bornholm members 2026-11-05; green shops 2026-11-09) | [`communities/bornholm/places.ts`](../apps/api/src/communities/bornholm/places.ts)   |
 | Which OSM tags feed each layer    | Written down per layer                                                                                                                                                                              | [`communities/bornholm/osm.ts`](../apps/api/src/communities/bornholm/osm.ts)         |
 | **Layers** (names, icons, fields) | Written for the project, in Danish                                                                                                                                                                  | [`communities/bornholm/layers.ts`](../apps/api/src/communities/bornholm/layers.ts)   |
 | **About text** ("Om")             | Written for the project; every link checked 2026-11-03                                                                                                                                              | [`communities/bornholm/about.ts`](../apps/api/src/communities/bornholm/about.ts)     |
@@ -16,7 +16,7 @@ folder in [`apps/api/src/communities`](../apps/api/src/communities).
 
 Places per layer: from the farm 30 · fish and smokehouses 13 · sweets and ice cream 14 ·
 drinks 10 · drinking water 26 · cycling 15 · recycling and repair 14 ·
-renewable energy 10 · EV charging 8 · nature areas 6 · community gardens 5 · green shops 2.
+renewable energy 10 · EV charging 8 · nature areas 6 · community gardens 5 · green shops 1.
 
 ### How the places were made
 
