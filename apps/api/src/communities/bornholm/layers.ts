@@ -307,8 +307,7 @@ export const BORNHOLM_LAYERS: readonly CreateLayerInput[] = [
   }),
   createLayerInputSchema.parse({
     slug: 'green-shops',
-    /* Hidden until it holds enough shops to be worth a topic of its own. */
-    isPublished: false,
+    isPublished: true,
     name: 'Grønne butikker',
     description:
       'Økologiske butikker, refill og emballagefrit, fair trade og butikker med genbrug eller reparation.',

@@ -7,7 +7,8 @@
  * `osmId` points at the source object, e.g. https://www.openstreetmap.org/node/1330908050
  *
  * Generated 2026-11-03 from the Overpass API (more local food 2026-11-04;
- * Gourmet Bornholm members and their member-page links 2026-11-05). Re-check
+ * Gourmet Bornholm members and their member-page links 2026-11-05; green shops
+ * 2026-11-09). Re-check
  * before relying on opening hours - the real world changes faster than a demo
  * data set. The
  * descriptions are in Danish, the language of the Bornholm showcase, and the
@@ -1369,6 +1370,16 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       whatMakesItGreen: 'Økologisk',
       website: 'https://www.helsam.dk/butikker/nordsjaelland-og-bornholm/helseland-aakirkeby',
+    },
+  },
+  {
+    osmId: 'node/5623108227',
+    layerSlug: 'green-shops',
+    name: 'Ernst',
+    description: 'Økologisk og biodynamisk købmand med løsvægt i Sorthat-Muleby.',
+    coordinates: [14.71727, 55.15469],
+    properties: {
+      whatMakesItGreen: 'Økologisk',
     },
   },
   {
