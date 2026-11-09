@@ -408,11 +408,24 @@ function drawPoints(): void {
  */
 const FIT_PADDING = L.point(140, 180);
 
-/** Quick: Leaflet's default flight scales with the distance and takes seconds. */
-const CLUSTER_FLIGHT: L.ZoomPanOptions = { duration: 0.5 };
+/*
+ * Zooms straight in. Leaflet's flyTo would first zoom out and then back in,
+ * which reads as the map jumping about rather than opening the group.
+ */
+const CLUSTER_ZOOM: L.ZoomPanOptions = { animate: !reduceMotion };
 
 /**
- * A badge with the number of places. Clicking a small group flies to show all
+ * A place, route or area does something on a single click; a double click on
+ * it must not also reach the map, which would zoom in by a step each time.
+ */
+function keepDoubleClickOff(layer: L.Layer): void {
+  layer.on('dblclick', (event: L.LeafletMouseEvent) => {
+    L.DomEvent.stopPropagation(event);
+  });
+}
+
+/**
+ * A badge with the number of places. Clicking a small group zooms to show all
  * of its places at once; a big one zooms in until it splits.
  */
 function clusterMarker(clusterId: number, count: number, position: L.LatLngTuple): L.Marker {
@@ -428,7 +441,7 @@ function clusterMarker(clusterId: number, count: number, position: L.LatLngTuple
     /* The zoom at which this group splits - at least one step forward. */
     const splits = Math.min(pointIndex.getClusterExpansionZoom(clusterId), CLUSTER_MAX_ZOOM + 1);
     if (count > OPEN_ALL_UP_TO) {
-      map.flyTo(position, splits, CLUSTER_FLIGHT);
+      map.setView(position, splits, CLUSTER_ZOOM);
       return;
     }
     const bounds = L.latLngBounds(
@@ -438,13 +451,14 @@ function clusterMarker(clusterId: number, count: number, position: L.LatLngTuple
       }),
     );
     const fits = map.getBoundsZoom(bounds, false, FIT_PADDING);
-    map.flyTo(
+    map.setView(
       bounds.getCenter(),
       Math.min(Math.max(fits, splits), CLUSTER_MAX_ZOOM + 1),
-      CLUSTER_FLIGHT,
+      CLUSTER_ZOOM,
     );
   };
   marker.on('click', expand);
+  keepDoubleClickOff(marker);
   marker.on('keypress', (event: L.LeafletKeyboardEvent) => {
     if (event.originalEvent.key === 'Enter' || event.originalEvent.key === ' ') expand();
   });
@@ -480,6 +494,7 @@ function featureShape(feature: Feature, selected: boolean): L.Layer {
       });
       marker.bindTooltip(textContent(feature.name), { direction: 'top' });
       marker.on('click', select);
+      keepDoubleClickOff(marker);
       marker.on('keypress', (event: L.LeafletKeyboardEvent) => {
         if (event.originalEvent.key === 'Enter' || event.originalEvent.key === ' ') select();
       });
@@ -495,6 +510,7 @@ function featureShape(feature: Feature, selected: boolean): L.Layer {
       const line = L.polyline(feature.geometry.coordinates.map(toLatLng), pathOptions);
       line.bindTooltip(textContent(feature.name), { sticky: true });
       line.on('click', select);
+      keepDoubleClickOff(line);
       return keyboardShape(line, feature, select);
     }
     case 'Polygon': {
@@ -504,6 +520,7 @@ function featureShape(feature: Feature, selected: boolean): L.Layer {
       );
       polygon.bindTooltip(textContent(feature.name), { sticky: true });
       polygon.on('click', select);
+      keepDoubleClickOff(polygon);
       return keyboardShape(polygon, feature, select);
     }
   }
