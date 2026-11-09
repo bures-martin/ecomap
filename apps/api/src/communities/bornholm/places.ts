@@ -1373,6 +1373,17 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     },
   },
   {
+    osmId: 'node/7794329435',
+    layerSlug: 'green-shops',
+    name: 'Okker-Gokker',
+    description: 'Økologisk børnetøj fra eget danske mærke, butik på Svaneke Torv.',
+    coordinates: [15.14115, 55.13599],
+    properties: {
+      whatMakesItGreen: 'Økologisk',
+      openingHours: 'Mo-Fr 10:30-17:00; Sa 10:30-15:30; Su 10:30-14:30',
+    },
+  },
+  {
     osmId: 'node/1827443736',
     layerSlug: 'drinking-water',
     name: 'Drikkevand ved Vallehuse',
