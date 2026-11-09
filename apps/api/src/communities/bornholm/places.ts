@@ -8,7 +8,7 @@
  *
  * Generated 2026-11-03 from the Overpass API (more local food 2026-11-04;
  * Gourmet Bornholm members and their member-page links 2026-11-05; green shops
- * 2026-11-09). Re-check
+ * 2026-11-09; links and hours validated 2026-11-09). Re-check
  * before relying on opening hours - the real world changes faster than a demo
  * data set. The
  * descriptions are in Danish, the language of the Bornholm showcase, and the
@@ -36,6 +36,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       type: 'Genbrugsplads',
       openingHours: 'Fr 10:00-17:00; Sa 09:00-17:00',
+      website: 'https://bofa.dk/om-bofa/abningstider/',
     },
   },
   {
@@ -100,6 +101,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [15.13021, 55.05678],
     properties: {
       type: 'Genbrugsbutik',
+      website: 'https://lumigenbrug-bornholm.dk/',
     },
   },
   {
@@ -110,6 +112,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [15.13564, 55.06673],
     properties: {
       type: 'Genbrugsbutik',
+      website: 'https://klunserkongen.dk/',
     },
   },
   {
@@ -121,6 +124,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       type: 'Genbrugsbutik',
       openingHours: 'PH,We,Fr-Mo 12:00-17:30; Tu,Th 10:00-17:30',
+      website: 'https://www.sparloppan.dk/',
     },
   },
   {
@@ -131,6 +135,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [15.11211, 55.02397],
     properties: {
       type: 'Genbrugsbutik',
+      website: 'https://pif.dk/pif-genbrug/',
     },
   },
   {
@@ -156,7 +161,8 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/soldalen-mostballaden/',
       kind: 'Gårdbutik',
-      website: 'https://mostballaden.dk',
+      website: 'http://mostballaden.dk/',
+      openingHours: 'We-Su 11:00-16:00',
     },
   },
   {
@@ -190,6 +196,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [14.94403, 55.17378],
     properties: {
       kind: 'Producent',
+      openingHours: 'Th-Su 14:00-17:00',
     },
   },
   {
@@ -212,7 +219,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/hoestet/',
       kind: 'Gårdbutik',
-      website: 'https://xn--hstet-vua.dk/',
+      website: 'https://hoestet.dk/',
     },
   },
   {
@@ -223,6 +230,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [14.95331, 55.06075],
     properties: {
       kind: 'Gårdbutik',
+      openingHours: 'Mo-Su 11:00-17:00',
     },
   },
   {
@@ -234,7 +242,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/vingaarden-lille-gadegaard/',
       kind: 'Vingård',
-      website: 'http://www.a7.dk/',
+      website: 'https://a7.dk/',
     },
   },
   {
@@ -774,7 +782,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/penyllan-beerhere/',
       kind: 'Bryggeri',
       openingHours: '12:00-21:00',
-      website: 'https://penyllan.com/bar/',
+      website: 'https://bar.penyllan.com/',
     },
   },
   {
@@ -785,7 +793,6 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [15.14079, 55.07286],
     properties: {
       kind: 'Bryggeri',
-      website: 'https://www.avijll.dk/',
     },
   },
   {
@@ -934,7 +941,6 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [14.69973, 55.10282],
     properties: {
       kind: 'Is',
-      website: 'https://www.chrisogmario.dk/',
     },
   },
   {
@@ -991,7 +997,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     coordinates: [15.06043, 55.11763],
     properties: {
       kind: 'Gårdbutik',
-      website: 'https://www.hallegaard.dk/',
+      website: 'https://hallegaard.eu/',
     },
   },
   {
@@ -1054,6 +1060,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/moenstergaard/',
       kind: 'Gårdbutik',
+      website: 'https://undercanvasbornholm.dk/moenstergaard/',
     },
   },
   {
@@ -1098,7 +1105,6 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       kind: 'Røgeri',
       sells: 'Røget fisk',
       openingHours: 'Mo-We 12:00-17:00; Th-Su 12:00-20:00',
-      website: 'https://arnager-rogeri.dk/',
     },
   },
   {
@@ -1216,7 +1222,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       kind: 'Røgeri',
       sells: 'Røget fisk og sild',
-      website: 'https://bakkaroegeriet.dk/',
+      website: 'https://www.bakkaroegeriet.dk/',
     },
   },
   {
@@ -1266,7 +1272,6 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       kind: 'Producent',
       sells: 'Honning',
-      website: 'https://bornholmerbi.dk/',
     },
   },
   {
@@ -1312,7 +1317,6 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       kind: 'Bryggeri',
       sells: 'Øl',
-      website: 'https://bornholmskevarer.dk/brand/28-chrool',
     },
   },
   {
@@ -1359,6 +1363,7 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
     properties: {
       type: 'Genbrugsbutik',
       facebook: 'https://www.facebook.com/profile.php?id=61578150895662',
+      website: 'https://www.sogc.dk/',
     },
   },
   {
@@ -1641,8 +1646,8 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       kind: 'Producent',
       sells: 'Brød og kager',
       openingHours: 'Mo-Fr 06:00-17:30; Sa 06:30-12:30',
-      website: 'http://bagerdam.dk/',
       gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/johannes-dam-soen/',
+      website: 'https://bornholmerkiksen.dk/',
     },
   },
   {
@@ -1669,8 +1674,8 @@ export const BORNHOLM_PLACES: readonly CommunityPlace[] = [
       sells: 'Is',
       payment: 'Flere muligheder',
       openingHours: '12:00-18:00',
-      website: 'http://www.kalas-kalas.dk/',
       gourmetBornholm: 'https://gourmetbornholm.dk/lokationer/sandvig-is-kalas/',
+      website: 'https://www.kalasbornholm.dk/',
     },
   },
   {
