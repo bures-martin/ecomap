@@ -77,7 +77,12 @@ const signOut = async (): Promise<void> => {
           class="app-title"
           :class="isPhone ? 'text-title-medium' : 'text-title-large'"
         >
-          {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
+          <template v-if="isDesktop">
+            {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
+          </template>
+          <template else>
+            {{ 'EcoMap' }}
+          </template>
         </RouterLink>
       </div>
 
