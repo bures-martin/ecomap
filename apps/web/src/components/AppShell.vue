@@ -80,7 +80,7 @@ const signOut = async (): Promise<void> => {
           <template v-if="isDesktop">
             {{ settingsQuery.data.value?.name ?? 'EcoMap' }}
           </template>
-          <template else>
+          <template v-else>
             {{ 'EcoMap' }}
           </template>
         </RouterLink>
