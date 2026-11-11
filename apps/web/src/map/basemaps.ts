@@ -37,14 +37,14 @@ function esri(service: string, attribution: string, maxNativeZoom: number): Base
 }
 
 const DEFINITIONS: Readonly<Record<Basemap, BasemapDefinition>> = {
-  streets: esri('World_Street_Map', 'Esri, HERE, Garmin, OpenStreetMap contributors', 19),
+  streets: esri('World_Street_Map', 'Esri, HERE, Garmin, OpenStreetMap', 19),
   osm: {
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: OSM_ATTRIBUTION,
     maxZoom: 19,
   },
-  light: esri('Canvas/World_Light_Gray_Base', 'Esri, HERE, Garmin, OpenStreetMap contributors', 16),
-  dark: esri('Canvas/World_Dark_Gray_Base', 'Esri, HERE, Garmin, OpenStreetMap contributors', 16),
+  light: esri('Canvas/World_Light_Gray_Base', 'Esri, HERE, Garmin, OpenStreetMap', 16),
+  dark: esri('Canvas/World_Dark_Gray_Base', 'Esri, HERE, Garmin, OpenStreetMap', 16),
   satellite: esri('World_Imagery', 'Esri, Maxar, Earthstar Geographics', 19),
   topo: {
     url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
