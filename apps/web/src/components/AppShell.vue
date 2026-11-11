@@ -81,7 +81,7 @@ const signOut = async (): Promise<void> => {
         </RouterLink>
       </div>
 
-      <nav v-if="isDesktop" :aria-label="t('nav.map')" class="d-flex ga-1">
+      <nav :aria-label="t('nav.map')" class="d-flex ga-1">
         <v-btn
           v-for="link in [...primaryLinks, ...adminLinks]"
           :key="link.to"
@@ -101,32 +101,35 @@ const signOut = async (): Promise<void> => {
       -->
       <ColorSchemeMenu />
 
-      <v-btn
-        v-if="!auth.user"
-        to="/sign-in"
-        variant="text"
-        :prepend-icon="mdiAccountCircle"
-        :aria-label="t('nav.signIn')"
-      >
-        {{ isDesktop ? t('nav.signIn') : '' }}
-      </v-btn>
-      <v-menu v-else>
-        <template #activator="{ props: activator }">
-          <v-btn v-bind="activator" variant="text" :aria-label="auth.user.displayName">
-            <UserAvatar
-              :name="auth.user.displayName"
-              :src="auth.user.avatarUrl"
-              :size="28"
-              :class="{ 'mr-2': isDesktop }"
-            />
-            {{ isDesktop ? auth.user.displayName : '' }}
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item to="/account" :title="t('nav.account')" />
-          <v-list-item :title="t('nav.signOut')" @click="signOut" />
-        </v-list>
-      </v-menu>
+      <!--
+        Show on Non-Demo Site
+        <v-btn
+          v-if="!auth.user"
+          to="/sign-in"
+          variant="text"
+          :prepend-icon="mdiAccountCircle"
+          :aria-label="t('nav.signIn')"
+        >
+          {{ isDesktop ? t('nav.signIn') : '' }}
+        </v-btn>
+        <v-menu v-else>
+          <template #activator="{ props: activator }">
+            <v-btn v-bind="activator" variant="text" :aria-label="auth.user.displayName">
+              <UserAvatar
+                :name="auth.user.displayName"
+                :src="auth.user.avatarUrl"
+                :size="28"
+                :class="{ 'mr-2': isDesktop }"
+              />
+              {{ isDesktop ? auth.user.displayName : '' }}
+            </v-btn>
+          </template>
+          <v-list density="compact">
+            <v-list-item to="/account" :title="t('nav.account')" />
+            <v-list-item :title="t('nav.signOut')" @click="signOut" />
+          </v-list>
+        </v-menu>
+       -->
     </v-toolbar>
 
     <v-navigation-drawer v-model="drawerOpen" temporary :width="260">
